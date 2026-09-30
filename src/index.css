@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html { -webkit-text-size-adjust: 100%; }
+body { @apply bg-paper text-ink font-sans antialiased; font-size: 15px; line-height: 1.65; word-break: keep-all; }
+:focus-visible { outline: 2px solid #3A74D8; outline-offset: 2px; border-radius: 4px; }
+mark.ev { background: rgba(250, 204, 21, 0.38); color: inherit; padding: 0 1px; border-radius: 2px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
