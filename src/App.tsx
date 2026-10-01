@@ -26,10 +26,13 @@ function Progress() {
   const done = Object.values(state.personas).filter((p) => Object.keys(p.scores).length === 4).length
   const marked = Object.values(state.reviews).filter((r) => r.verdict).length
   return (
-    <div className="mt-6 rounded-lg border border-rule bg-white px-3 py-2.5 text-[0.8rem] text-slate">
-      <p className="font-semibold text-ink">{state.evaluator ? `${state.evaluator} 님의 평가` : '평가 진행 상황'}</p>
-      <p>퍼소나 점수 {done}/6 · 핵심 리뷰 판정 {marked}개</p>
-      {state.submittedAt && <p className="text-pc">제출 완료</p>}
+    <div className="mt-6 rounded-xl bg-white px-4 py-3.5 shadow-e1">
+      <p className="text-b3 font-semibold text-g900">{state.evaluator ? `${state.evaluator} 님의 평가` : '평가 진행 상황'}</p>
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-g200" aria-hidden>
+        <div className="h-full rounded-full bg-brand transition-all duration-200" style={{ width: `${(done / 6) * 100}%` }} />
+      </div>
+      <p className="mt-2 text-cap text-g600 tabular">퍼소나 점수 {done}/6 · 핵심 리뷰 판정 {marked}개</p>
+      {state.submittedAt && <p className="mt-1 text-cap font-semibold text-success">제출했어요</p>}
     </div>
   )
 }
@@ -46,9 +49,9 @@ function Shell() {
             <NavLink
               to={n.to}
               end={n.to === '/'}
-              className={({ isActive }) => `flex items-baseline gap-2.5 rounded-md px-2.5 py-1.5 text-[0.93rem] ${isActive ? 'bg-ink text-white' : 'text-ink hover:bg-white'}`}
+              className={({ isActive }) => `flex h-11 items-center gap-3 rounded-m px-3 text-b2 transition-colors duration-200 ${isActive ? 'bg-g100 font-bold text-g900' : 'text-g700 hover:bg-g100/60'}`}
             >
-              <span className="w-3 text-[0.78rem] tabular-nums opacity-60">{n.step}</span>
+              <span className="w-3 text-cap text-g500 tabular">{n.step}</span>
               {n.label}
             </NavLink>
           </li>
@@ -57,27 +60,27 @@ function Shell() {
     </nav>
   )
   return (
-    <div className="min-h-screen lg:grid lg:grid-cols-[16rem_1fr]">
-      <aside className="hidden border-r border-rule px-5 py-8 lg:block">
+    <div className="min-h-screen lg:grid lg:grid-cols-[17rem_1fr]">
+      <aside className="hidden bg-g50 px-5 py-8 lg:block">
         <div className="sticky top-8">
-          <p className="mb-6 font-serif text-[1.1rem] font-bold leading-snug">부스터프로 퍼소나<br />도출 검증</p>
+          <p className="mb-7 px-3 text-t1 font-bold leading-snug">부스터프로 퍼소나<br />도출 검증</p>
           {nav}
           <Progress />
         </div>
       </aside>
-      <div className="sticky top-0 z-20 flex items-center justify-between border-b border-rule bg-paper/95 px-4 py-3 backdrop-blur lg:hidden">
-        <p className="font-serif font-bold">퍼소나 도출 검증</p>
-        <button onClick={() => setOpen((v) => !v)} aria-expanded={open} className="rounded-md border border-rule bg-white px-3 py-1 text-sm">
+      <div className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-g200 bg-white/95 px-4 backdrop-blur lg:hidden">
+        <p className="text-t2 font-bold">퍼소나 도출 검증</p>
+        <button onClick={() => setOpen((v) => !v)} aria-expanded={open} className="h-8 rounded-[10px] bg-g100 px-3 text-b3 font-semibold">
           {open ? '닫기' : '메뉴'}
         </button>
       </div>
       {open && (
-        <div className="border-b border-rule bg-paper px-4 pb-4 pt-2 lg:hidden">
+        <div className="border-b border-g200 bg-g50 px-4 pb-5 pt-2 lg:hidden">
           {nav}
           <Progress />
         </div>
       )}
-      <main className="min-w-0 px-4 pb-24 pt-8 sm:px-8 lg:px-12 lg:pt-12">
+      <main className="min-w-0 px-4 pb-28 pt-8 sm:px-8 lg:px-14 lg:pt-14">
         <div className="mx-auto max-w-[68rem]">
           <Routes>
             <Route path="/" element={<Overview />} />

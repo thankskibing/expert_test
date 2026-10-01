@@ -1,9 +1,21 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { CATS, DATA_IDS, PCOLOR, PNAME, loadReviews, study, type Cat, type DataPid, type ReviewsData } from '../lib/data'
-import { NextStep, PageHead, Tabs } from '../components/ui'
+import { Button, Chip, NextStep, PageHead, Segmented, TextField } from '../components/ui'
 
 const PAGE = 40
+
+export function PersonaSeg({ value, onChange, count }: { value: DataPid; onChange: (v: DataPid) => void; count: (p: DataPid) => number }) {
+  return (
+    <Segmented label="데이터 퍼소나" items={DATA_IDS} value={value} onChange={onChange} render={(v) => (
+      <span className="flex items-center gap-2 py-1">
+        <span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[v] }} />
+        <span>{v} {PNAME[v]}</span>
+        <span className="font-medium text-g500 tabular">{count(v)}</span>
+      </span>
+    )} />
+  )
+}
 
 export default function Reviews() {
   const [sp, setSp] = useSearchParams()
@@ -28,59 +40,51 @@ export default function Reviews() {
   return (
     <div>
       <PageHead step={1} title="리뷰 데이터">
-        키워드 규칙으로 각 퍼소나에 1차 분류된 리뷰(A 824 · B 902 · C 607건, 중복 포함)를 그 퍼소나의 핵심 행동 변수 기준으로 한 건씩 다시 판정했습니다. 기본 화면은 <b className="text-ink">퍼소나 적합</b> 리뷰 전체이며, 나머지 분류도 볼 수 있습니다.
+        키워드 규칙으로 퍼소나별로 1차 분류된 리뷰(A 824 · B 902 · C 607건, 중복 포함)를, 그 퍼소나의 핵심 행동 변수 기준으로 한 건씩 다시 판정했어요. 처음에는 퍼소나 적합 리뷰가 보이고, 다른 분류도 골라 볼 수 있어요.
       </PageHead>
 
-      <Tabs items={DATA_IDS} value={p} onChange={(v) => set('p', v)} render={(v) => (
-        <span className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full" style={{ background: PCOLOR[v] }} />
-          <span><b>{v}</b> {PNAME[v]}</span>
-          <span className="text-slate tabular-nums">{study.stats.reclass[v].n}</span>
-        </span>
-      )} />
+      <PersonaSeg value={p} onChange={(v) => set('p', v)} count={(v) => study.stats.reclass[v].n} />
 
-      <div className="mt-5 flex flex-wrap gap-1.5" role="group" aria-label="분류 필터">
+      <div className="mt-5 flex flex-wrap gap-2" role="group" aria-label="분류 필터">
         {CATS.filter((c) => counts[c.id]).map((c) => (
-          <button key={c.id} onClick={() => set('cat', c.id)} title={c.hint} aria-pressed={cat === c.id}
-            className={`rounded-full border px-3 py-1 text-[0.85rem] ${cat === c.id ? 'border-ink bg-ink text-white' : 'border-rule bg-white hover:border-slate'}`}>
-            {c.label} <span className="tabular-nums opacity-70">{counts[c.id]}</span>
-          </button>
+          <Chip key={c.id} on={cat === c.id} onClick={() => set('cat', c.id)} title={c.hint}>
+            {c.label} <span className="font-medium opacity-60 tabular">{counts[c.id]}</span>
+          </Chip>
         ))}
       </div>
-      <p className="mt-2 text-[0.85rem] text-slate">{CATS.find((c) => c.id === cat)!.hint}</p>
+      <p className="mt-3 text-b3 text-g600">{CATS.find((c) => c.id === cat)!.hint}</p>
 
-      <div className="mt-5 flex flex-wrap items-center gap-3">
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="원문 검색 (예: 매일, 비교, 듀얼)" aria-label="원문 검색"
-          className="w-full max-w-sm rounded-md border border-rule bg-white px-3 py-2 outline-none focus:border-ink" />
-        <span className="text-sm text-slate">{data ? `${list.length}건` : '불러오는 중…'}</span>
+      <div className="mt-6 flex flex-wrap items-center gap-3">
+        <div className="w-full max-w-sm"><TextField value={q} onChange={(e) => setQ(e.target.value)} placeholder="원문에서 찾기 (예: 매일, 비교, 듀얼)" aria-label="원문 검색" /></div>
+        <span className="text-b3 text-g600 tabular">{data ? `${list.length}건` : '불러오고 있어요'}</span>
       </div>
 
-      <ul className="mt-5 divide-y divide-rule border-y border-rule">
+      <ul className="mt-6 divide-y divide-g200 border-t border-g200">
         {shown.map(([i, , why]) => (
-          <li key={i} className="py-4">
-            <div className="flex gap-3">
-              <span className="w-12 shrink-0 pt-0.5 text-[0.78rem] tabular-nums text-slate">#{i}</span>
-              <div className="min-w-0 max-w-prose2">
-                <p className="whitespace-pre-line">{data!.texts[i]}</p>
-                <details className="mt-1.5 text-[0.88rem]">
-                  <summary className="cursor-pointer text-slate hover:text-ink">판단 이유</summary>
-                  <p className="mt-1 text-slate">{why}</p>
-                </details>
-              </div>
+          <li key={i} className="flex gap-4 py-5">
+            <span className="w-12 shrink-0 pt-0.5 text-cap text-g500 tabular">#{i}</span>
+            <div className="min-w-0 max-w-prose2">
+              <p className="whitespace-pre-line text-b2 text-g800">{data!.texts[i]}</p>
+              <details className="group mt-2">
+                <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-b3 font-semibold text-g600 hover:text-g800">
+                  판단 이유 <span className="transition-transform duration-200 group-open:rotate-180" aria-hidden>⌄</span>
+                </summary>
+                <p className="mt-2 rounded-m bg-g50 px-4 py-3 text-b3 text-g700">{why}</p>
+              </details>
             </div>
           </li>
         ))}
-        {data && !list.length && <li className="py-8 text-slate">조건에 맞는 리뷰가 없습니다. 검색어를 지우거나 다른 분류를 선택해 보세요.</li>}
+        {data && !list.length && <li className="py-10 text-b2 text-g600">조건에 맞는 리뷰가 없어요. 검색어를 지우거나 다른 분류를 고르면 다시 보여요.</li>}
       </ul>
 
       {pages > 1 && (
-        <div className="mt-5 flex items-center gap-3 text-sm">
-          <button disabled={page === 0} onClick={() => setPage(page - 1)} className="rounded-md border border-rule bg-white px-3 py-1.5 disabled:opacity-40">이전</button>
-          <span className="tabular-nums text-slate">{page + 1} / {pages}</span>
-          <button disabled={page >= pages - 1} onClick={() => setPage(page + 1)} className="rounded-md border border-rule bg-white px-3 py-1.5 disabled:opacity-40">다음</button>
+        <div className="mt-6 flex items-center gap-3">
+          <Button size="m" disabled={page === 0} onClick={() => setPage(page - 1)}>이전</Button>
+          <span className="text-b3 text-g600 tabular">{page + 1} / {pages}</span>
+          <Button size="m" disabled={page >= pages - 1} onClick={() => setPage(page + 1)}>다음</Button>
         </div>
       )}
-      <NextStep to="/core" label="2 핵심 리뷰" />
+      <NextStep to="/core" label="핵심 리뷰 보기" />
     </div>
   )
 }
