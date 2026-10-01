@@ -59,22 +59,22 @@ export default function TrackStack({ tracks, ids, scale = 1, paths, focus, label
         lastArea = t.area
         return (
           <div key={t.key}>
-            {areaHead && <p className="mb-1 mt-6 text-[0.8rem] font-semibold text-slate first:mt-0">{t.area}</p>}
-            <div className="border-b border-rule py-3.5 last:border-0">
-              <p className="mb-2 text-[0.95rem] font-semibold">{t.name}</p>
+            {areaHead && <p className="mb-1 mt-6 text-b3 font-semibold text-g600 first:mt-0">{t.area}</p>}
+            <div className="border-b border-g200 py-3.5 last:border-0">
+              <p className="mb-2 text-b2 font-semibold text-g900">{t.name}</p>
               <div className="grid grid-cols-[1fr] items-center gap-x-3 sm:grid-cols-[8.5rem_1fr_8.5rem]">
-                <span className="hidden text-right text-[0.8rem] leading-tight text-slate sm:block">{t.left}</span>
+                <span className="hidden text-right text-b3 leading-tight text-g600 sm:block">{t.left}</span>
                 <div className="relative h-8" ref={(n) => { lines.current[i] = n }}>
-                  <div className="absolute left-0 right-0 top-1/2 h-px bg-rule" />
-                  <div className="absolute left-0 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-rule" />
-                  <div className="absolute right-0 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-rule" />
+                  <div className="absolute left-0 right-0 top-1/2 h-px bg-g200" />
+                  <div className="absolute left-0 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-g200" />
+                  <div className="absolute right-0 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-g200" />
                   {ids.filter((id) => t.pos[id] !== undefined).map((id) => {
                     const dim = keep && !keep.includes(id)
                     return (
                       <span
                         key={id}
                         title={`${id}: ${t.name}`}
-                        className="absolute flex h-[22px] w-[22px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-[0.7rem] font-bold text-white ring-2 ring-paper transition-opacity"
+                        className="absolute flex h-[22px] w-[22px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-[11px] font-bold text-white ring-2 ring-white transition-opacity"
                         style={{ left: `${(t.pos[id] / scale) * 100}%`, top: `calc(50% + ${offsetFor(t, id, scale)}px)`, background: PCOLOR[id], opacity: dim ? 0.28 : 1, zIndex: keep?.includes(id) ? 2 : 1 }}
                       >
                         {label(id)}
@@ -82,13 +82,13 @@ export default function TrackStack({ tracks, ids, scale = 1, paths, focus, label
                     )
                   })}
                 </div>
-                <span className="hidden text-[0.8rem] leading-tight text-slate sm:block">{t.right}</span>
-                <div className="mt-1 flex justify-between gap-4 text-[0.75rem] text-slate sm:hidden">
+                <span className="hidden text-b3 leading-tight text-g600 sm:block">{t.right}</span>
+                <div className="mt-1 flex justify-between gap-4 text-cap text-g600 sm:hidden">
                   <span>{t.left}</span>
                   <span className="text-right">{t.right}</span>
                 </div>
               </div>
-              {t.note && <p className="mt-1.5 text-[0.78rem] text-slate">{t.note}</p>}
+              {t.note && <p className="mt-1.5 text-cap text-g600">{t.note}</p>}
             </div>
           </div>
         )

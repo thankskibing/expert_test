@@ -1,32 +1,38 @@
+import type { ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { DATA_IDS, PAIR, PCOLOR, QUAL_IDS, core, personaById, study, type DataPid, type QualPid } from '../lib/data'
-import { NextStep, Note, PageHead, PersonaPill } from '../components/ui'
+import { DATA_IDS, PAIR, PCOLOR, PNAME, PSHORT, QUAL_IDS, core, personaById, study, type DataPid, type QualPid } from '../lib/data'
+import { Button, NextStep, Note, PageHead } from '../components/ui'
 
 const ALL = [...DATA_IDS, ...QUAL_IDS] as string[]
 const REV_PAIR: Record<string, string> = { P: 'A', S1: 'B', S2: 'C' }
 
 function Slider({ name, left, right, value, color }: { name: string; left: string; right: string; value: number; color: string }) {
   return (
-    <div className="grid grid-cols-[6.5rem_1fr] items-center gap-3 py-1.5 text-[0.85rem]">
-      <span className="font-semibold">{name}</span>
-      <div>
-        <div className="relative h-4">
-          <div className="absolute left-0 right-0 top-1/2 h-px bg-rule" />
-          <span className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-white" style={{ left: `${value * 100}%`, background: color }} />
-        </div>
-        <div className="flex justify-between text-[0.72rem] text-slate"><span>{left}</span><span>{right}</span></div>
+    <div className="py-2.5">
+      <p className="mb-2 text-b3 font-semibold text-g900">{name}</p>
+      <div className="relative h-2 rounded-full bg-g200">
+        <span className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] bg-white shadow-e2" style={{ left: `${value * 100}%`, borderColor: color }} />
       </div>
+      <div className="mt-1.5 flex justify-between text-cap text-g500"><span>{left}</span><span>{right}</span></div>
     </div>
   )
 }
 
-function Block({ title, children }: { title: string; children: React.ReactNode }) {
+function Block({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="rounded-xl border border-rule bg-white p-5">
-      <h3 className="mb-2.5 text-[0.95rem] font-bold">{title}</h3>
-      <div className="text-[0.92rem]">{children}</div>
+    <section className="rounded-2xl bg-g50 p-5 sm:p-6">
+      <h3 className="mb-3 text-t1">{title}</h3>
+      <div className="text-b2 text-g800">{children}</div>
     </section>
   )
+}
+
+function Bullets({ items }: { items: string[] }) {
+  return <ul className="space-y-2">{items.map((m) => <li key={m} className="flex gap-2"><span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-g500" />{m}</li>)}</ul>
+}
+
+function LinkPill({ to, children }: { to: string; children: ReactNode }) {
+  return <Link to={to} className="inline-flex h-8 items-center rounded-[10px] bg-g100 px-3 text-b3 font-semibold text-g800 transition-colors duration-200 hover:bg-g200">{children}</Link>
 }
 
 export default function Personas() {
@@ -40,82 +46,88 @@ export default function Personas() {
   return (
     <div>
       <PageHead step={5} title="결과 퍼소나">
-        리뷰에서 나온 데이터 퍼소나 3개와 인터뷰에서 나온 정성 퍼소나 3개입니다. 이름·나이·직업·지역은 원자료 근거가 아닌 가상 프로필이므로 평가에서 제외해 주세요.
+        리뷰에서 나온 데이터 퍼소나 3개와 인터뷰에서 나온 정성 퍼소나 3개예요. 이름·나이·직업·지역은 원자료 근거가 없는 가상 프로필이라 평가에서 빼 주세요.
       </PageHead>
 
-      <div className="mb-8 grid gap-3 sm:grid-cols-2">
-        {[['리뷰 데이터에서', DATA_IDS], ['인터뷰에서', QUAL_IDS]].map(([label, ids]) => (
-          <div key={label as string}>
-            <p className="mb-1.5 text-[0.8rem] text-slate">{label as string}</p>
-            <div className="flex flex-col gap-1.5">
-              {(ids as string[]).map((x) => (
-                <button key={x} onClick={() => setSp({ id: x }, { replace: true })} aria-pressed={x === id}
-                  className={`flex items-center justify-between rounded-lg border px-3 py-2 text-left ${x === id ? 'border-ink bg-white' : 'border-rule hover:border-slate'}`}>
-                  <PersonaPill id={x} />
-                </button>
-              ))}
-            </div>
+      <div className="mb-10 grid gap-4 sm:grid-cols-2">
+        {([['리뷰 데이터에서 나온 퍼소나', DATA_IDS], ['인터뷰에서 나온 퍼소나', QUAL_IDS]] as [string, string[]][]).map(([label, ids]) => (
+          <div key={label}>
+            <p className="mb-2 text-b3 font-semibold text-g600">{label}</p>
+            <ul className="divide-y divide-g200 overflow-hidden rounded-2xl border border-g200">
+              {ids.map((x) => {
+                const on = x === id
+                return (
+                  <li key={x}>
+                    <button onClick={() => setSp({ id: x }, { replace: true })} aria-pressed={on}
+                      className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors duration-200 ${on ? 'bg-g100' : 'hover:bg-g50'}`}>
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-l text-cap font-bold" style={x.length > 1 || 'P' === x ? { background: `${PCOLOR[x]}1A`, color: PCOLOR[x] } : { background: PCOLOR[x], color: '#fff' }}>{x}</span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-cap text-g500">{PSHORT[x]}</span>
+                        <span className={`block text-b2 ${on ? 'font-bold text-g900' : 'font-semibold text-g800'}`}>{PNAME[x]}</span>
+                      </span>
+                      {on && <span className="text-cap font-semibold text-brand">보는 중</span>}
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
           </div>
         ))}
       </div>
 
       <article>
-        <header className="mb-6 flex flex-wrap items-end gap-x-4 gap-y-2 border-b-2 pb-4" style={{ borderColor: c }}>
-          <div>
-            <p className="text-[0.85rem] font-semibold" style={{ color: c }}>{isData ? '데이터' : '정성'} {p.role}</p>
-            <h2 className="font-serif text-[1.8rem] font-bold leading-tight">{p.type}</h2>
-          </div>
-          <div className="ml-auto flex flex-wrap gap-2 text-[0.85rem]">
+        <header className="mb-6">
+          <p className="text-b3 font-semibold" style={{ color: c }}>{isData ? '데이터' : '정성'} {p.role}</p>
+          <h2 className="mt-1 text-h1">{p.type}</h2>
+          <div className="mt-4 flex flex-wrap gap-2">
             {isData ? (
               <>
-                <Link className="rounded-md border border-rule bg-white px-3 py-1.5 hover:border-ink" to={`/core?p=${id}`}>근거: 핵심 리뷰 {core[id as DataPid].length}건</Link>
-                <Link className="rounded-md border border-rule bg-white px-3 py-1.5 hover:border-ink" to={`/reviews?p=${id}&cat=D`}>근거: 적합 리뷰 {study.stats.reclass[id as DataPid].counts.D}건</Link>
+                <LinkPill to={`/core?p=${id}`}>근거: 핵심 리뷰 {core[id as DataPid].length}건</LinkPill>
+                <LinkPill to={`/reviews?p=${id}&cat=D`}>근거: 적합 리뷰 {study.stats.reclass[id as DataPid].counts.D}건</LinkPill>
               </>
             ) : (
-              study.qualGroups[id as QualPid].members.map((u) => (
-                <Link key={u} className="rounded-md border border-rule bg-white px-3 py-1.5 hover:border-ink" to={`/interviews#${u}`}>근거: {u} 인터뷰</Link>
-              ))
+              study.qualGroups[id as QualPid].members.map((u) => <LinkPill key={u} to={`/interviews#${u}`}>근거: {u} 인터뷰</LinkPill>)
             )}
-            <Link className="rounded-md border border-rule bg-white px-3 py-1.5 hover:border-ink" to="/variables">근거: 행동 변수</Link>
-            <button className="rounded-md border border-rule bg-white px-3 py-1.5 hover:border-ink" onClick={() => setSp({ id: pair }, { replace: true })}>짝 퍼소나 보기</button>
+            <LinkPill to="/variables">근거: 행동 변수</LinkPill>
+            <Button size="s" variant="ghost" onClick={() => setSp({ id: pair }, { replace: true })}>짝 퍼소나 {PSHORT[pair]} 보기</Button>
           </div>
         </header>
 
         {p.flag && <div className="mb-6"><Note>{p.flag}</Note></div>}
 
-        <div className="grid gap-5 lg:grid-cols-[20rem_1fr]">
-          <div className="space-y-5">
-            <section className="rounded-xl border border-rule bg-white p-5">
+        <div className="grid gap-4 lg:grid-cols-[20rem_1fr]">
+          <div className="space-y-4">
+            <section className="rounded-2xl border border-g200 p-5">
               <div className="flex items-center gap-3">
-                <span className="flex h-12 w-12 items-center justify-center rounded-full font-serif text-lg font-bold text-white" style={{ background: c }}>{p.name.slice(0, 1)}</span>
-                <div><p className="font-bold">{p.name}({p.age}세)</p><p className="text-[0.8rem] text-slate">가상 프로필</p></div>
+                <span className="flex h-12 w-12 items-center justify-center rounded-l text-t1 font-bold text-white" style={{ background: c }}>{p.name.slice(0, 1)}</span>
+                <div><p className="text-t2 font-bold">{p.name}({p.age}세)</p><p className="text-cap text-g500">가상 프로필</p></div>
               </div>
-              <p className="mt-3 flex flex-wrap gap-1.5 text-[0.8rem]" style={{ color: c }}>{p.tags.map((t) => <span key={t}>#{t}</span>)}</p>
-              <dl className="mt-4 space-y-1.5 text-[0.88rem]">
-                {p.profile.map((x) => <div key={x.k} className="grid grid-cols-[7rem_1fr] gap-2"><dt className="text-slate">{x.k}</dt><dd>{x.v}</dd></div>)}
+              <p className="mt-4 flex flex-wrap gap-1.5">{p.tags.map((t) => <span key={t} className="rounded-full bg-g100 px-2.5 py-1 text-cap font-semibold text-g700">#{t}</span>)}</p>
+              <dl className="mt-4 divide-y divide-g200 text-b3">
+                {p.profile.map((x) => <div key={x.k} className="grid grid-cols-[7rem_1fr] gap-2 py-2.5"><dt className="text-g600">{x.k}</dt><dd className="text-g900">{x.v}</dd></div>)}
               </dl>
             </section>
-            <blockquote className="rounded-xl border-2 bg-white p-5 font-serif text-[1.05rem] leading-relaxed" style={{ borderColor: c }}>“{p.quote}”</blockquote>
-            <section className="rounded-xl border border-rule bg-white p-5">
-              <h3 className="mb-2 text-[0.95rem] font-bold">Behavior</h3>
+            <blockquote className="rounded-2xl px-5 py-6 text-t1 font-bold leading-snug text-g900" style={{ background: `${c}14` }}>“{p.quote}”</blockquote>
+            <section className="rounded-2xl border border-g200 p-5">
+              <h3 className="mb-1 text-t1">Behavior</h3>
               {p.behavior.map((b) => <Slider key={b.name} {...b} color={c} />)}
             </section>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="space-y-5">
-              <Block title="Bio"><p className="leading-relaxed">{p.bio}</p></Block>
-              <Block title="Motivation"><ul className="list-disc space-y-1 pl-5">{p.motivation.map((m) => <li key={m}>{m}</li>)}</ul></Block>
-              <Block title="Goal"><dl className="space-y-2.5">{p.goals.map((g) => <div key={g.k}><dt className="font-semibold">{g.k}</dt><dd>{g.v}</dd></div>)}</dl></Block>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-4">
+              <Block title="Bio"><p>{p.bio}</p></Block>
+              <Block title="Motivation"><Bullets items={p.motivation} /></Block>
+              <Block title="Goal"><dl className="space-y-3">{p.goals.map((g) => <div key={g.k}><dt className="font-bold text-g900">{g.k}</dt><dd className="mt-0.5">{g.v}</dd></div>)}</dl></Block>
             </div>
-            <div className="space-y-5">
-              <Block title="Pain points"><ul className="list-disc space-y-1 pl-5">{p.pains.map((m) => <li key={m}>{m}</li>)}</ul></Block>
-              <Block title="Needs"><ol className="space-y-2.5">{p.needs.map((n, i) => <li key={n.title}><p className="font-semibold">{i + 1}. {n.title}</p><p className="text-slate">{n.detail}</p></li>)}</ol></Block>
+            <div className="space-y-4">
+              <Block title="Pain points"><Bullets items={p.pains} /></Block>
+              <Block title="Needs"><ol className="space-y-3">{p.needs.map((n, i) => <li key={n.title}><p className="font-bold text-g900">{i + 1}. {n.title}</p><p className="mt-0.5 text-g700">{n.detail}</p></li>)}</ol></Block>
             </div>
           </div>
         </div>
       </article>
-      <NextStep to="/process" label="6 도출 과정·교차 검증" />
+      <NextStep to="/process" label="도출 과정·교차 검증 보기" />
     </div>
   )
 }

@@ -1,9 +1,13 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { PCOLOR, study } from '../lib/data'
-import { NextStep, PageHead, PersonaPill } from '../components/ui'
+import { Badge, NextStep, PageHead, PersonaPill } from '../components/ui'
 
 const pick = (u: (typeof study.participants)[number], k: string) => u.info.find((x) => x.k === k)?.v ?? ''
+
+function Avatar({ id, size = 36 }: { id: string; size?: number }) {
+  return <span className="flex shrink-0 items-center justify-center rounded-l text-b2 font-bold text-white" style={{ width: size, height: size, background: PCOLOR[id] }}>{id.slice(1)}</span>
+}
 
 export default function Interviews() {
   const ps = study.participants
@@ -14,60 +18,58 @@ export default function Interviews() {
   return (
     <div>
       <PageHead step={3} title="정성 인터뷰">
-        부스터프로 사용자 6명(U1~U6)을 심층 인터뷰했습니다. 녹취는 U1·U4·U5만 있고, U2·U3·U6은 인터뷰 기록지를 근거로 했습니다. 개인정보를 지우고 프로필 요약과 대표 발화만 싣습니다.
+        부스터프로 사용자 6명(U1~U6)을 심층 인터뷰했어요. 녹취는 U1·U4·U5만 있고, U2·U3·U6은 인터뷰 기록지를 근거로 했어요. 개인정보는 지우고 프로필 요약과 대표 발화만 보여드려요.
       </PageHead>
 
-      <div className="overflow-x-auto rounded-xl border border-rule bg-white">
-        <table className="w-full min-w-[40rem] text-left text-[0.9rem]">
-          <thead className="border-b border-rule text-[0.8rem] text-slate">
-            <tr>{['참여자', '기본 정보', '사용 제품', '사용 기간', '사용 빈도·시간', '그룹'].map((h) => <th key={h} className="px-3 py-2.5 font-semibold">{h}</th>)}</tr>
-          </thead>
-          <tbody className="divide-y divide-rule">
-            {ps.map((u) => (
-              <tr key={u.id}>
-                <td className="px-3 py-2.5"><a href={`#${u.id}`} className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[0.75rem] font-bold text-white" style={{ background: PCOLOR[u.id] }}>{u.id.slice(1)}</a></td>
-                <td className="px-3 py-2.5">{pick(u, '기본 정보')}</td>
-                <td className="px-3 py-2.5">{pick(u, '사용 제품')}</td>
-                <td className="px-3 py-2.5">{pick(u, '사용 기간')}</td>
-                <td className="px-3 py-2.5 text-[0.85rem]">{pick(u, '현재 사용 빈도·시간')}</td>
-                <td className="px-3 py-2.5"><PersonaPill id={u.group} withName={false} /></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="mt-10 space-y-10">
+      <ul className="divide-y divide-g200 rounded-2xl border border-g200">
         {ps.map((u) => (
-          <article key={u.id} id={u.id} className="scroll-mt-20 rounded-xl border border-rule bg-white p-5 sm:p-7">
-            <header className="mb-5 flex flex-wrap items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full font-bold text-white" style={{ background: PCOLOR[u.id] }}>{u.id.slice(1)}</span>
-              <div>
-                <h2 className="font-serif text-[1.25rem] font-bold leading-snug">{u.id} · {u.title}</h2>
-                <p className="text-[0.8rem] text-slate">근거 자료: {u.source}</p>
+          <li key={u.id}>
+            <a href={`#${u.id}`} className="flex items-center gap-3.5 px-5 py-3.5 transition-colors duration-200 hover:bg-g50">
+              <Avatar id={u.id} size={40} />
+              <div className="min-w-0 flex-1">
+                <p className="text-b2 font-semibold text-g900">{u.id} · {pick(u, '기본 정보')}</p>
+                <p className="truncate text-b3 text-g600">{pick(u, '사용 제품')} · {pick(u, '사용 기간')} · {pick(u, '현재 사용 빈도·시간')}</p>
+              </div>
+              <span className="hidden sm:block"><PersonaPill id={u.group} withName={false} /></span>
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      <div className="mt-12 space-y-6">
+        {ps.map((u) => (
+          <article key={u.id} id={u.id} className="scroll-mt-20 rounded-3xl bg-g50 p-5 sm:p-8">
+            <header className="mb-6 flex flex-wrap items-center gap-3">
+              <Avatar id={u.id} size={44} />
+              <div className="min-w-0">
+                <h2 className="text-h3">{u.id} · {u.title}</h2>
+                <p className="mt-0.5 text-cap text-g500">근거 자료: {u.source}</p>
               </div>
               <span className="ml-auto"><PersonaPill id={u.group} /></span>
             </header>
 
-            <div className="grid gap-8 lg:grid-cols-2">
-              <dl className="space-y-2 text-[0.9rem]">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <dl className="divide-y divide-g200 rounded-2xl bg-white px-5 text-b3">
                 {u.info.filter((x) => x.k !== '기본 정보').map((x) => (
-                  <div key={x.k} className="grid grid-cols-[7.5rem_1fr] gap-3">
-                    <dt className="text-slate">{x.k}</dt><dd>{x.v}</dd>
+                  <div key={x.k} className="grid grid-cols-[7.5rem_1fr] gap-3 py-3">
+                    <dt className="text-g600">{x.k}</dt><dd className="text-g900">{x.v}</dd>
                   </div>
                 ))}
               </dl>
               <div>
-                <h3 className="mb-2 text-sm font-semibold">대표 발화</h3>
-                <ul className="space-y-3">
+                <h3 className="mb-3 text-t2">대표 발화</h3>
+                <ul className="space-y-2">
                   {u.quotes.map((q, i) => (
-                    <li key={i} className="border-l-2 pl-3 font-serif text-[0.98rem] leading-relaxed" style={{ borderColor: PCOLOR[u.id] }}>“{q}”</li>
+                    <li key={i} className="max-w-[92%] rounded-[14px_14px_14px_4px] bg-white px-4 py-3 text-b2 text-g800 shadow-e1">{q}</li>
                   ))}
                 </ul>
-                <h3 className="mb-2 mt-6 text-sm font-semibold">Pain point</h3>
-                <ul className="space-y-2.5 text-[0.9rem]">
+                <h3 className="mb-3 mt-8 text-t2">Pain point</h3>
+                <ul className="space-y-3">
                   {u.pains.map((p) => (
-                    <li key={p.title}><p className="font-semibold">{p.title}</p><p className="text-slate">{p.detail}</p></li>
+                    <li key={p.title}>
+                      <p className="flex items-start gap-2 text-b2 font-semibold text-g900"><Badge tone="red">Pain</Badge><span>{p.title}</span></p>
+                      <p className="mt-1 text-b3 text-g600">{p.detail}</p>
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -75,7 +77,7 @@ export default function Interviews() {
           </article>
         ))}
       </div>
-      <NextStep to="/variables" label="4 행동 변수·그룹" />
+      <NextStep to="/variables" label="행동 변수·그룹 보기" />
     </div>
   )
 }
