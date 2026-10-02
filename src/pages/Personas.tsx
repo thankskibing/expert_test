@@ -32,7 +32,7 @@ function Bullets({ items }: { items: string[] }) {
 }
 
 function LinkPill({ to, children }: { to: string; children: ReactNode }) {
-  return <Link to={to} className="inline-flex h-8 items-center rounded-[10px] bg-g100 px-3 text-b3 font-semibold text-g800 transition-colors duration-200 hover:bg-g200">{children}</Link>
+  return <Link to={to} className="inline-flex h-8 items-center rounded-m border border-g300 bg-white px-[15px] text-b2 text-g900 transition-colors duration-200 hover:border-brand-hover hover:text-brand-hover">{children}</Link>
 }
 
 export default function Personas() {
@@ -102,7 +102,7 @@ export default function Personas() {
                 <span className="flex h-12 w-12 items-center justify-center rounded-l text-t1 font-bold text-white" style={{ background: c }}>{p.name.slice(0, 1)}</span>
                 <div><p className="text-t2 font-bold">{p.name}({p.age}세)</p><p className="text-cap text-g500">가상 프로필</p></div>
               </div>
-              <p className="mt-4 flex flex-wrap gap-1.5">{p.tags.map((t) => <span key={t} className="rounded-full bg-g100 px-2.5 py-1 text-cap font-semibold text-g700">#{t}</span>)}</p>
+              <p className="mt-4 flex flex-wrap gap-1.5">{p.tags.map((t) => <span key={t} className="rounded-s border border-g300 bg-g50 px-[7px] text-b3 text-g900">#{t}</span>)}</p>
               <dl className="mt-4 divide-y divide-g200 text-b3">
                 {p.profile.map((x) => <div key={x.k} className="grid grid-cols-[7rem_1fr] gap-2 py-2.5"><dt className="text-g600">{x.k}</dt><dd className="text-g900">{x.v}</dd></div>)}
               </dl>

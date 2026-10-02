@@ -67,8 +67,8 @@ export default function Evaluate() {
                 <PersonaPill id={id} />
                 <span className="text-cap text-g500 tabular">{filled}/4</span>
                 <span className="ml-auto flex gap-1">
-                  <Link to={`/personas?id=${id}`} className="inline-flex h-8 items-center rounded-[10px] px-3 text-b3 font-semibold text-g600 hover:bg-g100">퍼소나 다시 보기</Link>
-                  {p.kind === 'data' && <Link to={`/core?p=${id}`} className="inline-flex h-8 items-center rounded-[10px] px-3 text-b3 font-semibold text-g600 hover:bg-g100">핵심 리뷰</Link>}
+                  <Link to={`/personas?id=${id}`} className="inline-flex h-8 items-center px-2 text-b2 text-brand hover:text-brand-hover">퍼소나 다시 보기</Link>
+                  {p.kind === 'data' && <Link to={`/core?p=${id}`} className="inline-flex h-8 items-center px-2 text-b2 text-brand hover:text-brand-hover">핵심 리뷰</Link>}
                 </span>
               </div>
               <div className="divide-y divide-g200">
@@ -79,7 +79,7 @@ export default function Evaluate() {
                       {[1, 2, 3, 4, 5].map((n) => {
                         const on = pe?.scores[c.key] === n
                         return (
-                          <label key={n} className={`flex h-9 w-11 cursor-pointer items-center justify-center rounded-m text-b2 font-bold transition-colors duration-200 tabular ${on ? 'bg-white text-g900 shadow-e1' : 'text-g500 hover:text-g800'}`} style={on ? { color: PCOLOR[id] } : undefined}>
+                          <label key={n} className={`flex h-9 w-11 cursor-pointer items-center justify-center rounded-m text-b2 font-bold transition-colors duration-200 tabular ${on ? 'bg-white text-g900 shadow-e1' : 'text-g500 hover:text-g800'}`} >
                             <input type="radio" className="sr-only" name={`${id}-${c.key}`} checked={on} onChange={() => setScore(id, c.key, n)} />
                             {n}
                           </label>
@@ -119,11 +119,11 @@ export default function Evaluate() {
       {missing.length > 0 && <p className="mb-2 max-w-prose2 text-b3 text-g600">아직 점수가 비어 있는 퍼소나: {missing.map((m) => personaById(m).type).join(', ')}. 비어 있어도 제출할 수 있어요.</p>}
       {msg && <p role="status" className={`mb-2 max-w-prose2 text-b2 font-semibold ${status === 'error' ? 'text-danger' : 'text-[#029359]'}`}>{msg}</p>}
 
-      {/* Bottom CTA: fixed to the bottom with a white protection gradient, as in TDS */}
-      <div className="sticky bottom-0 z-10 -mx-4 bg-gradient-to-t from-white via-white to-white/0 px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-8 sm:-mx-8 sm:px-8 lg:-mx-14 lg:px-14">
-        <div className="flex gap-2">
-          <Button size="xl" variant="secondary" onClick={download} className="shrink-0">응답 파일로 저장</Button>
-          <Button size="xl" variant="primary" onClick={submit} disabled={status === 'sending'} className="flex-1">
+      {/* Footer toolbar: one primary action, secondary actions as default buttons */}
+      <div className="sticky bottom-0 z-10 -mx-4 mt-6 border-t border-g200 bg-white px-4 py-4 pb-[max(16px,env(safe-area-inset-bottom))] sm:-mx-8 sm:px-8">
+        <div className="flex justify-end gap-2">
+          <Button size="l" variant="secondary" onClick={download}>응답 파일로 저장</Button>
+          <Button size="l" variant="primary" onClick={submit} disabled={status === 'sending'}>
             {status === 'sending' ? '제출하고 있어요' : state.submittedAt ? '다시 제출하기' : '평가 제출하기'}
           </Button>
         </div>
