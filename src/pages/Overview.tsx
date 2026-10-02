@@ -13,7 +13,7 @@ function Lane({ title, steps }: { title: string; steps: { label: string; to: str
       <ol className="grid gap-2 md:grid-cols-4">
         {steps.map((s, i) => (
           <li key={i}>
-            <Link to={s.to} className="flex h-full flex-col rounded-2xl bg-g50 p-5 transition-colors duration-200 hover:bg-g100">
+            <Link to={s.to} className="flex h-full flex-col rounded-xl border border-g200 bg-white p-5 transition-shadow duration-200 hover:shadow-e1">
               <p className="mb-3 text-b3 text-g600">{s.label}</p>
               {s.body}
             </Link>
@@ -27,7 +27,7 @@ function Lane({ title, steps }: { title: string; steps: { label: string; to: str
 function Num({ id, n }: { id: string; n: number | string }) {
   return (
     <p className="flex items-center gap-2 leading-tight">
-      <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-[6px] px-1 text-[11px] font-bold text-white" style={{ background: PCOLOR[id] }}>{id}</span>
+      <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-s px-1 text-[11px] font-bold text-white" style={{ background: PCOLOR[id] }}>{id}</span>
       <span className="text-[22px] font-bold tabular">{n}</span>
       <span className="text-b3 text-g500">건</span>
     </p>

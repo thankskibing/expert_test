@@ -60,7 +60,7 @@ export default function Interviews() {
                 <h3 className="mb-3 text-t2">대표 발화</h3>
                 <ul className="space-y-2">
                   {u.quotes.map((q, i) => (
-                    <li key={i} className="max-w-[92%] rounded-[14px_14px_14px_4px] bg-white px-4 py-3 text-b2 text-g800 shadow-e1">{q}</li>
+                    <li key={i} className="rounded-xl border border-g200 bg-white px-4 py-3 text-b2 text-g900">{q}</li>
                   ))}
                 </ul>
                 <h3 className="mb-3 mt-8 text-t2">Pain point</h3>

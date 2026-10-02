@@ -45,9 +45,10 @@ export const QUAL_IDS: QualPid[] = ['P', 'S1', 'S2']
 export const PAIR: Record<DataPid, QualPid> = { A: 'P', B: 'S1', C: 'S2' }
 
 export const PCOLOR: Record<string, string> = {
-  A: '#F04452', B: '#3182F6', C: '#03B26C',
-  P: '#F04452', S1: '#3182F6', S2: '#03B26C',
-  U1: '#3F7FE0', U2: '#2FA37C', U3: '#8DBB2F', U4: '#8A3FD1', U5: '#2FAFCB', U6: '#D23B63',
+  A: '#F5222D', B: '#2F54EB', C: '#52C41A',
+  P: '#F5222D', S1: '#2F54EB', S2: '#52C41A',
+  // Ant Design preset palette (categorical use only)
+  U1: '#2F54EB', U2: '#13C2C2', U3: '#FAAD14', U4: '#722ED1', U5: '#FA8C16', U6: '#EB2F96',
 }
 export const PNAME: Record<string, string> = {
   A: '일상 루틴 기반 효과 축적형', B: '구매 타당성 검증형', C: '기능 최적화형',

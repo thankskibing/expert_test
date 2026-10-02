@@ -2,10 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Ant Design three-layer surfaces: layout #F5F5F5 → container #FFFFFF → elevated (shadow) */
 html { -webkit-text-size-adjust: 100%; }
-body { @apply bg-white text-g900 font-sans antialiased; font-size: 15px; line-height: 1.5; letter-spacing: -0.005em; word-break: keep-all; }
-:focus-visible { outline: 2px solid #3182F6; outline-offset: 2px; border-radius: 8px; }
-* { transition-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1); }
-mark.ev { background: #FFF1C2; color: inherit; padding: 0 2px; border-radius: 4px; }
+body { @apply bg-g100 font-sans; color: rgba(0, 0, 0, 0.88); font-size: 14px; line-height: 22px; word-break: keep-all; }
+:focus-visible { outline: 2px solid #91CAFF; outline-offset: 1px; border-radius: 6px; }
+mark.ev { background: #FFF1B8; color: inherit; padding: 0 2px; border-radius: 2px; }
 .tabular { font-variant-numeric: tabular-nums; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }

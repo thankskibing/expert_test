@@ -50,13 +50,13 @@ export default function CorePage() {
                   const on = ev?.verdict === v
                   return (
                     <button key={v} onClick={() => setVerdict(key, v)} aria-pressed={on}
-                      className={`h-8 rounded-[10px] px-3.5 text-b3 font-semibold transition-colors duration-200 ${on ? (v === 'fit' ? 'bg-[#E5F8EF] text-[#029359]' : 'bg-[#FFEBEE] text-danger') : 'bg-g100 text-g700 hover:bg-g200'}`}>
+                      className={`h-8 rounded-m border px-[15px] text-b2 transition-colors duration-200 ${on ? (v === 'fit' ? 'border-success bg-[#F6FFED] text-[#389E0D]' : 'border-danger bg-[#FFF1F0] text-[#CF1322]') : 'border-g300 bg-white text-g900 hover:border-brand-hover hover:text-brand-hover'}`}>
                       {v === 'fit' ? '적합해요' : '부적합해요'}
                     </button>
                   )
                 })}
                 {ev?.verdict && (
-                  <div className="min-w-[12rem] flex-1"><TextField value={ev.note} onChange={(e) => setNote(key, e.target.value)} placeholder="의견(선택)" aria-label="리뷰 의견" className="!h-9 !rounded-[10px] !text-b3" /></div>
+                  <div className="min-w-[12rem] flex-1"><TextField value={ev.note} onChange={(e) => setNote(key, e.target.value)} placeholder="의견(선택)" aria-label="리뷰 의견"  /></div>
                 )}
               </div>
             </li>

@@ -85,8 +85,8 @@ export default function Variables() {
           <span className="mr-1 text-b3 text-g600">참여자 한 명씩 보기</span>
           {UIDS.map((u) => (
             <button key={u} onClick={() => setQu(qu === u ? 'all' : u)} aria-pressed={qu === u}
-              className="flex h-8 items-center rounded-full px-3 text-b3 font-semibold transition-colors duration-200"
-              style={qu === u ? { background: PCOLOR[u], color: '#fff' } : { background: '#F2F4F6', color: '#4E5968' }}>
+              className="flex h-6 items-center rounded-s border px-2 text-b3 transition-colors duration-200"
+              style={qu === u ? { background: PCOLOR[u], borderColor: PCOLOR[u], color: '#fff' } : { background: '#FAFAFA', borderColor: '#D9D9D9', color: '#1F1F1F' }}>
               {u}
             </button>
           ))}
