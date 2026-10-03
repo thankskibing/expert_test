@@ -54,6 +54,8 @@ export const PNAME: Record<string, string> = {
   A: '일상 루틴 기반 효과 축적형', B: '구매 타당성 검증형', C: '기능 최적화형',
   P: '루틴 통합형 다기능 관리형', S1: '핵심 기능 유지 관찰형', S2: '상황 대응형 핵심 기능 집중형',
 }
+export const PRANK: Record<string, string> = { A: 'Primary', B: 'Secondary 1', C: 'Secondary 2', P: 'Primary', S1: 'Secondary 1', S2: 'Secondary 2' }
+export const PABBR: Record<string, string> = { A: 'P', B: 'S1', C: 'S2', P: 'P', S1: 'S1', S2: 'S2' }
 export const PSHORT: Record<string, string> = { A: '데이터 Primary', B: '데이터 Secondary 1', C: '데이터 Secondary 2', P: '정성 Primary', S1: '정성 Secondary 1', S2: '정성 Secondary 2' }
 
 export const CATS: { id: Cat; label: string; hint: string }[] = [

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { DATA_IDS, PCOLOR, QUAL_IDS, core, personaById } from '../lib/data'
+import { DATA_IDS, PCOLOR, PSHORT, QUAL_IDS, core, personaById } from '../lib/data'
 import { EVAL_ENDPOINT } from '../lib/config'
 import { CRITERIA, useEval } from '../lib/evalStore'
 import { Button, PageHead, PersonaPill, Section, TextArea, TextField } from '../components/ui'
@@ -102,7 +102,7 @@ export default function Evaluate() {
             const rows = reviewRows.filter((r) => r.p === p)
             return (
               <div key={p} className="rounded-2xl bg-g50 p-4">
-                <p className="text-b3 font-semibold text-g700"><span style={{ color: PCOLOR[p] }}>{p}</span> 핵심 리뷰 {core[p].length}건</p>
+                <p className="text-b3 font-semibold text-g700"><span style={{ color: PCOLOR[p] }}>{PSHORT[p]}</span> 핵심 리뷰 {core[p].length}건</p>
                 <p className="mt-1 text-b2 tabular"><b className="text-[#029359]">적합 {rows.filter((r) => r.ev!.verdict === 'fit').length}</b> · <b className="text-danger">부적합 {rows.filter((r) => r.ev!.verdict === 'unfit').length}</b></p>
               </div>
             )
