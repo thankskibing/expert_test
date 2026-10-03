@@ -38,14 +38,30 @@ export default function Overview() {
   const { state, setEvaluator } = useEval()
   return (
     <div>
-      <header className="mb-14 max-w-[52rem]">
-        <p className="mb-3 text-b3 font-semibold text-brand">메디큐브 부스터프로 사용자 연구 · 전문가 검토</p>
-        <h1 className="text-[32px] font-bold leading-[1.25] tracking-[-0.02em] sm:text-display">
-          리뷰 3,601건과 인터뷰 6명에서<br className="hidden sm:block" /> 퍼소나 6개가 나오기까지
+      <header className="mb-12 max-w-[52rem]">
+        <p className="mb-3 text-b3 font-semibold text-brand">메디큐브 부스터프로 사용자 연구 · 전문가 평가</p>
+        <h1 className="text-[30px] font-bold leading-[1.3] sm:text-display">
+          온라인 리뷰와 정성 인터뷰,<br className="hidden sm:block" /> 데이터에 따라 AI 퍼소나는 어떻게 달라질까요
         </h1>
         <p className="mt-5 max-w-prose2 text-b1 text-g700">
-          원자료부터 결과 퍼소나까지 도출 과정을 순서대로 보여드려요. 단계마다 근거를 확인하고, 퍼소나가 근거에서 타당하게 나왔는지 평가해 주세요. 리뷰 원문은 고치지 않았어요.
+          부스터프로 리뷰 3,601건과 사용자 인터뷰 6명을 각각 생성형 AI로 분석해, 데이터마다 Primary 퍼소나 1개와 Secondary 퍼소나 2개씩 모두 6개의 퍼소나를 도출했어요. 원자료부터 결과 퍼소나까지의 과정을 확인하고 평가해 주세요.
         </p>
+        <div className="mt-8 rounded-xl border border-g200 bg-g50 p-5 sm:p-6">
+          <p className="text-t1">연구 문제</p>
+          <ol className="mt-3 space-y-3">
+            {[
+              '데이터 유형(온라인 텍스트 데이터 vs. 정성 인터뷰 데이터)에 따라 생성형 AI가 도출한 퍼소나의 구성 요소에는 어떤 차이가 나타나는가?',
+              '온라인 사용자 데이터 기반 AI 퍼소나는 정성 인터뷰 기반 AI 퍼소나와 비교했을 때 어떤 강점과 한계를 가지는가?',
+              'UX 전문가는 두 유형의 AI 퍼소나가 서비스 기획 실무에 얼마나 유용하다고 평가하는가?',
+            ].map((q, i) => (
+              <li key={i} className="flex gap-3 text-b2 text-g900">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand text-b3 font-semibold text-white">{i + 1}</span>
+                <span className="pt-0.5">{q}</span>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-4 text-b3 text-g600">리뷰와 인터뷰 원문은 고치지 않았어요.</p>
+        </div>
       </header>
 
       <Section title="도출 흐름" lead="칸을 누르면 해당 단계로 이동해요. 숫자는 모두 실제 건수예요.">
@@ -65,7 +81,7 @@ export default function Overview() {
               { label: '3단계 인터뷰 참여자', to: '/interviews', body: <p className="text-[22px] font-bold">U1 ~ U6</p> },
               { label: '4단계 행동 변수', to: '/variables', body: <p className="text-b2 text-g800">공통 5개 + 신규 4개<br />그룹핑 패턴 6개</p> },
               { label: '참여자 그룹', to: '/variables', body: <p className="text-b2 text-g800">U1·U3·U6<br />U2·U4<br />U5</p> },
-              { label: '5단계 결과 퍼소나', to: '/personas', body: <p className="text-b2 text-g800">메인 · S1 · S2</p> },
+              { label: '5단계 결과 퍼소나', to: '/personas', body: <p className="text-b2 text-g800">Primary 1개<br />Secondary 2개</p> },
             ]}
           />
         </div>
@@ -73,15 +89,16 @@ export default function Overview() {
 
       <Section title="비교하는 퍼소나 쌍" lead="데이터 퍼소나와 정성 퍼소나를 같은 색으로 짝지었어요. 진한 색이 데이터 퍼소나, 옅은 색이 정성 퍼소나예요.">
         <ul className="divide-y divide-g200 rounded-2xl border border-g200">
-          {DATA_IDS.map((p) => (
+          {DATA_IDS.map((p, i) => (
             <li key={p} className="flex flex-wrap items-center gap-2 px-5 py-4">
+              <span className="w-28 shrink-0 text-b2 font-semibold text-g700">{['Primary', 'Secondary 1', 'Secondary 2'][i]}</span>
               <PersonaPill id={p} />
               <span aria-label="짝" className="text-g400">↔</span>
               <PersonaPill id={PAIR[p]} />
             </li>
           ))}
         </ul>
-        <p className="mt-3 max-w-prose2 text-b3 text-g600">데이터 A와 정성 메인이 각 연구의 메인(Primary) 퍼소나예요. 짝끼리 얼마나 맞는지는 6단계에서 다뤄요.</p>
+        <p className="mt-3 max-w-prose2 text-b3 text-g600">같은 순위(Primary, Secondary 1, Secondary 2)끼리 짝지었어요. 짝끼리 얼마나 맞는지는 6단계에서 다뤄요.</p>
       </Section>
 
       <Section title="평가 방법" lead="입력한 내용은 이 브라우저에 자동으로 저장되고, 7단계에서 한 번에 제출해요.">
