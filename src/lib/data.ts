@@ -54,7 +54,7 @@ export const PNAME: Record<string, string> = {
   A: '일상 루틴 기반 효과 축적형', B: '구매 타당성 검증형', C: '기능 최적화형',
   P: '루틴 통합형 다기능 관리형', S1: '핵심 기능 유지 관찰형', S2: '상황 대응형 핵심 기능 집중형',
 }
-export const PSHORT: Record<string, string> = { A: '데이터 A', B: '데이터 B', C: '데이터 C', P: '정성 메인', S1: '정성 S1', S2: '정성 S2' }
+export const PSHORT: Record<string, string> = { A: '데이터 Primary', B: '데이터 Secondary 1', C: '데이터 Secondary 2', P: '정성 Primary', S1: '정성 Secondary 1', S2: '정성 Secondary 2' }
 
 export const CATS: { id: Cat; label: string; hint: string }[] = [
   { id: 'D', label: '퍼소나 적합', hint: '이 퍼소나의 핵심 행동변수를 원문에서 직접 보여주는 리뷰' },
