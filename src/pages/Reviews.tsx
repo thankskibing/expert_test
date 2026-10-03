@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { CATS, DATA_IDS, PCOLOR, PNAME, loadReviews, study, type Cat, type DataPid, type ReviewsData } from '../lib/data'
+import { CATS, DATA_IDS, PCOLOR, PNAME, PRANK, loadReviews, study, type Cat, type DataPid, type ReviewsData } from '../lib/data'
 import { Button, Chip, NextStep, PageHead, Segmented, TextField } from '../components/ui'
 
 const PAGE = 40
@@ -10,7 +10,7 @@ export function PersonaSeg({ value, onChange, count }: { value: DataPid; onChang
     <Segmented label="데이터 퍼소나" items={DATA_IDS} value={value} onChange={onChange} render={(v) => (
       <span className="flex items-center gap-2 py-1">
         <span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[v] }} />
-        <span>{v} {PNAME[v]}</span>
+        <span>{PRANK[v]} · {PNAME[v]}</span>
         <span className="font-medium text-g500 tabular">{count(v)}</span>
       </span>
     )} />

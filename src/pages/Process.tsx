@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { CATS, DATA_IDS, PAIR, PCOLOR, PNAME, core, study, type Cat, type DataPid } from '../lib/data'
+import { CATS, DATA_IDS, PAIR, PCOLOR, PNAME, PSHORT, core, study, type Cat, type DataPid } from '../lib/data'
 import { NextStep, Note, PageHead, PersonaPill, Section } from '../components/ui'
 
 const S = study.stats
@@ -11,10 +11,10 @@ function DistBar({ p }: { p: DataPid }) {
   return (
     <div>
       <div className="mb-2 flex items-baseline justify-between">
-        <span className="flex items-center gap-2 text-b2 font-semibold"><span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[p] }} />{p} {PNAME[p]}</span>
+        <span className="flex items-center gap-2 text-b2 font-semibold"><span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[p] }} />{PSHORT[p]} · {PNAME[p]}</span>
         <span className="text-b3 text-g500 tabular">{r.n}건</span>
       </div>
-      <div className="flex h-8 gap-0.5 overflow-hidden rounded-m" role="img" aria-label={`${p} 재분류 분포`}>
+      <div className="flex h-8 gap-0.5 overflow-hidden rounded-m" role="img" aria-label={`${PSHORT[p]} 재분류 분포`}>
         {CATS.filter((c) => r.counts[c.id]).map((c) => {
           const pct = r.counts[c.id] / r.n
           return (
@@ -67,10 +67,10 @@ export default function Process() {
       <Section title="데이터 퍼소나를 도출한 절차">
         <ol className="max-w-prose2 space-y-5">
           {[
-            ['리뷰·댓글 3,601건 수집', '부스터프로 구매평과 리뷰 영상 댓글이에요. 원문은 고치지 않았어요.'],
+            ['리뷰·댓글 3,601건 수집', '메디큐브 공식몰·네이버쇼핑 구매 리뷰와 유튜브 리뷰 영상 댓글이에요. 원문은 고치지 않았어요.'],
             ['키워드 규칙으로 1차 분류', '한 리뷰가 여러 퍼소나에 중복으로 들어갈 수 있어요.'],
             ['퍼소나 기준으로 한 건씩 재분류', '키워드가 아니라 각 퍼소나의 핵심 행동 변수가 원문에 실제로 드러나는지 보고, 6개 분류 중 하나로 판정했어요. 판단 이유는 1단계에서 리뷰마다 볼 수 있어요.'],
-            ['핵심 리뷰 선정', `퍼소나 적합 리뷰 중 행동 변수를 가장 많이 함께 보여주는 리뷰를 A ${core.A.length} · B ${core.B.length} · C ${core.C.length}건 골랐어요.`],
+            ['핵심 리뷰 선정', `퍼소나 적합 리뷰 중 행동 변수를 가장 많이 함께 보여주는 리뷰를 Primary ${core.A.length} · Secondary 1 ${core.B.length} · Secondary 2 ${core.C.length}건 골랐어요.`],
           ].map(([t, d], i) => (
             <li key={t} className="flex gap-3">
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-weak text-cap font-bold text-brand">{i + 1}</span>
@@ -81,7 +81,7 @@ export default function Process() {
                   <div className="mt-3 space-y-2">
                     {DATA_IDS.map((p) => (
                       <div key={p} className="rounded-xl bg-g50 p-4 text-b3">
-                        <p className="font-semibold text-g900"><span style={{ color: PCOLOR[p] }}>{p}</span> {S.keywordRules[p]} <span className="text-g500">→ {S.keywordFlag[p]}건</span></p>
+                        <p className="font-semibold text-g900"><span style={{ color: PCOLOR[p] }}>{PSHORT[p]}</span> · {S.keywordRules[p]} <span className="text-g500">→ {S.keywordFlag[p]}건</span></p>
                         <ul className="mt-1.5 space-y-0.5 text-g600">{S.keywords[p].map((k) => <li key={k}>{k}</li>)}</ul>
                       </div>
                     ))}
@@ -108,7 +108,7 @@ export default function Process() {
                 const s = rate(p, 'Strong'), u = rate(p, 'Supporting')
                 return (
                   <tr key={p}>
-                    <td className="py-3 pr-6 font-bold" style={{ color: PCOLOR[p] }}>{p}</td>
+                    <td className="py-3 pr-6 font-bold" style={{ color: PCOLOR[p] }}>{PSHORT[p]}</td>
                     <td className="py-3 pr-6">{s.d}/{s.tot} <span className="text-g500">({s.pct}%)</span></td>
                     <td className="py-3 pr-6">{u.d}/{u.tot} <span className="text-g500">({u.pct}%)</span></td>
                     <td className="py-3">{S.reclass[p].outside}건</td>
@@ -129,7 +129,7 @@ export default function Process() {
               <dl className="grid gap-4 text-b2 md:grid-cols-2">
                 <div className="rounded-xl bg-white p-4"><dt className="mb-1 font-bold text-g900">같은 점</dt><dd className="text-g800">{PAIRS[p].same}</dd></div>
                 <div className="rounded-xl bg-white p-4"><dt className="mb-1 font-bold text-g900">다른 점</dt><dd className="text-g800">{PAIRS[p].diff}</dd></div>
-                <div className="px-1"><dt className="mb-1 text-b3 font-semibold text-g600">리뷰에서 본 {p}</dt><dd className="text-b3 text-g600">{PAIRS[p].data}</dd></div>
+                <div className="px-1"><dt className="mb-1 text-b3 font-semibold text-g600">리뷰에서 본 {PSHORT[p]}</dt><dd className="text-b3 text-g600">{PAIRS[p].data}</dd></div>
                 <div className="px-1"><dt className="mb-1 text-b3 font-semibold text-g600">리뷰에서 본 짝 정성 퍼소나</dt><dd className="text-b3 text-g600">{PAIRS[p].qual}</dd></div>
               </dl>
               <p className="mt-4"><Link className="text-b3 font-semibold text-brand" to={`/personas?id=${p}`}>두 퍼소나 나란히 보기</Link></p>
@@ -141,10 +141,10 @@ export default function Process() {
       <Section title="두 결과가 다르게 나온 이유(분석 메모)">
         <ol className="max-w-prose2 space-y-4">
           {[
-            ['리뷰는 구매 직후에 쓰여요.', '사용 초기임을 밝힌 리뷰가 608건, 몇 주 이상 장기 사용을 밝힌 리뷰가 141건이에요. 오래 쓰면서 생기는 행동(S1의 장기 관찰, S2의 사용 축소)은 리뷰에 잘 드러나지 않아요.'],
-            ['A의 루틴→효과 패턴은 일부만 확인돼요.', '1차 분류 824건 중 272건(33.0%)이 적합했고, 정성 퍼소나와 닮은 행동도 함께 나타나요.'],
-            ['B의 검증 행동은 약해요.', "'처음' 같은 단어나 할인·구매 맥락만으로 분류된 리뷰가 많아, 적합은 902건 중 123건(13.6%)이에요. '처음'만으로 분류된 리뷰가 202건이에요."],
-            ['C는 기능 평가와 제품명 때문에 부풀었어요.', "'모드가 다양해서 좋다'는 평가와 제품명 '부스터'(36건)가 키워드에 걸렸어요. 컨디션별 조절은 13건뿐이고, 오히려 핵심 모드 위주 사용(정성 Secondary 1과 비슷)이 보여요."],
+            ['리뷰는 구매 직후에 쓰여요.', '사용 초기임을 밝힌 리뷰가 608건, 몇 주 이상 장기 사용을 밝힌 리뷰가 141건이에요. 오래 쓰면서 생기는 행동(정성 Secondary 1의 장기 관찰, 정성 Secondary 2의 사용 축소)은 리뷰에 잘 드러나지 않아요.'],
+            ['데이터 Primary의 루틴→효과 패턴은 일부만 확인돼요.', '1차 분류 824건 중 272건(33.0%)이 적합했고, 정성 퍼소나와 닮은 행동도 함께 나타나요.'],
+            ['데이터 Secondary 1의 검증 행동은 약해요.', "'처음' 같은 단어나 할인·구매 맥락만으로 분류된 리뷰가 많아, 적합은 902건 중 123건(13.6%)이에요. '처음'만으로 분류된 리뷰가 202건이에요."],
+            ['데이터 Secondary 2는 기능 평가와 제품명 때문에 부풀었어요.', "'모드가 다양해서 좋다'는 평가와 제품명 '부스터'(36건)가 키워드에 걸렸어요. 컨디션별 조절은 13건뿐이고, 오히려 핵심 모드 위주 사용(정성 Secondary 1과 비슷)이 보여요."],
             ['정성 퍼소나의 행동은 리뷰에 드물어요.', '정성 퍼소나와 닮은 리뷰는 3,601건 중 132건(3.7%)이에요.'],
           ].map(([t, d], i) => (
             <li key={t} className="flex gap-3">
@@ -157,8 +157,8 @@ export default function Process() {
 
       <Section title="확인이 필요한 점">
         <div className="max-w-prose2 space-y-2">
-          <Note>기존 C 그룹 자료의 대표 인용 3개 중 2개(#304, #2362)는 재분류에서 C의 직접 근거가 아니었어요. #304는 기능 평가에 가까운 보조·맥락 근거이고, #2362는 앱 설정 때문에 듀얼 모드를 쓰지 않는 반례예요. <Link className="font-semibold text-brand" to="/variables">4단계에서 보기</Link></Note>
-          <Note>데이터 퍼소나 C의 Pain points와 Needs는 데이터 퍼소나 A와 문구가 같아요(원본 자료 기준). C만의 내용인지 검토가 필요해요.</Note>
+          <Note>기존 데이터 Secondary 2 그룹 자료의 대표 인용 3개 중 2개(#304, #2362)는 재분류에서 데이터 Secondary 2의 직접 근거가 아니었어요. #304는 기능 평가에 가까운 보조·맥락 근거이고, #2362는 앱 설정 때문에 듀얼 모드를 쓰지 않는 반례예요. <Link className="font-semibold text-brand" to="/variables">4단계에서 보기</Link></Note>
+          <Note>데이터 Secondary 2의 Pain points와 Needs는 데이터 Primary와 문구가 같아요(원본 자료 기준). 데이터 Secondary 2만의 내용인지 검토가 필요해요.</Note>
         </div>
       </Section>
       <NextStep to="/evaluate" label="평가하러 가기" />

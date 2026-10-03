@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { DATA_IDS, PAIR, PCOLOR, PNAME, PSHORT, QUAL_IDS, core, personaById, study, type DataPid, type QualPid } from '../lib/data'
+import { DATA_IDS, PABBR, PAIR, PCOLOR, PNAME, PSHORT, QUAL_IDS, core, personaById, study, type DataPid, type QualPid } from '../lib/data'
 import { Button, NextStep, Note, PageHead } from '../components/ui'
 
 const ALL = [...DATA_IDS, ...QUAL_IDS] as string[]
@@ -60,7 +60,7 @@ export default function Personas() {
                   <li key={x}>
                     <button onClick={() => setSp({ id: x }, { replace: true })} aria-pressed={on}
                       className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors duration-200 ${on ? 'bg-g100' : 'hover:bg-g50'}`}>
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-l text-cap font-bold" style={x.length > 1 || 'P' === x ? { background: `${PCOLOR[x]}1A`, color: PCOLOR[x] } : { background: PCOLOR[x], color: '#fff' }}>{x}</span>
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-l text-cap font-bold" style={x.length > 1 || 'P' === x ? { background: `${PCOLOR[x]}1A`, color: PCOLOR[x] } : { background: PCOLOR[x], color: '#fff' }}>{PABBR[x]}</span>
                       <span className="min-w-0 flex-1">
                         <span className="block text-cap text-g500">{PSHORT[x]}</span>
                         <span className={`block text-b2 ${on ? 'font-bold text-g900' : 'font-semibold text-g800'}`}>{PNAME[x]}</span>

@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { DATA_IDS, PAIR, PCOLOR, core, study } from '../lib/data'
+import { DATA_IDS, PABBR, PAIR, PCOLOR, core, study } from '../lib/data'
 import { useEval } from '../lib/evalStore'
 import { NextStep, PersonaPill, Section, TextField } from '../components/ui'
 
@@ -27,10 +27,23 @@ function Lane({ title, steps }: { title: string; steps: { label: string; to: str
 function Num({ id, n }: { id: string; n: number | string }) {
   return (
     <p className="flex items-center gap-2 leading-tight">
-      <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-s px-1 text-[11px] font-bold text-white" style={{ background: PCOLOR[id] }}>{id}</span>
+      <span className="inline-flex h-5 min-w-[26px] items-center justify-center rounded-s px-1 text-[11px] font-bold text-white" style={{ background: PCOLOR[id] }}>{PABBR[id]}</span>
       <span className="text-[22px] font-bold tabular">{n}</span>
       <span className="text-b3 text-g500">건</span>
     </p>
+  )
+}
+
+const IMG = 'https://m.themedicube.co.kr/web/product/extra/big/202604/184e32f2aa5e815b76989286ff650b0d.jpg'
+
+function ProductImage() {
+  const [ok, setOk] = useState(true)
+  if (!ok) return <div className="flex aspect-square items-center justify-center rounded-xl bg-g50 text-b3 text-g500">제품 이미지를 불러오지 못했어요</div>
+  return (
+    <figure>
+      <img src={IMG} alt="메디큐브 에이지알 부스터 프로 X2 제품 이미지" referrerPolicy="no-referrer" loading="lazy" onError={() => setOk(false)} className="aspect-square w-full rounded-xl border border-g200 bg-g50 object-cover" />
+      <figcaption className="mt-2 text-b3 text-g500">이미지 출처: 메디큐브 공식몰</figcaption>
+    </figure>
   )
 }
 
@@ -64,12 +77,40 @@ export default function Overview() {
         </div>
       </header>
 
+      <Section title="연구 대상: 메디큐브 에이지알 부스터 프로" lead="제조사 상세페이지 내용을 바탕으로 정리했어요.">
+        <div className="grid gap-6 rounded-xl border border-g200 p-5 sm:p-6 md:grid-cols-[minmax(0,15rem)_1fr]">
+          <ProductImage />
+          <div>
+            <p className="text-b2 text-g900">
+              에이지알 부스터 프로는 화장품 흡수를 돕는 부스터 기능을 중심으로 미세전류, EMS, 모공 관리 기능을 한 기기에 담은 메디큐브의 홈 뷰티 디바이스예요. 2026년 3월 출시된 <b>부스터 프로 X2</b>는 이전 모델보다 출력이 2배 강해졌다고 소개되며, 두 모드를 함께 쓰는 듀얼 모드와 마스크팩 위에서 쓰는 마스크 모드, AGE-R 앱과 연동한 AI 케어가 더해졌어요.
+            </p>
+            <table className="mt-4 w-full text-left text-b2">
+              <thead><tr className="border-b border-g200 bg-g50"><th className="px-3 py-2 font-semibold">모드</th><th className="px-3 py-2 font-semibold">주요 용도</th></tr></thead>
+              <tbody className="divide-y divide-g200">
+                {[
+                  ['부스터', '스킨케어 제품 흡수, 속건조·윤기'],
+                  ['MC(미세전류)', '탄력·볼륨'],
+                  ['더마샷(EMS)', '붓기·윤곽'],
+                  ['에어샷', '모공·각질'],
+                  ['마스크', '시트 마스크팩 위에서 흡수 (X2 추가)'],
+                  ['듀얼 · AI 케어', '두 모드 동시 사용, 앱의 맞춤 관리 안내 (X2 추가)'],
+                ].map(([m, d]) => <tr key={m}><td className="whitespace-nowrap px-3 py-2 text-g900">{m}</td><td className="px-3 py-2 text-g700">{d}</td></tr>)}
+              </tbody>
+            </table>
+            <p className="mt-3 text-b3 text-g600">
+              모드별 단계(강도)를 조절할 수 있어요. 인터뷰 참여자 중에는 1세대 사용자와 X2 사용자가 섞여 있어요.{' '}
+              <a href="https://themedicube.co.kr/product/detail.html?product_no=2705" target="_blank" rel="noreferrer" className="text-brand hover:text-brand-hover">제품 상세페이지</a>
+            </p>
+          </div>
+        </div>
+      </Section>
+
       <Section title="도출 흐름" lead="칸을 누르면 해당 단계로 이동해요. 숫자는 모두 실제 건수예요.">
         <div className="space-y-8">
           <Lane
             title="리뷰 데이터에서 데이터 퍼소나로"
             steps={[
-              { label: '1단계 리뷰 원자료', to: '/reviews', body: <p className="text-[22px] font-bold tabular">3,601<span className="ml-1 text-b3 font-normal text-g500">건</span></p> },
+              { label: '1단계 리뷰 원자료', to: '/reviews', body: <div><p className="text-[22px] font-bold tabular">3,601<span className="ml-1 text-b3 font-normal text-g500">건</span></p><p className="mt-2 text-b3 text-g700">메디큐브 공식몰 · 네이버쇼핑 구매 리뷰, 유튜브 댓글</p></div> },
               { label: '키워드 규칙으로 1차 분류(중복 포함)', to: '/process', body: <div className="space-y-1">{DATA_IDS.map((p) => <Num key={p} id={p} n={S.keywordFlag[p]} />)}</div> },
               { label: '재분류 후 퍼소나 적합', to: '/reviews', body: <div className="space-y-1">{DATA_IDS.map((p) => <Num key={p} id={p} n={S.reclass[p].counts.D} />)}</div> },
               { label: '2단계 핵심 리뷰', to: '/core', body: <div className="space-y-1">{DATA_IDS.map((p) => <Num key={p} id={p} n={core[p].length} />)}</div> },
