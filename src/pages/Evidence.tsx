@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { core, personaById, study, type DataPid, type QualPid } from '../lib/data'
+import { DATA_IDS, core, personaById, study, type DataPid, type QualPid, type Uid } from '../lib/data'
 import { EVIDENCE_QS_AFTER, ROUNDS, type RoundKey } from '../lib/protocol'
 import { useEval, xy } from '../lib/evalStore'
 import { SOURCE_DETAIL, SOURCE_LABEL } from '../lib/payload'
+import TrackStack from '../components/TrackStack'
 import { XY_COLOR } from '../components/PersonaCard'
 import { FieldList } from '../components/form'
 import { RoundTabs, StepNav } from '../components/flow'
 import { Button, Highlighted, PageHead } from '../components/ui'
+
+const GNUM: Record<string, string> = { A: '1', B: '2', C: '3' }
+const UIDS: Uid[] = ['U1', 'U2', 'U3', 'U4', 'U5', 'U6']
 
 interface Item { key: string; text: string; evidence?: string[] }
 
@@ -104,6 +108,25 @@ function Head({ id, label }: { id: string; label: 'X' | 'Y' }) {
   )
 }
 
+/** Same unified track display used on the 행동 변수·그룹 page — data personas on their 8 variables,
+ * qual personas on the 6 그룹핑 패턴 variables, no area-group headers either way. */
+function TrackSection({ id }: { id: string }) {
+  const p = personaById(id)
+  if (p.kind === 'data') {
+    return (
+      <Sub title="행동 변수 위치" lead="이 그룹이 8개 행동 변수에서 차지하는 위치예요.">
+        <TrackStack tracks={study.dataVars} ids={DATA_IDS} scale={4} paths={[id as DataPid]} label={(gid) => GNUM[gid]} />
+      </Sub>
+    )
+  }
+  const members = study.qualGroups[id as QualPid].members
+  return (
+    <Sub title="행동 변수 위치" lead="이 그룹에 속한 참여자들이 6개 행동 변수에서 차지하는 위치예요.">
+      <TrackStack tracks={study.qualPattern} ids={UIDS} paths={members} focus={members} />
+    </Sub>
+  )
+}
+
 function TraitsSection({ id }: { id: string }) {
   const p = personaById(id)
   const g = p.kind === 'data' ? study.dataGroups[id as DataPid] : study.qualGroups[id as QualPid]
@@ -125,6 +148,7 @@ function EvidencePanel({ id, label }: { id: string; label: 'X' | 'Y' }) {
   return (
     <article className="min-w-0 rounded-xl border border-g200 bg-white">
       <Head id={id} label={label} />
+      <TrackSection id={id} />
       <TraitsSection id={id} />
       <EvidenceSection id={id} more={more} setMore={setMore} />
     </article>
@@ -144,6 +168,8 @@ function EvidencePair({ xId, yId }: { xId: string; yId: string }) {
       <div className="hidden overflow-hidden rounded-xl border border-g200 bg-white xl:grid xl:grid-cols-2 xl:items-stretch xl:[&>*:nth-child(2n)]:border-l xl:[&>*:nth-child(2n)]:border-g200">
         <Head id={xId} label="X" />
         <Head id={yId} label="Y" />
+        <TrackSection id={xId} />
+        <TrackSection id={yId} />
         <TraitsSection id={xId} />
         <TraitsSection id={yId} />
         <EvidenceSection id={xId} more={moreX} setMore={setMoreX} />

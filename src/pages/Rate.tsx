@@ -29,6 +29,21 @@ function ScaleRow({ no, q, value, onChange }: { no: string; q: string; value?: n
   )
 }
 
+/** Average of a dimension's item scores for a persona, or null if not all items are rated yet. */
+function dimAvg(state: ReturnType<typeof useEval>['state'], pid: string, d: (typeof DIMS)[number]) {
+  const vs = d.items.map((it) => state.ratings[pid]?.[it.id])
+  if (vs.some((v) => v === undefined)) return null
+  return (vs as number[]).reduce((a, v) => a + v, 0) / vs.length
+}
+
+/** 추가 질문 2는 해당 영역 평균 점수가 낮은지/높은지에 따라 문구가 달라져요. */
+function moreQ(d: (typeof DIMS)[number], avg: number | null) {
+  if (avg === null) return d.moreNeutral
+  if (avg < 3) return d.moreLow
+  if (avg > 3) return d.moreHigh
+  return d.moreNeutral
+}
+
 export default function Rate() {
   const { state, setRating, setDimNote } = useEval()
   const [sp, setSp] = useSearchParams()
@@ -94,9 +109,12 @@ export default function Rate() {
                 {d.items.map((it) => <ScaleRow key={it.id} no={it.id} q={it.q} value={state.ratings[pid]?.[it.id]} onChange={(v) => setRating(pid, it.id, v)} />)}
               </div>
               <div className="border-t border-g200 px-5 py-4">
-                <label htmlFor={`${pid}-${d.id}`} className="block text-b2 font-semibold text-g900">추가 질문 · {d.follow}</label>
-                <p className="mb-2 mt-0.5 text-b3 text-g600">필요 시: {d.more}</p>
-                <TextArea id={`${pid}-${d.id}`} rows={3} value={state.dimNotes[pid]?.[d.id] ?? ''} onChange={(e) => setDimNote(pid, d.id, e.target.value)} placeholder="답변 메모" />
+                <label htmlFor={`${pid}-${d.id}-1`} className="block text-b2 font-semibold text-g900">추가 질문 1 · {d.follow}</label>
+                <TextArea id={`${pid}-${d.id}-1`} rows={3} className="mt-2" value={state.dimNotes[pid]?.[`${d.id}_1`] ?? ''} onChange={(e) => setDimNote(pid, `${d.id}_1`, e.target.value)} placeholder="답변 메모" />
+              </div>
+              <div className="border-t border-g200 px-5 py-4">
+                <label htmlFor={`${pid}-${d.id}-2`} className="block text-b2 font-semibold text-g900">추가 질문 2 · {moreQ(d, dimAvg(state, pid, d))}</label>
+                <TextArea id={`${pid}-${d.id}-2`} rows={3} className="mt-2" value={state.dimNotes[pid]?.[`${d.id}_2`] ?? ''} onChange={(e) => setDimNote(pid, `${d.id}_2`, e.target.value)} placeholder="답변 메모" />
               </div>
             </section>
           ))}
