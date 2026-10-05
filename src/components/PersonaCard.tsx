@@ -43,8 +43,8 @@ function Header({ p, label, blind, c, header }: { p: Persona; label: 'X' | 'Y'; 
 function ProfileSection({ id, p, c }: { id: string; p: Persona; c: string }) {
   return (
     <section className="px-5 py-4">
-      <div className="flex items-center gap-3">
-        {PIMG[id] && <img src={PIMG[id]} alt="" aria-hidden className="h-14 w-14 shrink-0 rounded-full border border-g200 object-cover" />}
+      <div className="flex items-center gap-4">
+        {PIMG[id] && <img src={PIMG[id]} alt="" aria-hidden className="h-24 w-24 shrink-0 rounded-full border border-g200 object-cover" />}
         <div className="min-w-0">
           <p className="text-t1">{p.name}({p.age}세)</p>
           <p className="mt-1 flex flex-wrap gap-1.5">{p.tags.map((t) => <span key={t} className="rounded-s border border-g300 bg-g50 px-[7px] text-b3">#{t}</span>)}</p>

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { CATS, DATA_IDS, PAIR, PCOLOR, PNAME, PSHORT, core, study, type Cat, type DataPid } from '../lib/data'
-import { Note, PageHead, PersonaPill, Section } from '../components/ui'
+import { PageHead, PersonaPill, Section } from '../components/ui'
 
 const S = study.stats
 // Toss bar-chart rule: grey bars by default, only the emphasised segment (퍼소나 적합) in brand blue. No axis lines.
@@ -153,13 +153,6 @@ export default function Process() {
             </li>
           ))}
         </ol>
-      </Section>
-
-      <Section title="확인이 필요한 점">
-        <div className="max-w-prose2 space-y-2">
-          <Note>기존 데이터 Secondary 2 그룹 자료의 대표 인용 3개 중 2개(#304, #2362)는 재분류에서 데이터 Secondary 2의 직접 근거가 아니었어요. #304는 기능 평가에 가까운 보조·맥락 근거이고, #2362는 앱 설정 때문에 듀얼 모드를 쓰지 않는 반례예요. <Link className="font-semibold text-brand" to="/variables">행동 변수·그룹에서 보기</Link></Note>
-          <Note>데이터 Secondary 2의 Pain points와 Needs는 데이터 Primary와 문구가 같아요(원본 자료 기준). 데이터 Secondary 2만의 내용인지 검토가 필요해요.</Note>
-        </div>
       </Section>
     </div>
   )

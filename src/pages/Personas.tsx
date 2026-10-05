@@ -98,8 +98,8 @@ export default function Personas() {
         <div className="grid gap-4 lg:grid-cols-[20rem_1fr]">
           <div className="space-y-4">
             <section className="rounded-2xl border border-g200 p-5">
-              <div className="flex items-center gap-3">
-                {PIMG[id] ? <img src={PIMG[id]} alt="" aria-hidden className="h-12 w-12 shrink-0 rounded-full border border-g200 object-cover" /> : <span className="flex h-12 w-12 items-center justify-center rounded-l text-t1 font-bold text-white" style={{ background: c }}>{p.name.slice(0, 1)}</span>}
+              <div className="flex items-center gap-4">
+                {PIMG[id] ? <img src={PIMG[id]} alt="" aria-hidden className="h-20 w-20 shrink-0 rounded-full border border-g200 object-cover" /> : <span className="flex h-20 w-20 items-center justify-center rounded-l text-h3 font-bold text-white" style={{ background: c }}>{p.name.slice(0, 1)}</span>}
                 <div><p className="text-t2 font-bold">{p.name}({p.age}세)</p><p className="text-cap text-g500">가상 프로필</p></div>
               </div>
               <p className="mt-4 flex flex-wrap gap-1.5">{p.tags.map((t) => <span key={t} className="rounded-s border border-g300 bg-g50 px-[7px] text-b3 text-g900">#{t}</span>)}</p>
