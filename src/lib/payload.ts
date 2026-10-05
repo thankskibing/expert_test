@@ -1,5 +1,5 @@
 import { personaById, study } from './data'
-import { COMPARE_QS, DIMS, EVIDENCE_QS_AFTER, EVIDENCE_QS_BEFORE, FINAL_QS, PROFILE, ROUNDS, type Field, type Round } from './protocol'
+import { COMPARE_QS, DIMS, EVIDENCE_QS_AFTER, FINAL_QS, PROFILE, ROUNDS, type Field, type Round } from './protocol'
 import { xy, type EvalState } from './evalStore'
 
 export const SOURCE_LABEL = { data: '온라인 사용자 리뷰 기반', qual: '정성 인터뷰 기반' } as const
@@ -52,9 +52,7 @@ export function buildPayload(s: EvalState) {
   }
   for (const r of ROUNDS) {
     const e = s.evidence[r.key] ?? {}
-    putFields(`evidence.${r.key}`, [...EVIDENCE_QS_BEFORE, ...EVIDENCE_QS_AFTER], e, `[${r.label}] `)
-    const p = e.e_pick?.startsWith('X가') ? 'X' : e.e_pick?.startsWith('Y가') ? 'Y' : null
-    put(`evidence.${r.key}.e_pick_result`, grade(s, r, p), `[${r.label}] 출처 공개 전 추측 정답 여부`)
+    putFields(`evidence.${r.key}`, EVIDENCE_QS_AFTER, e, `[${r.label}] `)
   }
 
   const ratingRows: (string | number)[][] = []
