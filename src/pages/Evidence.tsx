@@ -13,9 +13,25 @@ import { Button, Highlighted, PageHead } from '../components/ui'
 const GNUM: Record<string, string> = { A: '1', B: '2', C: '3' }
 const UIDS: Uid[] = ['U1', 'U2', 'U3', 'U4', 'U5', 'U6']
 
+interface Item { key: string; text: string; evidence?: string[] }
+
+/**
+ * One flat list of short excerpts for either persona type, in the same card shape (index badge +
+ * text, optionally with highlighted phrases). This is deliberate: a data persona's reviews and a
+ * qual persona's interview quotes must look the same here, or the layout itself gives the source away.
+ */
+function evidenceItems(id: string): Item[] {
+  const p = personaById(id)
+  if (p.kind === 'data') return core[id as DataPid].map((r) => ({ key: `#${r.idx}`, text: r.text, evidence: r.evidence }))
+  const qg = study.qualGroups[id as QualPid]
+  const people = study.participants.filter((u) => qg.members.includes(u.id))
+  let n = 0
+  return people.flatMap((u) => u.quotes.map((q) => ({ key: `#${++n}`, text: q })))
+}
+
 function Sub({ title, lead, children }: { title: string; lead?: string; children: React.ReactNode }) {
   return (
-    <section className="border-t border-g200 py-5">
+    <section className="border-t border-g200 px-5 py-5">
       <h4 className="text-t2">{title}</h4>
       {lead && <p className="mt-0.5 text-b3 text-g600">{lead}</p>}
       <div className="mt-3">{children}</div>
@@ -32,71 +48,104 @@ function Traits({ traits, summary }: { traits: string[]; summary: string }) {
   )
 }
 
-/** Raw evidence for one persona, written so that nothing names the data source. */
-function EvidencePanel({ id, label, revealed }: { id: string; label: 'X' | 'Y'; revealed: boolean }) {
+function EvidenceList({ items, more, setMore }: { items: Item[]; more: boolean; setMore: (fn: (v: boolean) => boolean) => void }) {
+  const shown = more ? items : items.slice(0, 5)
+  return (
+    <>
+      <ul className="space-y-3">
+        {shown.map((it) => (
+          <li key={it.key} className="rounded-xl border border-g200 p-4">
+            <p className="mb-1.5 text-cap text-g500 tabular">{it.key}</p>
+            {it.evidence ? <Highlighted text={it.text} phrases={it.evidence} /> : <p className="whitespace-pre-line text-b2 text-g900">{it.text}</p>}
+          </li>
+        ))}
+      </ul>
+      {items.length > 5 && <Button variant="ghost" className="mt-2 h-8 px-0 text-b2" onClick={() => setMore((v) => !v)}>{more ? '접기' : `${items.length - 5}건 더 보기`}</Button>}
+    </>
+  )
+}
+
+function Head({ id, label, revealed }: { id: string; label: 'X' | 'Y'; revealed: boolean }) {
   const p = personaById(id)
   const c = XY_COLOR[label]
-  const [more, setMore] = useState(false)
-  const isData = p.kind === 'data'
-  const reviews = isData ? core[id as DataPid] : []
-  const qg = isData ? null : study.qualGroups[id as QualPid]
-  const people = qg ? study.participants.filter((u) => qg.members.includes(u.id)) : []
-  const shownReviews = more ? reviews : reviews.slice(0, 5)
+  return (
+    <header className="flex flex-wrap items-center gap-3 border-b border-g200 px-5 py-4" style={{ borderTop: `3px solid ${c}` }}>
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-t1 text-white" style={{ background: c }}>{label}</span>
+      <div className="min-w-0 flex-1">
+        <p className="text-b3 text-g600">퍼소나 {label}의 근거 자료</p>
+        <h3 className="text-h3">{p.type}</h3>
+      </div>
+      {revealed && <span className={`rounded-s border px-2 text-b3 ${p.kind === 'data' ? 'border-[#ADC6FF] bg-[#F0F5FF] text-[#1D39C4]' : 'border-[#FFD591] bg-[#FFF7E6] text-[#D46B08]'}`}>{SOURCE_LABEL[p.kind]}</span>}
+    </header>
+  )
+}
 
+function TrackSection({ id }: { id: string }) {
+  const p = personaById(id)
+  const isData = p.kind === 'data'
+  const qg = isData ? null : study.qualGroups[id as QualPid]
+  return (
+    <Sub title="행동 변수" lead="점 안의 숫자는 이 퍼소나와 연결된 번호예요. 선은 그 번호들이 각 변수에서 어디쯤 있는지 이어줘요.">
+      {isData
+        ? <TrackStack tracks={study.dataVars} ids={DATA_IDS} scale={4} paths={[id]} label={(g) => GNUM[g]} />
+        : <TrackStack tracks={study.qualPattern} ids={UIDS} paths={qg!.members} focus={qg!.members} showArea />}
+    </Sub>
+  )
+}
+
+function TraitsSection({ id }: { id: string }) {
+  const p = personaById(id)
+  const g = p.kind === 'data' ? study.dataGroups[id as DataPid] : study.qualGroups[id as QualPid]
+  return <Sub title="그룹 특성"><Traits traits={g.traits} summary={g.summary} /></Sub>
+}
+
+function EvidenceSection({ id, more, setMore }: { id: string; more: boolean; setMore: (fn: (v: boolean) => boolean) => void }) {
+  const items = evidenceItems(id)
+  return (
+    <Sub title="원문 근거" lead={`총 ${items.length}건이에요.`}>
+      <EvidenceList items={items} more={more} setMore={setMore} />
+    </Sub>
+  )
+}
+
+/** Stacked fallback for narrow screens. */
+function EvidencePanel({ id, label, revealed }: { id: string; label: 'X' | 'Y'; revealed: boolean }) {
+  const [more, setMore] = useState(false)
   return (
     <article className="min-w-0 rounded-xl border border-g200 bg-white">
-      <header className="flex flex-wrap items-center gap-3 border-b border-g200 px-5 py-4" style={{ borderTop: `3px solid ${c}`, borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
-        <span className="flex h-9 w-9 items-center justify-center rounded-full text-t1 text-white" style={{ background: c }}>{label}</span>
-        <div className="min-w-0 flex-1">
-          <p className="text-b3 text-g600">퍼소나 {label}의 근거 자료</p>
-          <h3 className="text-h3">{p.type}</h3>
-        </div>
-        {revealed && <span className={`rounded-s border px-2 text-b3 ${isData ? 'border-[#ADC6FF] bg-[#F0F5FF] text-[#1D39C4]' : 'border-[#FFD591] bg-[#FFF7E6] text-[#D46B08]'}`}>{SOURCE_LABEL[p.kind]}</span>}
-      </header>
-      <div className="px-5 pb-3">
-        <Sub title="행동 변수" lead={isData ? '점 안의 숫자는 사용자 그룹 번호예요. 선은 이 퍼소나의 그룹이 지나는 위치예요.' : '점 안의 숫자는 참여자 번호예요. 선은 이 퍼소나에 묶인 참여자들이에요.'}>
-          {isData
-            ? <TrackStack tracks={study.dataVars} ids={DATA_IDS} scale={4} paths={[id]} label={(g) => GNUM[g]} />
-            : <TrackStack tracks={study.qualPattern} ids={UIDS} paths={qg!.members} focus={qg!.members} showArea />}
-        </Sub>
-        <Sub title="그룹 특성">
-          {isData ? <Traits traits={study.dataGroups[id as DataPid].traits} summary={study.dataGroups[id as DataPid].summary} /> : <Traits traits={qg!.traits} summary={qg!.summary} />}
-        </Sub>
-        <Sub title="원문 근거" lead={isData ? `노란 표시는 판단 근거가 된 원문 구절이에요. 총 ${reviews.length}건` : `이 그룹에 속한 참여자 ${people.length}명의 원문 발화와 불편 사항이에요.`}>
-          {isData ? (
-            <>
-              <ul className="space-y-3">
-                {shownReviews.map((r) => (
-                  <li key={r.idx} className="rounded-xl border border-g200 p-4">
-                    <Highlighted text={r.text} phrases={r.evidence} />
-                    <p className="mt-2 flex flex-wrap gap-1.5">{r.tags.map((t) => <span key={t} className="rounded-s border border-g300 bg-g50 px-[7px] text-b3 text-g700">{t}</span>)}</p>
-                  </li>
-                ))}
-              </ul>
-              {reviews.length > 5 && <Button variant="ghost" className="mt-2 h-8 px-0 text-b2" onClick={() => setMore((v) => !v)}>{more ? '접기' : `${reviews.length - 5}건 더 보기`}</Button>}
-            </>
-          ) : (
-            <ul className="space-y-3">
-              {people.map((u) => (
-                <li key={u.id} className="rounded-xl border border-g200 p-4">
-                  <p className="text-b2 font-semibold text-g900">참여자 {u.id.replace('U', '')} · {u.title}</p>
-                  <ul className="mt-2 space-y-2">
-                    {u.quotes.slice(0, more ? undefined : 3).map((q) => <li key={q} className="border-l-2 border-g300 pl-3 text-b2 text-g900">“{q}”</li>)}
-                  </ul>
-                  {more && u.pains.length > 0 && (
-                    <div className="mt-3">
-                      <p className="text-b3 font-semibold text-g700">불편 사항</p>
-                      <ul className="mt-1 space-y-1">{u.pains.map((x) => <li key={x.title} className="text-b2 text-g900"><b className="font-semibold">{x.title}</b> <span className="text-g700">{x.detail}</span></li>)}</ul>
-                    </div>
-                  )}
-                </li>
-              ))}
-              <Button variant="ghost" className="h-8 px-0 text-b2" onClick={() => setMore((v) => !v)}>{more ? '접기' : '발화와 불편 사항 더 보기'}</Button>
-            </ul>
-          )}
-        </Sub>
-      </div>
+      <Head id={id} label={label} revealed={revealed} />
+      <TrackSection id={id} />
+      <TraitsSection id={id} />
+      <EvidenceSection id={id} more={more} setMore={setMore} />
     </article>
+  )
+}
+
+/**
+ * Side-by-side X/Y evidence. At xl+, every section (행동 변수, 그룹 특성, 원문 근거) is one shared
+ * grid row so the shorter side stretches to match — same technique as PersonaPair. Below xl it falls
+ * back to two stacked panels.
+ */
+function EvidencePair({ xId, yId, revealed }: { xId: string; yId: string; revealed: boolean }) {
+  const [moreX, setMoreX] = useState(false)
+  const [moreY, setMoreY] = useState(false)
+  return (
+    <>
+      <div className="hidden overflow-hidden rounded-xl border border-g200 bg-white xl:grid xl:grid-cols-2 xl:items-stretch xl:[&>*:nth-child(2n)]:border-l xl:[&>*:nth-child(2n)]:border-g200">
+        <Head id={xId} label="X" revealed={revealed} />
+        <Head id={yId} label="Y" revealed={revealed} />
+        <TrackSection id={xId} />
+        <TrackSection id={yId} />
+        <TraitsSection id={xId} />
+        <TraitsSection id={yId} />
+        <EvidenceSection id={xId} more={moreX} setMore={setMoreX} />
+        <EvidenceSection id={yId} more={moreY} setMore={setMoreY} />
+      </div>
+      <div className="grid gap-4 xl:hidden">
+        <EvidencePanel id={xId} label="X" revealed={revealed} />
+        <EvidencePanel id={yId} label="Y" revealed={revealed} />
+      </div>
+    </>
   )
 }
 
@@ -122,9 +171,8 @@ export default function Evidence() {
 
       <RoundTabs value={rKey} onChange={go} done={(k) => state.revealed[k]} />
 
-      <div className="mt-6 grid items-start gap-4 xl:grid-cols-2">
-        <EvidencePanel key={`${rKey}-X`} id={X} label="X" revealed={revealed} />
-        <EvidencePanel key={`${rKey}-Y`} id={Y} label="Y" revealed={revealed} />
+      <div className="mt-6">
+        <EvidencePair key={rKey} xId={X} yId={Y} revealed={revealed} />
       </div>
 
       <section className="mt-8 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
