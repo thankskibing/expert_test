@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { DATA_IDS, PABBR, PAIR, PCOLOR, PNAME, PSHORT, QUAL_IDS, core, personaById, study, type DataPid, type QualPid } from '../lib/data'
-import { Button, NextStep, Note, PageHead } from '../components/ui'
+import { Button, Note, PageHead } from '../components/ui'
 
 const ALL = [...DATA_IDS, ...QUAL_IDS] as string[]
 const REV_PAIR: Record<string, string> = { P: 'A', S1: 'B', S2: 'C' }
@@ -45,7 +45,7 @@ export default function Personas() {
 
   return (
     <div>
-      <PageHead step={5} title="결과 퍼소나">
+      <PageHead title="결과 퍼소나">
         리뷰에서 나온 데이터 퍼소나 3개와 인터뷰에서 나온 정성 퍼소나 3개예요. 이름·나이·직업·지역은 원자료 근거가 없는 가상 프로필이라 평가에서 빼 주세요.
       </PageHead>
 
@@ -127,7 +127,6 @@ export default function Personas() {
           </div>
         </div>
       </article>
-      <NextStep to="/process" label="도출 과정·교차 검증 보기" />
     </div>
   )
 }

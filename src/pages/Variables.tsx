@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { CATLABEL, DATA_IDS, PCOLOR, PNAME, QUAL_IDS, study, type DataPid, type QualPid, type Uid } from '../lib/data'
 import TrackStack from '../components/TrackStack'
-import { Badge, Chip, NextStep, PageHead, PersonaPill, Section, Segmented } from '../components/ui'
+import { Badge, Chip, PageHead, PersonaPill, Section, Segmented } from '../components/ui'
 
 const GNUM: Record<string, string> = { A: '1', B: '2', C: '3' }
 const UIDS: Uid[] = ['U1', 'U2', 'U3', 'U4', 'U5', 'U6']
@@ -52,7 +52,7 @@ export default function Variables() {
 
   return (
     <div>
-      <PageHead step={4} title="행동 변수와 그룹">
+      <PageHead title="행동 변수와 그룹">
         데이터 퍼소나는 리뷰에서, 정성 퍼소나는 인터뷰에서 각각 행동 변수를 세우고 그룹의 위치를 비교해 도출했어요. 그룹을 고르면 그 그룹이 변수들을 지나가는 선이 그려져요.
       </PageHead>
 
@@ -106,12 +106,11 @@ export default function Variables() {
           </div>
           {qg !== 'all' && (
             <GroupCard tag={`${study.qualGroups[qg].group} · ${study.qualGroups[qg].role} · ${study.qualGroups[qg].members.join(', ')}`} name={study.qualGroups[qg].name} traits={study.qualGroups[qg].traits} summary={study.qualGroups[qg].summary}>
-              <p className="mt-4 text-b3 text-g600">참여자별 발화는 3단계 정성 인터뷰에서 볼 수 있어요.</p>
+              <p className="mt-4 text-b3 text-g600">참여자별 발화는 정성 인터뷰 페이지에서 볼 수 있어요.</p>
             </GroupCard>
           )}
         </div>
       </Section>
-      <NextStep to="/personas" label="결과 퍼소나 보기" />
     </div>
   )
 }

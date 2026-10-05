@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { CATS, DATA_IDS, PAIR, PCOLOR, PNAME, PSHORT, core, study, type Cat, type DataPid } from '../lib/data'
-import { NextStep, Note, PageHead, PersonaPill, Section } from '../components/ui'
+import { Note, PageHead, PersonaPill, Section } from '../components/ui'
 
 const S = study.stats
 // Toss bar-chart rule: grey bars by default, only the emphasised segment (퍼소나 적합) in brand blue. No axis lines.
@@ -60,8 +60,8 @@ const PAIRS: Record<DataPid, { same: string; diff: string; data: string; qual: s
 export default function Process() {
   return (
     <div>
-      <PageHead step={6} title="도출 과정과 교차 검증">
-        데이터 퍼소나를 뒷받침하는 리뷰가 실제로 얼마나 되는지 다시 확인하고, 짝으로 묶은 정성 퍼소나와 어디가 같고 다른지 정리했어요. 이 페이지의 비교와 해석은 연구팀의 분석 메모로, 평가 대상이에요.
+      <PageHead title="도출 과정과 교차 검증">
+        데이터 퍼소나를 뒷받침하는 리뷰가 실제로 얼마나 되는지 다시 확인하고, 짝으로 묶은 정성 퍼소나와 어디가 같고 다른지 정리했어요. 이 페이지의 비교와 해석은 연구팀의 분석 메모예요.
       </PageHead>
 
       <Section title="데이터 퍼소나를 도출한 절차">
@@ -69,7 +69,7 @@ export default function Process() {
           {[
             ['리뷰·댓글 3,601건 수집', '메디큐브 공식몰·네이버쇼핑 구매 리뷰와 유튜브 리뷰 영상 댓글이에요. 원문은 고치지 않았어요.'],
             ['키워드 규칙으로 1차 분류', '한 리뷰가 여러 퍼소나에 중복으로 들어갈 수 있어요.'],
-            ['퍼소나 기준으로 한 건씩 재분류', '키워드가 아니라 각 퍼소나의 핵심 행동 변수가 원문에 실제로 드러나는지 보고, 6개 분류 중 하나로 판정했어요. 판단 이유는 1단계에서 리뷰마다 볼 수 있어요.'],
+            ['퍼소나 기준으로 한 건씩 재분류', '키워드가 아니라 각 퍼소나의 핵심 행동 변수가 원문에 실제로 드러나는지 보고, 6개 분류 중 하나로 판정했어요. 판단 이유는 리뷰 데이터 페이지에서 리뷰마다 볼 수 있어요.'],
             ['핵심 리뷰 선정', `퍼소나 적합 리뷰 중 행동 변수를 가장 많이 함께 보여주는 리뷰를 Primary ${core.A.length} · Secondary 1 ${core.B.length} · Secondary 2 ${core.C.length}건 골랐어요.`],
           ].map(([t, d], i) => (
             <li key={t} className="flex gap-3">
@@ -157,11 +157,10 @@ export default function Process() {
 
       <Section title="확인이 필요한 점">
         <div className="max-w-prose2 space-y-2">
-          <Note>기존 데이터 Secondary 2 그룹 자료의 대표 인용 3개 중 2개(#304, #2362)는 재분류에서 데이터 Secondary 2의 직접 근거가 아니었어요. #304는 기능 평가에 가까운 보조·맥락 근거이고, #2362는 앱 설정 때문에 듀얼 모드를 쓰지 않는 반례예요. <Link className="font-semibold text-brand" to="/variables">4단계에서 보기</Link></Note>
+          <Note>기존 데이터 Secondary 2 그룹 자료의 대표 인용 3개 중 2개(#304, #2362)는 재분류에서 데이터 Secondary 2의 직접 근거가 아니었어요. #304는 기능 평가에 가까운 보조·맥락 근거이고, #2362는 앱 설정 때문에 듀얼 모드를 쓰지 않는 반례예요. <Link className="font-semibold text-brand" to="/variables">행동 변수·그룹에서 보기</Link></Note>
           <Note>데이터 Secondary 2의 Pain points와 Needs는 데이터 Primary와 문구가 같아요(원본 자료 기준). 데이터 Secondary 2만의 내용인지 검토가 필요해요.</Note>
         </div>
       </Section>
-      <NextStep to="/evaluate" label="평가하러 가기" />
     </div>
   )
 }

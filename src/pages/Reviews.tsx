@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { CATS, DATA_IDS, PCOLOR, PNAME, PRANK, loadReviews, study, type Cat, type DataPid, type ReviewsData } from '../lib/data'
-import { Button, Chip, NextStep, PageHead, Segmented, TextField } from '../components/ui'
+import { Button, Chip, PageHead, Segmented, TextField } from '../components/ui'
 
 const PAGE = 40
 
@@ -39,7 +39,7 @@ export default function Reviews() {
 
   return (
     <div>
-      <PageHead step={1} title="리뷰 데이터">
+      <PageHead title="리뷰 데이터">
         키워드 규칙으로 퍼소나별로 1차 분류된 리뷰(A 824 · B 902 · C 607건, 중복 포함)를, 그 퍼소나의 핵심 행동 변수 기준으로 한 건씩 다시 판정했어요. 처음에는 퍼소나 적합 리뷰가 보이고, 다른 분류도 골라 볼 수 있어요.
       </PageHead>
 
@@ -84,7 +84,6 @@ export default function Reviews() {
           <Button size="m" disabled={page >= pages - 1} onClick={() => setPage(page + 1)}>다음</Button>
         </div>
       )}
-      <NextStep to="/core" label="핵심 리뷰 보기" />
     </div>
   )
 }
