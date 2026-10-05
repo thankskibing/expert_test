@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { PCOLOR, study } from '../lib/data'
-import { Badge, NextStep, PageHead, PersonaPill } from '../components/ui'
+import { Badge, PageHead, PersonaPill } from '../components/ui'
 
 const pick = (u: (typeof study.participants)[number], k: string) => u.info.find((x) => x.k === k)?.v ?? ''
 
@@ -17,7 +17,7 @@ export default function Interviews() {
   }, [hash])
   return (
     <div>
-      <PageHead step={3} title="정성 인터뷰">
+      <PageHead title="정성 인터뷰">
         부스터프로 사용자 6명(U1~U6)을 심층 인터뷰했어요. 녹취는 U1·U4·U5만 있고, U2·U3·U6은 인터뷰 기록지를 근거로 했어요. 개인정보는 지우고 프로필 요약과 대표 발화만 보여드려요.
       </PageHead>
 
@@ -77,7 +77,6 @@ export default function Interviews() {
           </article>
         ))}
       </div>
-      <NextStep to="/variables" label="행동 변수·그룹 보기" />
     </div>
   )
 }

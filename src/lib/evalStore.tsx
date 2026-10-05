@@ -1,63 +1,75 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { ROUNDS, type RoundKey } from './protocol'
 
-export const CRITERIA = [
-  { key: 'evidence', label: '근거 충분성', q: '원문 근거가 퍼소나 설명을 뒷받침하기에 충분한가' },
-  { key: 'variables', label: '변수 타당성', q: '행동 변수가 사용자 간 차이를 잘 설명하는가' },
-  { key: 'consistency', label: '서술 일치도', q: 'Pain point·Needs·Goal이 근거에서 나온 내용인가' },
-  { key: 'distinct', label: '구분 명확성', q: '다른 퍼소나와 겹치지 않고 뚜렷하게 구분되는가' },
-] as const
-export type CriterionKey = (typeof CRITERIA)[number]['key']
+/** Answers are kept as flat string maps so every question (and its "기타" text) maps to one cell in the sheet. */
+export type Answers = Record<string, string>
 
-export interface PersonaEval { scores: Partial<Record<CriterionKey, number>>; comment: string }
-export interface ReviewEval { verdict: 'fit' | 'unfit' | null; note: string }
 export interface EvalState {
   evaluator: string
-  personas: Record<string, PersonaEval>
-  reviews: Record<string, ReviewEval> // key: `${persona}-${idx}`
-  overall: string
+  /** per round: true = 퍼소나 X is the online-review (data) persona. Randomised once per evaluator. */
+  assignment: Record<RoundKey, boolean>
+  profile: Answers
+  compare: Record<RoundKey, Answers>
+  evidence: Record<RoundKey, Answers>
+  revealed: Record<RoundKey, boolean>
+  /** ratings[personaId][itemId] = 1..5 */
+  ratings: Record<string, Record<string, number>>
+  /** dimNotes[personaId][dimId] = text */
+  dimNotes: Record<string, Record<string, string>>
+  final: Answers
   submittedAt: string | null
 }
 
-const KEY = 'persona-eval-draft-v1'
-const empty: EvalState = { evaluator: '', personas: {}, reviews: {}, overall: '', submittedAt: null }
-
+const KEY = 'persona-eval-v2'
+const rk = <T,>(v: () => T) => Object.fromEntries(ROUNDS.map((r) => [r.key, v()])) as Record<RoundKey, T>
+function fresh(): EvalState {
+  return {
+    evaluator: '', assignment: rk(() => Math.random() < 0.5), profile: {}, compare: rk(() => ({})), evidence: rk(() => ({})),
+    revealed: rk(() => false), ratings: {}, dimNotes: {}, final: {}, submittedAt: null,
+  }
+}
 function read(): EvalState {
   try {
     const raw = window.localStorage.getItem(KEY)
-    return raw ? { ...empty, ...JSON.parse(raw) } : empty
-  } catch {
-    return empty
-  }
+    if (raw) { const f = fresh(); const s = JSON.parse(raw); return { ...f, ...s, assignment: { ...f.assignment, ...s.assignment } } }
+  } catch { /* storage unavailable */ }
+  return fresh()
 }
 
 interface Ctx {
   state: EvalState
+  set: (fn: (s: EvalState) => EvalState) => void
   setEvaluator: (v: string) => void
-  setScore: (pid: string, k: CriterionKey, v: number) => void
-  setComment: (pid: string, v: string) => void
-  setVerdict: (key: string, v: ReviewEval['verdict']) => void
-  setNote: (key: string, v: string) => void
-  setOverall: (v: string) => void
+  setProfile: (id: string, v: string) => void
+  setCompare: (r: RoundKey, id: string, v: string) => void
+  setEvidence: (r: RoundKey, id: string, v: string) => void
+  reveal: (r: RoundKey) => void
+  setRating: (pid: string, item: string, v: number) => void
+  setDimNote: (pid: string, dim: string, v: string) => void
+  setFinal: (id: string, v: string) => void
   markSubmitted: () => void
+  reset: () => void
 }
 const EvalCtx = createContext<Ctx | null>(null)
 
 export function EvalProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<EvalState>(read)
   useEffect(() => {
-    try { window.localStorage.setItem(KEY, JSON.stringify(state)) } catch { /* storage unavailable: keep in memory */ }
+    try { window.localStorage.setItem(KEY, JSON.stringify(state)) } catch { /* keep in memory */ }
   }, [state])
-  const pe = (s: EvalState, pid: string): PersonaEval => s.personas[pid] ?? { scores: {}, comment: '' }
-  const re = (s: EvalState, k: string): ReviewEval => s.reviews[k] ?? { verdict: null, note: '' }
   const ctx: Ctx = {
     state,
+    set: setState,
     setEvaluator: (v) => setState((s) => ({ ...s, evaluator: v })),
-    setScore: (pid, k, v) => setState((s) => ({ ...s, personas: { ...s.personas, [pid]: { ...pe(s, pid), scores: { ...pe(s, pid).scores, [k]: v } } } })),
-    setComment: (pid, v) => setState((s) => ({ ...s, personas: { ...s.personas, [pid]: { ...pe(s, pid), comment: v } } })),
-    setVerdict: (key, v) => setState((s) => ({ ...s, reviews: { ...s.reviews, [key]: { ...re(s, key), verdict: re(s, key).verdict === v ? null : v } } })),
-    setNote: (key, v) => setState((s) => ({ ...s, reviews: { ...s.reviews, [key]: { ...re(s, key), note: v } } })),
-    setOverall: (v) => setState((s) => ({ ...s, overall: v })),
+    setProfile: (id, v) => setState((s) => ({ ...s, profile: { ...s.profile, [id]: v } })),
+    setCompare: (r, id, v) => setState((s) => ({ ...s, compare: { ...s.compare, [r]: { ...s.compare[r], [id]: v } } })),
+    setEvidence: (r, id, v) => setState((s) => ({ ...s, evidence: { ...s.evidence, [r]: { ...s.evidence[r], [id]: v } } })),
+    reveal: (r) => setState((s) => ({ ...s, revealed: { ...s.revealed, [r]: true } })),
+    setRating: (pid, item, v) => setState((s) => ({ ...s, ratings: { ...s.ratings, [pid]: { ...s.ratings[pid], [item]: v } } })),
+    setDimNote: (pid, dim, v) => setState((s) => ({ ...s, dimNotes: { ...s.dimNotes, [pid]: { ...s.dimNotes[pid], [dim]: v } } })),
+    setFinal: (id, v) => setState((s) => ({ ...s, final: { ...s.final, [id]: v } })),
     markSubmitted: () => setState((s) => ({ ...s, submittedAt: new Date().toISOString() })),
+    reset: () => setState(fresh()),
   }
   return <EvalCtx.Provider value={ctx}>{children}</EvalCtx.Provider>
 }
@@ -67,3 +79,10 @@ export function useEval() {
   if (!c) throw new Error('EvalProvider missing')
   return c
 }
+
+/** Which persona sits under label X / Y for a round. */
+export function xy(state: EvalState, r: (typeof ROUNDS)[number]) {
+  const xData = state.assignment[r.key]
+  return { X: xData ? r.data : r.qual, Y: xData ? r.qual : r.data } as { X: string; Y: string }
+}
+export const allRevealed = (s: EvalState) => ROUNDS.every((r) => s.revealed[r.key])

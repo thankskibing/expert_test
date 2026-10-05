@@ -1,28 +1,53 @@
 /**
- * 퍼소나 전문가 평가 응답 저장용 Google Apps Script
- * 1) 응답을 받을 구글 시트 → 확장 프로그램 → Apps Script 에 이 코드를 붙여넣고 저장
- * 2) 배포 → 새 배포 → 유형: 웹 앱 / 실행 사용자: 나 / 액세스 권한: 모든 사용자 → 배포
- * 3) 나온 웹 앱 URL(https://script.google.com/macros/s/.../exec)을 사이트 설정에 넣습니다.
+ * AI 퍼소나 전문가 평가 응답 저장용 Google Apps Script (v2: 인터뷰 흐름)
+ *
+ * 붙여넣기 / 재배포 방법
+ * 1) 응답 시트 → 확장 프로그램 → Apps Script → 기존 코드를 모두 지우고 이 코드를 붙여넣은 뒤 저장
+ * 2) 배포 → 배포 관리 → (기존 웹 앱 배포) 연필 아이콘 → 버전: "새 버전" → 배포
+ *    ※ "새 배포"를 만들면 주소가 바뀌어요. 같은 주소를 유지하려면 반드시 "배포 관리"에서 새 버전으로 올려 주세요.
+ *
+ * 만들어지는 시트
+ * - 응답(전체): 제출 1건 = 1행. 새 문항이 생기면 열이 자동으로 추가돼요.
+ * - 척도 점수: 문항 1개 = 1행(긴 형식). 피벗 테이블·평균 계산용.
+ * - 문항 설명: 응답(전체) 열 이름과 실제 질문 문구의 대응표.
  */
 function doPost(e) {
-  var data = JSON.parse(e.postData.contents);
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var t = new Date();
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var received = new Date();
 
-  var ps = sheet_(ss, '퍼소나 평가', ['제출 시각', '평가자', '퍼소나', '퍼소나 이름', '근거 충분성', '변수 타당성', '서술 일치도', '구분 명확성', '의견']);
-  data.personas.forEach(function (p) {
-    ps.appendRow([t, data.evaluator, p.id, p.name, p.evidence, p.variables, p.consistency, p.distinct, p.comment]);
-  });
+    // 1) 응답(전체): 동적 헤더
+    var wide = sheet_(ss, '응답(전체)', ['receivedAt']);
+    var keys = ['receivedAt'].concat(data.keys || Object.keys(data.answers));
+    var header = ensureHeader_(wide, keys);
+    var row = header.map(function (h) {
+      if (h === 'receivedAt') return received;
+      var v = data.answers[h];
+      return v === undefined || v === null ? '' : v;
+    });
+    wide.appendRow(row);
 
-  var rs = sheet_(ss, '핵심 리뷰 판정', ['제출 시각', '평가자', '퍼소나', '리뷰 번호', '판정', '의견']);
-  data.reviews.forEach(function (r) {
-    rs.appendRow([t, data.evaluator, r.persona, r.idx, r.verdict, r.note]);
-  });
+    // 2) 척도 점수: 긴 형식
+    var longHeader = ['receivedAt', '평가자'].concat(data.ratingHeader || []);
+    var long = sheet_(ss, '척도 점수', longHeader);
+    var rows = (data.ratingRows || []).map(function (r) { return [received, data.evaluator].concat(r); });
+    if (rows.length) long.getRange(long.getLastRow() + 1, 1, rows.length, rows[0].length).setValues(rows);
 
-  var os = sheet_(ss, '종합 의견', ['제출 시각', '평가자', '종합 의견']);
-  os.appendRow([t, data.evaluator, data.overall]);
+    // 3) 문항 설명
+    var lab = sheet_(ss, '문항 설명', ['열 이름', '질문']);
+    var known = {};
+    if (lab.getLastRow() > 1) lab.getRange(2, 1, lab.getLastRow() - 1, 1).getValues().forEach(function (r) { known[r[0]] = true; });
+    var add = [];
+    keys.forEach(function (k) { if (!known[k] && data.labels && data.labels[k]) add.push([k, data.labels[k]]); });
+    if (add.length) lab.getRange(lab.getLastRow() + 1, 1, add.length, 2).setValues(add);
 
-  return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 function sheet_(ss, name, header) {
@@ -33,4 +58,18 @@ function sheet_(ss, name, header) {
     sh.setFrozenRows(1);
   }
   return sh;
+}
+
+/** Adds any missing keys as new columns at the end and returns the full header. */
+function ensureHeader_(sh, keys) {
+  var lastCol = Math.max(sh.getLastColumn(), 1);
+  var header = sh.getRange(1, 1, 1, lastCol).getValues()[0].filter(function (h) { return h !== ''; });
+  var changed = false;
+  keys.forEach(function (k) { if (header.indexOf(k) < 0) { header.push(k); changed = true; } });
+  if (changed) {
+    var max = sh.getMaxColumns();
+    if (header.length > max) sh.insertColumnsAfter(max, header.length - max);
+    sh.getRange(1, 1, 1, header.length).setValues([header]);
+  }
+  return header;
 }
