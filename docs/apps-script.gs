@@ -11,12 +11,15 @@
  * - 척도 점수: 문항 1개 = 1행(긴 형식). 피벗 테이블·평균 계산용.
  * - 문항 설명: 응답(전체) 열 이름과 실제 질문 문구의 대응표.
  */
+// 응답을 저장할 시트의 ID. 스크립트가 시트에 바인딩되어 있지 않아도 항상 이 시트를 열도록 고정해요.
+var SHEET_ID = '1Tu4XR3M-3gqhq_NDRszfehYORpTeyzzVZY3TtTKSnqo';
+
 function doPost(e) {
   var lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
     var data = JSON.parse(e.postData.contents);
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var ss = SpreadsheetApp.openById(SHEET_ID);
     var received = new Date();
 
     // 1) 응답(전체): 동적 헤더
@@ -45,6 +48,12 @@ function doPost(e) {
     if (add.length) lab.getRange(lab.getLastRow() + 1, 1, add.length, 2).setValues(add);
 
     return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    try {
+      var es = SpreadsheetApp.openById(SHEET_ID).getSheetByName('오류 로그') || SpreadsheetApp.openById(SHEET_ID).insertSheet('오류 로그');
+      es.appendRow([new Date(), String(err), e && e.postData && e.postData.contents]);
+    } catch (e2) { /* 로그 저장도 실패하면 조용히 넘어가요 */ }
+    return ContentService.createTextOutput(JSON.stringify({ ok: false, error: String(err) })).setMimeType(ContentService.MimeType.JSON);
   } finally {
     lock.releaseLock();
   }
