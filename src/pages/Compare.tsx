@@ -1,7 +1,7 @@
 import { useSearchParams } from 'react-router-dom'
 import { COMPARE_QS, ROUNDS, type RoundKey } from '../lib/protocol'
 import { useEval, xy } from '../lib/evalStore'
-import PersonaCard from '../components/PersonaCard'
+import { PersonaPair } from '../components/PersonaCard'
 import { FieldList } from '../components/form'
 import { RoundTabs, StepNav } from '../components/flow'
 import { PageHead } from '../components/ui'
@@ -25,9 +25,8 @@ export default function Compare() {
 
       <RoundTabs value={rKey} onChange={go} done={done} />
 
-      <div className="mt-6 grid gap-4 xl:grid-cols-2">
-        <PersonaCard id={X} label="X" blind />
-        <PersonaCard id={Y} label="Y" blind />
+      <div className="mt-6">
+        <PersonaPair xId={X} yId={Y} blind />
       </div>
 
       <section className="mt-8 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
