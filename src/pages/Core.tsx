@@ -31,7 +31,6 @@ export default function CorePage() {
             <li key={r.idx} className="rounded-2xl border border-g200 bg-white p-5 sm:p-6">
               <div className="mb-3 flex flex-wrap items-center gap-1.5">
                 <span className="mr-1 flex items-center gap-1.5 text-cap text-g500 tabular"><span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[p] }} />#{r.idx}</span>
-                {r.pdf && <Badge tone="dark">기존 퍼소나 자료의 대표 인용</Badge>}
                 {r.tags.map((t) => <Badge key={t}>{t}</Badge>)}
               </div>
               <div className="max-w-prose2"><Highlighted text={r.text} phrases={r.evidence} /></div>
