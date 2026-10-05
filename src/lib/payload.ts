@@ -3,6 +3,7 @@ import { COMPARE_QS, DIMS, EVIDENCE_QS_AFTER, EVIDENCE_QS_BEFORE, FINAL_QS, PROF
 import { xy, type EvalState } from './evalStore'
 
 export const SOURCE_LABEL = { data: '온라인 사용자 리뷰 기반', qual: '정성 인터뷰 기반' } as const
+const SOURCE_SHORT = { data: '리뷰 기반', qual: '인터뷰 기반' } as const
 export const SOURCE_DETAIL = {
   data: `메디큐브 공식몰·네이버쇼핑 구매 리뷰, 유튜브 댓글 ${study.stats.totalReviews.toLocaleString()}건을 분석해 만들었어요.`,
   qual: `실제 사용자 ${study.stats.interviews}명과의 심층 인터뷰를 분석해 만들었어요.`,
@@ -36,7 +37,7 @@ export function buildPayload(s: EvalState) {
   put('evaluator', s.evaluator, '평가자')
   put('submittedAt', new Date().toISOString(), '제출 시각(브라우저)')
   put('profile.consent', s.profile.consent, '녹음·기록 동의')
-  PROFILE.forEach((sec) => putFields('profile', sec.fields, s.profile, `[${sec.title}] `))
+  PROFILE.forEach((sec) => putFields('profile', sec.fields, s.profile, ''))
 
   for (const r of ROUNDS) {
     const { X } = xy(s, r)
@@ -45,15 +46,15 @@ export function buildPayload(s: EvalState) {
   }
   for (const r of ROUNDS) {
     const c = s.compare[r.key] ?? {}
-    putFields(`compare.${r.key}`, COMPARE_QS, c, `[④ 퍼소나 비교 · ${r.label}] `)
+    putFields(`compare.${r.key}`, COMPARE_QS, c, `[${r.label}] `)
     const p = c.c_pick === '퍼소나 X' ? 'X' : c.c_pick === '퍼소나 Y' ? 'Y' : null
-    put(`compare.${r.key}.c_pick_result`, grade(s, r, p), `[④ 퍼소나 비교 · ${r.label}] 리뷰 기반 추측 정답 여부`)
+    put(`compare.${r.key}.c_pick_result`, grade(s, r, p), `[${r.label}] 리뷰 기반 추측 정답 여부`)
   }
   for (const r of ROUNDS) {
     const e = s.evidence[r.key] ?? {}
-    putFields(`evidence.${r.key}`, [...EVIDENCE_QS_BEFORE, ...EVIDENCE_QS_AFTER], e, `[⑤ 제작 데이터 확인 · ${r.label}] `)
+    putFields(`evidence.${r.key}`, [...EVIDENCE_QS_BEFORE, ...EVIDENCE_QS_AFTER], e, `[${r.label}] `)
     const p = e.e_pick?.startsWith('X가') ? 'X' : e.e_pick?.startsWith('Y가') ? 'Y' : null
-    put(`evidence.${r.key}.e_pick_result`, grade(s, r, p), `[⑤ 제작 데이터 확인 · ${r.label}] 출처 공개 전 추측 정답 여부`)
+    put(`evidence.${r.key}.e_pick_result`, grade(s, r, p), `[${r.label}] 출처 공개 전 추측 정답 여부`)
   }
 
   const ratingRows: (string | number)[][] = []
@@ -63,13 +64,13 @@ export function buildPayload(s: EvalState) {
     for (const d of DIMS) {
       for (const it of d.items) {
         const v = s.ratings[id]?.[it.id]
-        put(`rating.${round.key}.${src}.${it.id}`, v, `[⑥ ${round.label} · ${SOURCE_LABEL[per.kind]} · ${d.title}] ${it.id}. ${it.q}`)
+        put(`rating.${round.key}.${src}.${it.id}`, v, `[${round.label} · ${SOURCE_SHORT[per.kind]} · ${d.title}] ${it.id}. ${it.q}`)
         ratingRows.push([round.label, SOURCE_LABEL[per.kind], `퍼소나 ${label}`, per.type, `${d.no}. ${d.title}`, it.id, it.q, v ?? ''])
       }
-      put(`note.${round.key}.${src}.${d.id}`, s.dimNotes[id]?.[d.id], `[⑥ ${round.label} · ${SOURCE_LABEL[per.kind]} · ${d.title}] 추가 질문 답변`)
+      put(`note.${round.key}.${src}.${d.id}`, s.dimNotes[id]?.[d.id], `[${round.label} · ${SOURCE_SHORT[per.kind]}] ${d.title} 추가 질문 답변`)
     }
   }
-  putFields('final', FINAL_QS, s.final, '[⑦ 두 퍼소나 비교 평가] ')
+  putFields('final', FINAL_QS, s.final, '')
 
   return {
     version: 2,
