@@ -1,5 +1,11 @@
 import studyJson from '../data/study.json'
 import coreJson from '../data/core.json'
+import imgA from '../assets/personas/A.png'
+import imgB from '../assets/personas/B.png'
+import imgC from '../assets/personas/C.png'
+import imgP from '../assets/personas/P.png'
+import imgS1 from '../assets/personas/S1.png'
+import imgS2 from '../assets/personas/S2.png'
 
 export type DataPid = 'A' | 'B' | 'C'
 export type QualPid = 'P' | 'S1' | 'S2'
@@ -54,6 +60,8 @@ export const PNAME: Record<string, string> = {
   A: '일상 루틴 기반 효과 축적형', B: '구매 타당성 검증형', C: '기능 최적화형',
   P: '루틴 통합형 다기능 관리형', S1: '핵심 기능 유지 관찰형', S2: '상황 대응형 핵심 기능 집중형',
 }
+/** Persona avatar images. Same illustration style across all six so the image itself carries no source hint. */
+export const PIMG: Record<string, string> = { A: imgA, B: imgB, C: imgC, P: imgP, S1: imgS1, S2: imgS2 }
 export const PRANK: Record<string, string> = { A: 'Primary', B: 'Secondary 1', C: 'Secondary 2', P: 'Primary', S1: 'Secondary 1', S2: 'Secondary 2' }
 export const PABBR: Record<string, string> = { A: 'P', B: 'S1', C: 'S2', P: 'P', S1: 'S1', S2: 'S2' }
 export const PSHORT: Record<string, string> = { A: '데이터 Primary', B: '데이터 Secondary 1', C: '데이터 Secondary 2', P: '정성 Primary', S1: '정성 Secondary 1', S2: '정성 Secondary 2' }

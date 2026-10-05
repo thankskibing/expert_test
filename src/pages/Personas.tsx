@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { DATA_IDS, PABBR, PAIR, PCOLOR, PNAME, PSHORT, QUAL_IDS, core, personaById, study, type DataPid, type QualPid } from '../lib/data'
+import { DATA_IDS, PABBR, PAIR, PCOLOR, PIMG, PNAME, PSHORT, QUAL_IDS, core, personaById, study, type DataPid, type QualPid } from '../lib/data'
 import { Button, Note, PageHead } from '../components/ui'
 
 const ALL = [...DATA_IDS, ...QUAL_IDS] as string[]
@@ -46,7 +46,7 @@ export default function Personas() {
   return (
     <div>
       <PageHead title="결과 퍼소나">
-        리뷰에서 나온 데이터 퍼소나 3개와 인터뷰에서 나온 정성 퍼소나 3개예요. 이름·나이·직업·지역은 원자료 근거가 없는 가상 프로필이라 평가에서 빼 주세요.
+        리뷰에서 나온 데이터 퍼소나 3개와 인터뷰에서 나온 정성 퍼소나 3개예요. 이름·나이·사진·직업 등 프로필 정보는 원자료 근거가 없는 가상 정보라 평가에서 빼 주세요.
       </PageHead>
 
       <div className="mb-10 grid gap-4 sm:grid-cols-2">
@@ -99,7 +99,7 @@ export default function Personas() {
           <div className="space-y-4">
             <section className="rounded-2xl border border-g200 p-5">
               <div className="flex items-center gap-3">
-                <span className="flex h-12 w-12 items-center justify-center rounded-l text-t1 font-bold text-white" style={{ background: c }}>{p.name.slice(0, 1)}</span>
+                {PIMG[id] ? <img src={PIMG[id]} alt="" aria-hidden className="h-12 w-12 shrink-0 rounded-full border border-g200 object-cover" /> : <span className="flex h-12 w-12 items-center justify-center rounded-l text-t1 font-bold text-white" style={{ background: c }}>{p.name.slice(0, 1)}</span>}
                 <div><p className="text-t2 font-bold">{p.name}({p.age}세)</p><p className="text-cap text-g500">가상 프로필</p></div>
               </div>
               <p className="mt-4 flex flex-wrap gap-1.5">{p.tags.map((t) => <span key={t} className="rounded-s border border-g300 bg-g50 px-[7px] text-b3 text-g900">#{t}</span>)}</p>

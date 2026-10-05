@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { personaById } from '../lib/data'
+import { personaById, PIMG } from '../lib/data'
 
 export const XY_COLOR: Record<'X' | 'Y', string> = { X: '#13C2C2', Y: '#722ED1' }
 
@@ -46,8 +46,13 @@ export default function PersonaCard({ id, label, blind, header }: { id: string; 
       </header>
       <div className="px-5 pb-2">
         <section className="py-4">
-          <p className="text-t1">{p.name}({p.age}세)</p>
-          <p className="mt-1.5 flex flex-wrap gap-1.5">{p.tags.map((t) => <span key={t} className="rounded-s border border-g300 bg-g50 px-[7px] text-b3">#{t}</span>)}</p>
+          <div className="flex items-center gap-3">
+            {PIMG[id] && <img src={PIMG[id]} alt="" aria-hidden className="h-14 w-14 shrink-0 rounded-full border border-g200 object-cover" />}
+            <div className="min-w-0">
+              <p className="text-t1">{p.name}({p.age}세)</p>
+              <p className="mt-1 flex flex-wrap gap-1.5">{p.tags.map((t) => <span key={t} className="rounded-s border border-g300 bg-g50 px-[7px] text-b3">#{t}</span>)}</p>
+            </div>
+          </div>
           <dl className="mt-3 grid grid-cols-[7rem_1fr] gap-x-3 gap-y-1 text-b2">
             {p.profile.map((x) => <div key={x.k} className="contents"><dt className="text-g600">{x.k}</dt><dd className="text-g900">{x.v}</dd></div>)}
           </dl>
