@@ -35,7 +35,7 @@ export default function PersonaCard({ id, label, blind, header }: { id: string; 
   const p = personaById(id)
   const c = XY_COLOR[label]
   return (
-    <article className="rounded-xl border border-g200 bg-white">
+    <article className="flex h-full flex-col rounded-xl border border-g200 bg-white">
       <header className="flex flex-wrap items-center gap-3 border-b border-g200 px-5 py-4" style={{ borderTop: `3px solid ${c}`, borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
         <span className="flex h-9 w-9 items-center justify-center rounded-full text-t1 text-white" style={{ background: c }}>{label}</span>
         <div className="min-w-0 flex-1">
