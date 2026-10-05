@@ -62,7 +62,7 @@ export default function Variables() {
           : <span className="flex items-center gap-2 py-1"><span className="flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold text-white" style={{ background: PCOLOR[v] }}>{GNUM[v]}</span>{PNAME[v]}</span>} />
         <div className="mt-6 grid gap-6 xl:grid-cols-[1.25fr_1fr]">
           <div className="rounded-3xl border border-g200 px-4 py-3 sm:px-6">
-            <TrackStack tracks={study.dataVars} ids={DATA_IDS} scale={4} paths={dp === 'all' ? [] : [dp]} label={(id) => GNUM[id]} showArea />
+            <TrackStack tracks={study.dataVars} ids={DATA_IDS} scale={4} paths={dp === 'all' ? [] : [dp]} label={(id) => GNUM[id]} />
           </div>
           {dp !== 'all' ? <DataGroupCard p={dp} /> : (
             <div className="space-y-3">
@@ -72,7 +72,7 @@ export default function Variables() {
         </div>
       </Section>
 
-      <Section title="정성 퍼소나: 인터뷰 참여자 6명의 위치" lead="원자료는 U1~U6 인터뷰예요. 점 안의 숫자는 참여자 번호예요. 기존 공통 변수 5개에 인터뷰에서 새로 나온 변수 4개를 더했어요.">
+      <Section title="정성 퍼소나: 행동 변수 6개와 그룹 P/S1/S2" lead="원자료는 U1~U6 인터뷰예요. 점 안의 숫자는 참여자 번호예요. 인터뷰 내용을 AI로 정리해 도출한 이 6개 행동 변수에서 가까이 모이는 참여자끼리 그룹으로 묶었어요.">
         <div className="flex flex-wrap gap-2">
           {QUAL_IDS.map((g) => (
             <Chip key={g} on={qg === g && qu === 'all'} onClick={() => { setQg(g); setQu('all') }}>
@@ -91,23 +91,18 @@ export default function Variables() {
             </button>
           ))}
         </div>
-        <div className="mt-5 rounded-3xl border border-g200 px-4 py-3 sm:px-6">
-          <p className="mt-3 text-b3 font-semibold text-g600">기존 공통 행동 변수</p>
-          <TrackStack tracks={study.qualCommon} ids={UIDS} paths={qPaths} focus={qFocus} />
-          <p className="mt-6 text-b3 font-semibold text-g600">신규 도출 행동 변수</p>
-          <TrackStack tracks={study.qualNew} ids={UIDS} paths={qPaths} focus={qFocus} />
-        </div>
-      </Section>
-
-      <Section title="정성 퍼소나: 그룹핑에 쓴 행동 패턴 6개" lead="인터뷰 내용을 AI로 정리해 도출한 패턴이에요. 이 6개 변수에서 가까이 모이는 참여자끼리 그룹으로 묶었어요.">
-        <div className="grid gap-6 xl:grid-cols-[1.25fr_1fr]">
+        <div className="mt-6 grid gap-6 xl:grid-cols-[1.25fr_1fr]">
           <div className="rounded-3xl border border-g200 px-4 py-3 sm:px-6">
-            <TrackStack tracks={study.qualPattern} ids={UIDS} paths={qPaths} focus={qFocus} showArea />
+            <TrackStack tracks={study.qualPattern} ids={UIDS} paths={qPaths} focus={qFocus} />
           </div>
-          {qg !== 'all' && (
+          {qg !== 'all' ? (
             <GroupCard tag={`${study.qualGroups[qg].group} · ${study.qualGroups[qg].role} · ${study.qualGroups[qg].members.join(', ')}`} name={study.qualGroups[qg].name} traits={study.qualGroups[qg].traits} summary={study.qualGroups[qg].summary}>
               <p className="mt-4 text-b3 text-g600">참여자별 발화는 정성 인터뷰 페이지에서 볼 수 있어요.</p>
             </GroupCard>
+          ) : (
+            <div className="space-y-3">
+              {QUAL_IDS.map((p) => <div key={p} className="rounded-2xl bg-g50 p-5"><PersonaPill id={p} /><p className="mt-2 text-b2 text-g800">{study.qualGroups[p].summary}</p></div>)}
+            </div>
           )}
         </div>
       </Section>
