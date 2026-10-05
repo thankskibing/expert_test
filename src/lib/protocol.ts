@@ -52,12 +52,6 @@ export const COMPARE_QS: Field[] = [
   { id: 'c_diff', q: '두 퍼소나를 비교했을 때, 사용자 특성에서 가장 다르게 느껴지는 부분은 무엇인가요?', type: 'textarea' },
 ]
 
-export const EVIDENCE_QS_BEFORE: Field[] = [
-  { id: 'e_changed', q: '근거 자료와 행동변수를 확인한 후, 처음 두 퍼소나를 보았을 때의 판단과 달라진 부분이 있나요?', type: 'textarea' },
-  { id: 'e_pick', q: '현재는 어느 퍼소나가 온라인 리뷰 기반이고, 어느 퍼소나가 정성 인터뷰 기반이라고 생각하시나요?', type: 'radio', options: ['X가 온라인 리뷰 기반, Y가 정성 인터뷰 기반', 'Y가 온라인 리뷰 기반, X가 정성 인터뷰 기반', '판단하기 어려움'] },
-  { id: 'e_basis_type', q: '그렇게 판단하게 된 가장 큰 근거는 무엇인가요?', type: 'checks', options: ['원문 데이터의 특성', '행동변수나 그룹의 차이', '퍼소나에 표현된 정보의 구체성이나 맥락'], other: true },
-  { id: 'e_basis', q: '근거에 대해 자세히 말씀해 주세요.', type: 'textarea' },
-]
 export const EVIDENCE_QS_AFTER: Field[] = [
   { id: 'e_surprise', q: '실제 데이터 출처를 확인했을 때 예상과 다른 부분이 있었나요? 있었다면 어떤 점이었나요?', type: 'textarea' },
   { id: 'e_clearer', q: '근거 자료까지 함께 확인했을 때, 두 퍼소나의 차이가 이전보다 더 분명하게 느껴지는 부분이 있나요? 있다면 어떤 부분인가요?', type: 'textarea' },
