@@ -18,7 +18,7 @@ export default function Interviews() {
   return (
     <div>
       <PageHead title="정성 인터뷰">
-        부스터프로 사용자 6명(U1~U6)을 심층 인터뷰했어요. 녹취는 U1·U4·U5만 있고, U2·U3·U6은 인터뷰 기록지를 근거로 했어요. 개인정보는 지우고 프로필 요약과 대표 발화만 보여드려요.
+        부스터프로 사용자 6명(U1~U6)을 심층 인터뷰했어요. 개인정보는 지우고 프로필 요약과 대표 발화만 보여드려요.
       </PageHead>
 
       <ul className="divide-y divide-g200 rounded-2xl border border-g200">
@@ -43,7 +43,6 @@ export default function Interviews() {
               <Avatar id={u.id} size={44} />
               <div className="min-w-0">
                 <h2 className="text-h3">{u.id} · {u.title}</h2>
-                <p className="mt-0.5 text-cap text-g500">근거 자료: {u.source}</p>
               </div>
               <span className="ml-auto"><PersonaPill id={u.group} /></span>
             </header>

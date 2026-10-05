@@ -65,7 +65,8 @@ export function buildPayload(s: EvalState) {
         put(`rating.${round.key}.${src}.${it.id}`, v, `[${round.label} · ${SOURCE_SHORT[per.kind]} · ${d.title}] ${it.id}. ${it.q}`)
         ratingRows.push([round.label, SOURCE_LABEL[per.kind], `퍼소나 ${label}`, per.type, `${d.no}. ${d.title}`, it.id, it.q, v ?? ''])
       }
-      put(`note.${round.key}.${src}.${d.id}`, s.dimNotes[id]?.[d.id], `[${round.label} · ${SOURCE_SHORT[per.kind]}] ${d.title} 추가 질문 답변`)
+      put(`note.${round.key}.${src}.${d.id}_1`, s.dimNotes[id]?.[`${d.id}_1`], `[${round.label} · ${SOURCE_SHORT[per.kind]}] ${d.title} 추가 질문 1 답변`)
+      put(`note.${round.key}.${src}.${d.id}_2`, s.dimNotes[id]?.[`${d.id}_2`], `[${round.label} · ${SOURCE_SHORT[per.kind]}] ${d.title} 추가 질문 2 답변`)
     }
   }
   putFields('final', FINAL_QS, s.final, '')
