@@ -1,28 +1,35 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, NavLink, Route, Routes, useLocation } from 'react-router-dom'
-import { EvalProvider, allRevealed, useEval } from './lib/evalStore'
+import { EvalProvider, useEval } from './lib/evalStore'
 import Start from './pages/Start'
 import Profile from './pages/Profile'
-import Compare from './pages/Compare'
-import Evidence from './pages/Evidence'
-import Rate from './pages/Rate'
-import Final from './pages/Final'
+import Step1 from './pages/Step1'
+import Step2 from './pages/Step2'
+import Step3 from './pages/Step3'
+import Step4 from './pages/Step4'
+import Step5 from './pages/Step5'
+import Step6 from './pages/Step6'
+import Step7 from './pages/Step7'
+import Step8 from './pages/Step8'
 import Reviews from './pages/Reviews'
 import CorePage from './pages/Core'
 import Interviews from './pages/Interviews'
 import Variables from './pages/Variables'
 import Personas from './pages/Personas'
 import Process from './pages/Process'
-import { ITEM_COUNT, ROUNDS } from './lib/protocol'
-import type { ReactNode } from 'react'
+import { ITEM_COUNT } from './lib/protocol'
 
 export const NAV = [
   { to: '/', label: '시작', step: 0 },
-  { to: '/profile', label: '기본 프로필', step: 1 },
-  { to: '/compare', label: '퍼소나 비교', step: 2 },
-  { to: '/evidence', label: '제작 데이터 확인', step: 3 },
-  { to: '/rate', label: '전문가 평가', step: 4 },
-  { to: '/final', label: '비교 평가·제출', step: 5 },
+  { to: '/profile', label: '기본 프로필', step: '' },
+  { to: '/step1', label: '1. 연구 개요·전체 프로세스', step: 1 },
+  { to: '/step2', label: '2. 수집·전처리 검증', step: 2 },
+  { to: '/step3', label: '3. 토픽·리뷰 집단 구성 검증', step: 3 },
+  { to: '/step4', label: '4. 리뷰 AI 분석·퍼소나 근거', step: 4 },
+  { to: '/step5', label: '5. 인터뷰·정성 퍼소나', step: 5 },
+  { to: '/step6', label: '6. 두 퍼소나 비교', step: 6 },
+  { to: '/step7', label: '7. 최종 퍼소나 품질 평가', step: 7 },
+  { to: '/step8', label: '8. 종합 평가·제출', step: 8 },
 ]
 export const REF = [
   { to: '/reviews', label: '리뷰 데이터' },
@@ -30,39 +37,26 @@ export const REF = [
   { to: '/interviews', label: '정성 인터뷰' },
   { to: '/variables', label: '행동 변수·그룹' },
   { to: '/personas', label: '결과 퍼소나' },
-  { to: '/process', label: '도출 과정·교차 검증' },
+  { to: '/process', label: '도출 과정·교차 검증(연구팀 메모)' },
 ]
 
 function Progress() {
   const { state } = useEval()
   const rated = Object.values(state.ratings).reduce((a, r) => a + Object.keys(r).length, 0)
   const total = ITEM_COUNT * 6
-  const compared = ROUNDS.filter((r) => state.compare[r.key]?.c_pick).length
-  const revealed = ROUNDS.filter((r) => state.revealed[r.key]).length
+  const stepDone = [state.step1.s1_q1, state.step2.s2_q1, state.step3.s3_q1, state.step4.s4_q1, state.step5qual.s5q_q1, state.step6.s6_q1].filter(Boolean).length
   return (
     <div className="mt-4 rounded-xl border border-g200 bg-g50 p-3">
       <p className="text-b2 font-semibold">{state.evaluator ? `${state.evaluator} 님의 평가` : '평가 진행 상황'}</p>
-      <p className="mt-1 text-b3 text-g600 tabular">퍼소나 비교 {compared}/3 · 출처 확인 {revealed}/3</p>
+      <p className="mt-1 text-b3 text-g600 tabular">1~6단계 진행 {stepDone}/6</p>
       <div className="mt-2 flex items-center gap-2">
         <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-g200" aria-hidden>
           <div className="h-full rounded-full bg-brand transition-all duration-200" style={{ width: `${(rated / total) * 100}%` }} />
         </div>
         <span className="text-b3 text-g700 tabular">{rated}/{total}</span>
       </div>
-      <p className="mt-1 text-b3 text-g600">척도 평가 문항</p>
+      <p className="mt-1 text-b3 text-g600">7단계 척도 평가 문항</p>
       {state.submittedAt && <p className="mt-1 text-b3 text-success">제출했어요</p>}
-    </div>
-  )
-}
-
-function Locked({ children }: { children: ReactNode }) {
-  const { state } = useEval()
-  if (allRevealed(state)) return <>{children}</>
-  return (
-    <div className="py-16 text-center">
-      <p className="text-h3">아직 볼 수 없는 자료예요</p>
-      <p className="mx-auto mt-2 max-w-md text-b2 text-g600">참고 자료에는 퍼소나의 데이터 출처가 드러나 있어요. 제작 데이터 확인 단계에서 세 쌍의 출처를 모두 확인하면 열려요.</p>
-      <NavLink to="/evidence" className="mt-6 inline-flex h-10 items-center rounded-l bg-brand px-[15px] text-b1 text-white hover:bg-brand-hover">제작 데이터 확인으로 가기</NavLink>
     </div>
   )
 }
@@ -73,8 +67,6 @@ function Shell() {
   const [open, setOpen] = useState(false)
   const loc = useLocation()
   useEffect(() => { setOpen(false); window.scrollTo(0, 0) }, [loc.pathname])
-  const { state } = useEval()
-  const open2 = allRevealed(state)
   const nav = (
     <nav aria-label="페이지 이동">
       <ol className="space-y-1">
@@ -87,17 +79,10 @@ function Shell() {
           </li>
         ))}
       </ol>
-      <p className="mb-1 mt-6 flex items-center gap-1.5 px-4 text-b3 text-g600">
-        참고 자료
-        {!open2 && <svg aria-label="잠김" viewBox="0 0 16 16" className="h-3.5 w-3.5"><rect x="3" y="7" width="10" height="7" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.3" /><path d="M5.5 7V5a2.5 2.5 0 015 0v2" fill="none" stroke="currentColor" strokeWidth="1.3" /></svg>}
-      </p>
-      {open2 ? (
-        <ul className="space-y-1">
-          {REF.map((n) => <li key={n.to}><NavLink to={n.to} className={linkCls}>{n.label}</NavLink></li>)}
-        </ul>
-      ) : (
-        <p className="px-4 text-b3 text-g500">데이터 출처를 모두 확인하면 열려요.</p>
-      )}
+      <p className="mb-1 mt-6 px-4 text-b3 text-g600">참고 자료</p>
+      <ul className="space-y-1">
+        {REF.map((n) => <li key={n.to}><NavLink to={n.to} className={linkCls}>{n.label}</NavLink></li>)}
+      </ul>
     </nav>
   )
   return (
@@ -126,16 +111,20 @@ function Shell() {
           <Routes>
             <Route path="/" element={<Start />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/compare" element={<Compare />} />
-            <Route path="/evidence" element={<Evidence />} />
-            <Route path="/rate" element={<Rate />} />
-            <Route path="/final" element={<Final />} />
-            <Route path="/reviews" element={<Locked><Reviews /></Locked>} />
-            <Route path="/core" element={<Locked><CorePage /></Locked>} />
-            <Route path="/interviews" element={<Locked><Interviews /></Locked>} />
-            <Route path="/variables" element={<Locked><Variables /></Locked>} />
-            <Route path="/personas" element={<Locked><Personas /></Locked>} />
-            <Route path="/process" element={<Locked><Process /></Locked>} />
+            <Route path="/step1" element={<Step1 />} />
+            <Route path="/step2" element={<Step2 />} />
+            <Route path="/step3" element={<Step3 />} />
+            <Route path="/step4" element={<Step4 />} />
+            <Route path="/step5" element={<Step5 />} />
+            <Route path="/step6" element={<Step6 />} />
+            <Route path="/step7" element={<Step7 />} />
+            <Route path="/step8" element={<Step8 />} />
+            <Route path="/reviews" element={<Reviews />} />
+            <Route path="/core" element={<CorePage />} />
+            <Route path="/interviews" element={<Interviews />} />
+            <Route path="/variables" element={<Variables />} />
+            <Route path="/personas" element={<Personas />} />
+            <Route path="/process" element={<Process />} />
             <Route path="*" element={<Start />} />
           </Routes>
         </div>

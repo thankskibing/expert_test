@@ -19,7 +19,7 @@ export default function Profile() {
           <div className="mt-2 max-w-3xl"><FieldList fields={sec.fields} get={get} set={setProfile} /></div>
         </section>
       ))}
-      <StepNav prev="/" next="/compare" nextLabel="퍼소나 비교 시작하기" />
+      <StepNav prev="/" next="/step1" nextLabel="1단계: 연구 개요 보기" />
     </div>
   )
 }

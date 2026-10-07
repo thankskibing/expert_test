@@ -1,5 +1,6 @@
 import studyJson from '../data/study.json'
 import coreJson from '../data/core.json'
+import methodJson from '../data/method.json'
 import imgA from '../assets/personas/A.png'
 import imgB from '../assets/personas/B.png'
 import imgC from '../assets/personas/C.png'
@@ -45,6 +46,21 @@ interface Study {
 
 export const study = studyJson as unknown as Study
 export const core = coreJson as unknown as Record<DataPid, CoreReview[]>
+
+export interface Topic { no: number; name: string; keywords: string[]; proportion: number; coherence: number; characteristic: string; comments: string[] }
+export interface Method {
+  collection: { period: string; reviewPeriod: string; keywords: string[]; youtubeCriteria: string; initialTable: { product: string; commerce: string; youtube: string; total: string }[]; initialScope: string; narrowReason: string }
+  preprocessing: { steps: string[]; table: { cat: string; example: string }[]; counts: { nouns: number; rules: number; stopwords: number; extraStopwords: number } }
+  topics: Topic[]
+  coherenceNote: string
+  journey: { stage: string; desc: string; quote: string }[]
+  classification: { singleTotal: string; multiTotal: string; anyMatch: string; dupTotals: string; areas: { area: string; vars: string[] }[] }
+  groupNarratives: Record<DataPid, { flowSteps: string[]; need: string }>
+  interview: { periodNote: string; selectionReason: string; genderAgeReason: string; designTable: { k: string; v: string }[] }
+  aiProcess: { review: { label: string; steps: string[] }; interview: { label: string; steps: string[] }; disclaimer: string }
+  prompting: { openai: { k: string; v: string }[]; cooper: { no: number; step: string; desc: string }[] }
+}
+export const method = methodJson as unknown as Method
 
 export const DATA_IDS: DataPid[] = ['A', 'B', 'C']
 export const QUAL_IDS: QualPid[] = ['P', 'S1', 'S2']

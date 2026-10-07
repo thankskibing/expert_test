@@ -1,37 +1,47 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import { ROUNDS, type RoundKey } from './protocol'
+import { DATA_IDS, QUAL_IDS } from './data'
 
 /** Answers are kept as flat string maps so every question (and its "기타" text) maps to one cell in the sheet. */
 export type Answers = Record<string, string>
 
+/** Per-review judgment used in STEP 4-4 (리뷰별 1~5점 + 동의 여부 + 이유), keyed by `${personaId}_${reviewIdx}`. */
+export interface ReviewJudge { score?: number; agree?: string; reason?: string }
+
 export interface EvalState {
   evaluator: string
-  /** per round: true = 퍼소나 X is the online-review (data) persona. Randomised once per evaluator. */
-  assignment: Record<RoundKey, boolean>
   profile: Answers
-  compare: Record<RoundKey, Answers>
-  evidence: Record<RoundKey, Answers>
-  revealed: Record<RoundKey, boolean>
-  /** ratings[personaId][itemId] = 1..5 */
+  step1: Answers
+  step2: Answers
+  step3: Answers
+  step4: Answers
+  step4reclass: Answers
+  reviewJudge: Record<string, ReviewJudge>
+  step5pattern: Answers
+  step5qual: Answers
+  step6: Answers
+  /** ratings[personaId][itemId] = 1..5 (STEP 7, reuses the existing DIMS rubric) */
   ratings: Record<string, Record<string, number>>
   /** dimNotes[personaId][dimId] = text */
   dimNotes: Record<string, Record<string, string>>
-  final: Answers
+  step8: Answers
   submittedAt: string | null
 }
 
-const KEY = 'persona-eval-v2'
-const rk = <T,>(v: () => T) => Object.fromEntries(ROUNDS.map((r) => [r.key, v()])) as Record<RoundKey, T>
+const KEY = 'persona-eval-v3'
+const ALL_PERSONAS = [...DATA_IDS, ...QUAL_IDS]
 function fresh(): EvalState {
   return {
-    evaluator: '', assignment: rk(() => Math.random() < 0.5), profile: {}, compare: rk(() => ({})), evidence: rk(() => ({})),
-    revealed: rk(() => false), ratings: {}, dimNotes: {}, final: {}, submittedAt: null,
+    evaluator: '', profile: {},
+    step1: {}, step2: {}, step3: {}, step4: {}, step4reclass: {}, reviewJudge: {},
+    step5pattern: {}, step5qual: {}, step6: {},
+    ratings: {}, dimNotes: {},
+    step8: {}, submittedAt: null,
   }
 }
 function read(): EvalState {
   try {
     const raw = window.localStorage.getItem(KEY)
-    if (raw) { const f = fresh(); const s = JSON.parse(raw); return { ...f, ...s, assignment: { ...f.assignment, ...s.assignment } } }
+    if (raw) { const f = fresh(); const s = JSON.parse(raw); return { ...f, ...s } }
   } catch { /* storage unavailable */ }
   return fresh()
 }
@@ -41,12 +51,18 @@ interface Ctx {
   set: (fn: (s: EvalState) => EvalState) => void
   setEvaluator: (v: string) => void
   setProfile: (id: string, v: string) => void
-  setCompare: (r: RoundKey, id: string, v: string) => void
-  setEvidence: (r: RoundKey, id: string, v: string) => void
-  reveal: (r: RoundKey) => void
+  setStep1: (id: string, v: string) => void
+  setStep2: (id: string, v: string) => void
+  setStep3: (id: string, v: string) => void
+  setStep4: (id: string, v: string) => void
+  setStep4reclass: (id: string, v: string) => void
+  setReviewJudge: (key: string, patch: Partial<ReviewJudge>) => void
+  setStep5pattern: (id: string, v: string) => void
+  setStep5qual: (id: string, v: string) => void
+  setStep6: (id: string, v: string) => void
   setRating: (pid: string, item: string, v: number) => void
   setDimNote: (pid: string, dim: string, v: string) => void
-  setFinal: (id: string, v: string) => void
+  setStep8: (id: string, v: string) => void
   markSubmitted: () => void
   reset: () => void
 }
@@ -57,17 +73,25 @@ export function EvalProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try { window.localStorage.setItem(KEY, JSON.stringify(state)) } catch { /* keep in memory */ }
   }, [state])
+  const section = <K extends keyof EvalState>(key: K) => (id: string, v: string) =>
+    setState((s) => ({ ...s, [key]: { ...(s[key] as Answers), [id]: v } }))
   const ctx: Ctx = {
     state,
     set: setState,
     setEvaluator: (v) => setState((s) => ({ ...s, evaluator: v })),
-    setProfile: (id, v) => setState((s) => ({ ...s, profile: { ...s.profile, [id]: v } })),
-    setCompare: (r, id, v) => setState((s) => ({ ...s, compare: { ...s.compare, [r]: { ...s.compare[r], [id]: v } } })),
-    setEvidence: (r, id, v) => setState((s) => ({ ...s, evidence: { ...s.evidence, [r]: { ...s.evidence[r], [id]: v } } })),
-    reveal: (r) => setState((s) => ({ ...s, revealed: { ...s.revealed, [r]: true } })),
+    setProfile: section('profile'),
+    setStep1: section('step1'),
+    setStep2: section('step2'),
+    setStep3: section('step3'),
+    setStep4: section('step4'),
+    setStep4reclass: section('step4reclass'),
+    setReviewJudge: (key, patch) => setState((s) => ({ ...s, reviewJudge: { ...s.reviewJudge, [key]: { ...s.reviewJudge[key], ...patch } } })),
+    setStep5pattern: section('step5pattern'),
+    setStep5qual: section('step5qual'),
+    setStep6: section('step6'),
     setRating: (pid, item, v) => setState((s) => ({ ...s, ratings: { ...s.ratings, [pid]: { ...s.ratings[pid], [item]: v } } })),
     setDimNote: (pid, dim, v) => setState((s) => ({ ...s, dimNotes: { ...s.dimNotes, [pid]: { ...s.dimNotes[pid], [dim]: v } } })),
-    setFinal: (id, v) => setState((s) => ({ ...s, final: { ...s.final, [id]: v } })),
+    setStep8: section('step8'),
     markSubmitted: () => setState((s) => ({ ...s, submittedAt: new Date().toISOString() })),
     reset: () => setState(fresh()),
   }
@@ -80,9 +104,4 @@ export function useEval() {
   return c
 }
 
-/** Which persona sits under label X / Y for a round. */
-export function xy(state: EvalState, r: (typeof ROUNDS)[number]) {
-  const xData = state.assignment[r.key]
-  return { X: xData ? r.data : r.qual, Y: xData ? r.qual : r.data } as { X: string; Y: string }
-}
-export const allRevealed = (s: EvalState) => ROUNDS.every((r) => s.revealed[r.key])
+export const PERSONA_ORDER = ALL_PERSONAS
