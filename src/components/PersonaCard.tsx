@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { personaById, PIMG, type Persona } from '../lib/data'
+import { PCOLOR, personaById, PIMG, type Persona } from '../lib/data'
 
 export const XY_COLOR: Record<'X' | 'Y', string> = { X: '#13C2C2', Y: '#722ED1' }
 
@@ -27,7 +27,7 @@ const Bullets = ({ items }: { items: string[] }) => (
   <ul className="space-y-1.5">{items.map((m) => <li key={m} className="flex gap-2"><span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-g500" />{m}</li>)}</ul>
 )
 
-function Header({ p, label, blind, c, header }: { p: Persona; label: 'X' | 'Y'; blind: boolean; c: string; header?: ReactNode }) {
+function Header({ p, label, blind, c, header }: { p: Persona; label: string; blind: boolean; c: string; header?: ReactNode }) {
   return (
     <header className="flex flex-wrap items-center gap-3 border-b border-g200 px-5 py-4" style={{ borderTop: `3px solid ${c}` }}>
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-t1 text-white" style={{ background: c }}>{label}</span>
@@ -84,6 +84,19 @@ export default function PersonaCard({ id, label, blind, header }: { id: string; 
       <Header p={p} label={label} blind={blind} c={c} header={header} />
       <ProfileSection id={id} p={p} c={c} />
       <Body p={p} blind={blind} c={c} />
+    </article>
+  )
+}
+
+/** Fully revealed persona card (source shown openly) keyed by the persona's own id, not a blind X/Y label. */
+export function FullPersonaCard({ id, header }: { id: string; header?: ReactNode }) {
+  const p = personaById(id)
+  const c = PCOLOR[id]
+  return (
+    <article className="flex h-full flex-col rounded-xl border border-g200 bg-white">
+      <Header p={p} label={id} blind={false} c={c} header={header} />
+      <ProfileSection id={id} p={p} c={c} />
+      <Body p={p} blind={false} c={c} />
     </article>
   )
 }

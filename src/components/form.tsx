@@ -1,5 +1,24 @@
-import type { Field } from '../lib/protocol'
+import { SCALE, type Field } from '../lib/protocol'
 import { TextArea, TextField } from './ui'
+
+function ScaleInput({ value, onChange, label }: { value: string; onChange: (v: string) => void; label: string }) {
+  const n = value ? Number(value) : undefined
+  return (
+    <div role="radiogroup" aria-label={label} className="grid max-w-md grid-cols-5 gap-1.5">
+      {SCALE.map((s, i) => {
+        const v = i + 1
+        const on = n === v
+        return (
+          <button key={v} type="button" role="radio" aria-checked={on} onClick={() => onChange(String(v))} title={s}
+            className={`flex min-h-[3.25rem] flex-col items-center justify-center rounded-m border px-1 py-1.5 text-center transition-colors duration-200 ${on ? 'border-brand bg-brand text-white' : 'border-g300 bg-white text-g900 hover:border-brand-hover hover:text-brand-hover'}`}>
+            <span className="text-b1 font-semibold tabular">{v}</span>
+            <span className={`text-[11px] leading-tight ${on ? 'text-white' : 'text-g600'}`}>{s}</span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
 
 /** Renders one protocol question. Multi-select answers are stored as "a | b"; "기타" text under `${id}_other`. */
 export function FieldInput({ f, get, set, no }: { f: Field; get: (id: string) => string; set: (id: string, v: string) => void; no?: string }) {
@@ -21,6 +40,7 @@ export function FieldInput({ f, get, set, no }: { f: Field; get: (id: string) =>
       <p className="text-b2 text-g900">{no && <b className="mr-1.5 font-semibold text-brand">{no}</b>}{f.q}</p>
       {f.hint && <p className="mt-0.5 text-b3 text-g600">{f.hint}</p>}
       <div className="mt-2.5">
+        {f.type === 'scale' && <ScaleInput value={v} onChange={(nv) => set(f.id, nv)} label={f.q} />}
         {f.type === 'text' && <TextField value={v} onChange={(e) => set(f.id, e.target.value)} className="max-w-md" aria-label={f.q} />}
         {f.type === 'textarea' && <TextArea value={v} onChange={(e) => set(f.id, e.target.value)} rows={3} aria-label={f.q} placeholder="답변 메모" />}
         {(f.type === 'radio' || f.type === 'select') && (

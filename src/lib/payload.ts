@@ -1,6 +1,6 @@
-import { personaById, study } from './data'
-import { COMPARE_QS, DIMS, EVIDENCE_QS_AFTER, FINAL_QS, PROFILE, ROUNDS, type Field, type Round } from './protocol'
-import { xy, type EvalState } from './evalStore'
+import { DATA_IDS, PNAME, PSHORT, QUAL_IDS, core, personaById, study } from './data'
+import { DIMS, PROFILE, REVIEW_AGREE_OPTIONS, STEP1_QS, STEP2_QS, STEP3_QS, STEP4_PROCESS_QS, STEP4_RECLASS_QS, STEP5_PATTERN_QS, STEP5_QUAL_QS, STEP6_QS, STEP8_CHECKLIST, STEP8_QS, type Field } from './protocol'
+import { PERSONA_ORDER, type EvalState } from './evalStore'
 
 export const SOURCE_LABEL = { data: '온라인 사용자 리뷰 기반', qual: '정성 인터뷰 기반' } as const
 const SOURCE_SHORT = { data: '리뷰 기반', qual: '인터뷰 기반' } as const
@@ -8,19 +8,10 @@ export const SOURCE_DETAIL = {
   data: `메디큐브 공식몰·네이버쇼핑 구매 리뷰, 유튜브 댓글 ${study.stats.totalReviews.toLocaleString()}건을 분석해 만들었어요.`,
   qual: `실제 사용자 ${study.stats.interviews}명과의 심층 인터뷰를 분석해 만들었어요.`,
 }
-const SRC_KEY = { data: 'review', qual: 'interview' } as const
 
-/** Persona ids in evaluation order: per round, X then Y. */
-export function evalOrder(s: EvalState) {
-  return ROUNDS.flatMap((r) => { const { X, Y } = xy(s, r); return [{ round: r, label: 'X' as const, id: X }, { round: r, label: 'Y' as const, id: Y }] })
-}
-
-/** Was the guess right? pick is the label the evaluator believes is review-based. */
-function grade(s: EvalState, r: Round, pickedLabel: 'X' | 'Y' | null) {
-  if (!pickedLabel) return '판단 어려움/무응답'
-  const { X } = xy(s, r)
-  const reviewLabel = X === r.data ? 'X' : 'Y'
-  return pickedLabel === reviewLabel ? '맞음' : '틀림'
+/** Review ids sampled for STEP 4-4 per data persona (first ~10 of the curated 핵심 리뷰 list). */
+export function sampleReviewIdx(pid: (typeof DATA_IDS)[number], n = 10) {
+  return core[pid].slice(0, n).map((r) => r.idx)
 }
 
 export function buildPayload(s: EvalState) {
@@ -39,45 +30,55 @@ export function buildPayload(s: EvalState) {
   put('profile.consent', s.profile.consent, '녹음·기록 동의')
   PROFILE.forEach((sec) => putFields('profile', sec.fields, s.profile, ''))
 
-  for (const r of ROUNDS) {
-    const { X } = xy(s, r)
-    const xIsData = X === r.data
-    put(`assign.${r.key}`, xIsData ? 'X=리뷰 기반, Y=인터뷰 기반' : 'X=인터뷰 기반, Y=리뷰 기반', `[${r.label}] X/Y 배정`)
-  }
-  for (const r of ROUNDS) {
-    const c = s.compare[r.key] ?? {}
-    putFields(`compare.${r.key}`, COMPARE_QS, c, `[${r.label}] `)
-    const p = c.c_pick === '퍼소나 X' ? 'X' : c.c_pick === '퍼소나 Y' ? 'Y' : null
-    put(`compare.${r.key}.c_pick_result`, grade(s, r, p), `[${r.label}] 리뷰 기반 추측 정답 여부`)
-  }
-  for (const r of ROUNDS) {
-    const e = s.evidence[r.key] ?? {}
-    putFields(`evidence.${r.key}`, EVIDENCE_QS_AFTER, e, `[${r.label}] `)
+  putFields('step1', STEP1_QS, s.step1, '[1. 연구 개요] ')
+  putFields('step2', STEP2_QS, s.step2, '[2. 수집·전처리] ')
+  putFields('step3', STEP3_QS, s.step3, '[3. 토픽·집단 구성] ')
+  putFields('step4', STEP4_PROCESS_QS, s.step4, '[4-1. AI 분석 과정] ')
+  putFields('step4reclass', STEP4_RECLASS_QS, s.step4reclass, '[4-3. 재분류 결과] ')
+  putFields('step5pattern', STEP5_PATTERN_QS, s.step5pattern, '[5-1. 발화→분석→재구성] ')
+  putFields('step5qual', STEP5_QUAL_QS, s.step5qual, '[5-2. 정성 퍼소나 검증] ')
+  putFields('step6', STEP6_QS, s.step6, '[6. 리뷰-인터뷰 퍼소나 비교] ')
+  putFields('step8', STEP8_QS, s.step8, '[8. 종합 평가] ')
+  putFields('step8', STEP8_CHECKLIST, s.step8, '[8. 종합 평가] ')
+
+  const reviewRows: (string | number)[][] = []
+  for (const pid of DATA_IDS) {
+    for (const r of core[pid]) {
+      const key = `${pid}_${r.idx}`
+      const j = s.reviewJudge[key]
+      if (!j || (j.score === undefined && !j.agree && !j.reason)) continue
+      put(`review.${key}.score`, j.score, `[4-4 · ${PSHORT[pid]} · 리뷰 #${r.idx}] 행동을 얼마나 잘 보여주는지(1~5)`)
+      put(`review.${key}.agree`, j.agree, `[4-4 · ${PSHORT[pid]} · 리뷰 #${r.idx}] 연구자 분류에 대한 동의 여부`)
+      put(`review.${key}.reason`, j.reason, `[4-4 · ${PSHORT[pid]} · 리뷰 #${r.idx}] 이유`)
+      reviewRows.push([PSHORT[pid], r.idx, j.score ?? '', j.agree ?? '', j.reason ?? ''])
+    }
   }
 
   const ratingRows: (string | number)[][] = []
-  for (const { round, label, id } of evalOrder(s)) {
+  for (const id of PERSONA_ORDER) {
     const per = personaById(id)
-    const src = SRC_KEY[per.kind]
     for (const d of DIMS) {
       for (const it of d.items) {
         const v = s.ratings[id]?.[it.id]
-        put(`rating.${round.key}.${src}.${it.id}`, v, `[${round.label} · ${SOURCE_SHORT[per.kind]} · ${d.title}] ${it.id}. ${it.q}`)
-        ratingRows.push([round.label, SOURCE_LABEL[per.kind], `퍼소나 ${label}`, per.type, `${d.no}. ${d.title}`, it.id, it.q, v ?? ''])
+        put(`rating.${id}.${it.id}`, v, `[7. 최종 평가 · ${PSHORT[id]}(${SOURCE_SHORT[per.kind]}) · ${d.title}] ${it.id}. ${it.q}`)
+        ratingRows.push([PSHORT[id], SOURCE_LABEL[per.kind], PNAME[id], per.type, `${d.no}. ${d.title}`, it.id, it.q, v ?? ''])
       }
-      put(`note.${round.key}.${src}.${d.id}_1`, s.dimNotes[id]?.[`${d.id}_1`], `[${round.label} · ${SOURCE_SHORT[per.kind]}] ${d.title} 추가 질문 1 답변`)
-      put(`note.${round.key}.${src}.${d.id}_2`, s.dimNotes[id]?.[`${d.id}_2`], `[${round.label} · ${SOURCE_SHORT[per.kind]}] ${d.title} 추가 질문 2 답변`)
+      put(`note.${id}.${d.id}_1`, s.dimNotes[id]?.[`${d.id}_1`], `[7 · ${PSHORT[id]}] ${d.title} 추가 질문 1 답변`)
+      put(`note.${id}.${d.id}_2`, s.dimNotes[id]?.[`${d.id}_2`], `[7 · ${PSHORT[id]}] ${d.title} 추가 질문 2 답변`)
     }
   }
-  putFields('final', FINAL_QS, s.final, '')
 
   return {
-    version: 2,
+    version: 3,
     evaluator: s.evaluator,
     keys: Object.keys(answers),
     answers,
     labels,
-    ratingHeader: ['라운드', '데이터 출처', '표시 이름', '퍼소나 유형', '평가 영역', '문항', '문항 내용', '점수'],
+    ratingHeader: ['표시 이름', '데이터 출처', '퍼소나 유형명', '퍼소나 역할', '평가 영역', '문항', '문항 내용', '점수'],
     ratingRows,
+    reviewHeader: ['퍼소나', '리뷰 번호', '점수(1~5)', '동의 여부', '이유'],
+    reviewRows,
   }
 }
+
+export { REVIEW_AGREE_OPTIONS, QUAL_IDS }
