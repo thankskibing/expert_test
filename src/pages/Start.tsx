@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useEval } from '../lib/evalStore'
+import { ITEM_COUNT } from '../lib/protocol'
 import { Button, Section, TextField } from '../components/ui'
 
 const IMG = 'https://m.themedicube.co.kr/web/product/extra/big/202604/184e32f2aa5e815b76989286ff650b0d.jpg'
@@ -20,7 +21,7 @@ const STEPS = [
   ['기본 프로필', '실무 배경과 생성형 AI 활용 경험을 간단히 여쭤봐요.'],
   ['퍼소나 비교', '같은 제품 사용자를 대상으로 만든 두 퍼소나를 세 쌍(Primary, Secondary 1, Secondary 2) 살펴봐요. 어떤 데이터로 만들었는지는 아직 알려드리지 않아요.'],
   ['제작 데이터 확인', '각 퍼소나의 근거 자료와 행동 변수를 확인한 뒤, 데이터 출처를 공개해요.'],
-  ['전문가 평가', '퍼소나 6개를 7개 영역 22개 문항으로 평가해요(1~5점).'],
+  ['전문가 평가', `퍼소나 6개를 7개 영역 ${ITEM_COUNT}개 문항으로 평가해요(1~5점).`],
   ['두 퍼소나 비교 평가', '두 방식의 강점과 한계, 실무 활용에 대한 의견을 여쭤봐요.'],
 ]
 
