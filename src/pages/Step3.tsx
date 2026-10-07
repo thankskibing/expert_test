@@ -35,7 +35,7 @@ export default function Step3() {
       </Section>
 
       <Section title="3-2. 토픽과 리뷰 집단(A/B/C)은 다른 분석이에요">
-        <Note label="핵심">{GROUP_DISCLAIMER} 위 4개 토픽은 리뷰 전체에서 주제를 찾은 것이고, 아래 A/B/C는 정보 탐색/구매 결정 · 루틴/효과 인식 · 기능 활용/제어라는 행동 변수를 기준으로 연구자가 구성한 분석용 집단이에요. 같은 리뷰라도 토픽은 하나, 집단은 중복으로 속할 수 있어요.</Note>
+        <Note label="핵심">{GROUP_DISCLAIMER} 위 4개 토픽은 리뷰 전체에서 주제를 찾은 것이고, 아래 A/B/C는 그 토픽 결과를 입력받은 AI가 정보 탐색/구매 결정 · 루틴/효과 인식 · 기능 활용/제어라는 행동 변수를 기준으로 구성한 분석용 집단이에요. 토픽은 '무엇에 대해 말하는지(내용)', 집단은 '어떻게 행동하는지(행동 패턴)'를 기준으로 나눈 거라 같은 리뷰라도 토픽은 하나, 집단은 중복으로 속할 수 있어요.</Note>
       </Section>
 
       <Section title="3-3. 리뷰 분석 집단(A/B/C) 구성 기준" lead={`단일 유형 분류 ${method.classification.singleTotal} · 복수 유형 분류 ${method.classification.multiTotal} · 하나 이상 근거가 확인된 데이터 ${method.classification.anyMatch}`}>

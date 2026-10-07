@@ -22,14 +22,14 @@ import { ITEM_COUNT } from './lib/protocol'
 export const NAV = [
   { to: '/', label: '시작', step: 0 },
   { to: '/profile', label: '기본 프로필', step: '' },
-  { to: '/step1', label: '1. 연구 개요·전체 프로세스', step: 1 },
-  { to: '/step2', label: '2. 수집·전처리 검증', step: 2 },
-  { to: '/step3', label: '3. 토픽·리뷰 집단 구성 검증', step: 3 },
-  { to: '/step4', label: '4. 리뷰 AI 분석·퍼소나 근거', step: 4 },
-  { to: '/step5', label: '5. 인터뷰·정성 퍼소나', step: 5 },
-  { to: '/step6', label: '6. 두 퍼소나 비교', step: 6 },
-  { to: '/step7', label: '7. 최종 퍼소나 품질 평가', step: 7 },
-  { to: '/step8', label: '8. 종합 평가·제출', step: 8 },
+  { to: '/step1', label: '연구 개요·전체 프로세스', step: 1 },
+  { to: '/step2', label: '수집·전처리 검증', step: 2 },
+  { to: '/step3', label: '토픽·리뷰 집단 구성 검증', step: 3 },
+  { to: '/step4', label: '리뷰 AI 분석·퍼소나 근거', step: 4 },
+  { to: '/step5', label: '인터뷰·정성 퍼소나', step: 5 },
+  { to: '/step6', label: '두 퍼소나 비교', step: 6 },
+  { to: '/step7', label: '최종 퍼소나 품질 평가', step: 7 },
+  { to: '/step8', label: '종합 평가·제출', step: 8 },
 ]
 export const REF = [
   { to: '/reviews', label: '리뷰 데이터' },

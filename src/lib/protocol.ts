@@ -55,7 +55,7 @@ export const PROFILE: { title: string; lead: string; fields: Field[] }[] = [
 ]
 
 /** A/B/C 리뷰 집단과 토픽모델링 설명에 함께 붙이는 고정 안내문. STEP 1·3에 그대로 쓰여요. */
-export const GROUP_DISCLAIMER = 'A/B/C 집단은 최종 퍼소나나 행동유형이 아니라, 생성형 AI가 유사한 사용자 경험을 묶어서 분석할 수 있도록 연구자가 구성한 분석용 리뷰 집단이에요.'
+export const GROUP_DISCLAIMER = 'A/B/C 집단은 최종 퍼소나나 행동유형이 아니라, LDA 토픽모델링 결과를 입력받은 생성형 AI가 유사한 사용자 경험을 묶어서 분석할 수 있도록 구성한 분석용 리뷰 집단이에요.'
 
 /** STEP 1. 연구 개요 및 전체 분석 프로세스 */
 export const STEP1_QS: Field[] = [
@@ -84,8 +84,8 @@ export const STEP3_QS: Field[] = [
 
 /** STEP 4-1. AI 분석 과정 설명에 대한 평가 */
 export const STEP4_PROCESS_QS: Field[] = [
-  ...likert('s4_q1', '리뷰 집단 전체 원문을 AI에 입력해 반복 행동을 분석하게 한 과정이 타당한 분석 방식이다.'),
-  ...likert('s4_q2', 'AI가 도출한 행동유형 후보를 연구자가 원문으로 재검토하는 절차가 AI의 임의 해석(환각)을 통제하는 데 충분하다.'),
+  ...likert('s4_q1', 'LDA 토픽모델링 결과를 생성형 AI에 입력해 리뷰 집단(A/B/C)과 행동 패턴을 구성하게 한 과정이 타당한 분석 방식이다.'),
+  ...likert('s4_q2', 'AI가 도출한 리뷰 집단과 행동유형 후보를 연구자가 원문으로 재검토·재분류하고, 그 결과를 다시 AI로 세분화하는 절차가 AI의 임의 해석(환각)을 통제하는 데 충분하다.'),
   ...likert('s4_q3', '이 분석 과정을 거쳐 나온 결과를 실제 업무에서도 신뢰하고 활용할 수 있을 것 같다.'),
   { id: 's4_reflect', q: '직접 이런 방식으로 AI를 활용해 사용자 데이터를 분석한다면, 어떤 점을 더 보완하고 싶으신가요?', type: 'textarea' },
 ]
