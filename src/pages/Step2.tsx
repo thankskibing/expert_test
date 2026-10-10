@@ -63,7 +63,7 @@ export default function Step2() {
         <div className="max-w-3xl"><FieldList fields={STEP2_QS} get={(id) => state.step2[id] ?? ''} set={setStep2} /></div>
       </section>
 
-      <StepNav prev="/step1" next="/step3" nextLabel="3단계: 토픽·리뷰 집단 구성 검증으로" />
+      <StepNav prev="/step1" next="/step3" nextLabel="3단계: 토픽 모델링 검증으로" />
     </div>
   )
 }

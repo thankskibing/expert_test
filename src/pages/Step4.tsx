@@ -7,7 +7,7 @@ import { sampleReviewIdx } from '../lib/payload'
 import { FieldList } from '../components/form'
 import { FullPersonaCard } from '../components/PersonaCard'
 import { StepNav } from '../components/flow'
-import { Highlighted, Note, PageHead, Section, Segmented } from '../components/ui'
+import { Badge, Highlighted, Note, PageHead, Section, Segmented } from '../components/ui'
 
 const CATCOLOR: Record<Cat, string> = { D: '#3182F6', Q: '#8B95A1', N: '#F04452', X: '#D1D6DB', O: '#E5E8EB', R: '#FF9F2E' }
 
@@ -91,6 +91,34 @@ export default function Step4() {
               ))}
             </ol>
           </Section>
+
+          <Section title="리뷰 분석 집단(A/B/C) 구성 및 행동 변수" lead={`단일 유형 분류 ${method.classification.singleTotal} · 복수 유형 분류 ${method.classification.multiTotal} · 하나 이상 근거가 확인된 데이터 ${method.classification.anyMatch}`}>
+            <p className="max-w-prose2 text-b2 text-g700">LDA 토픽모델링 결과를 입력받은 AI가 리뷰 전반에서 반복되는 행동 패턴을 찾아 '정보 탐색/구매 결정 · 루틴/효과 인식 · 기능 활용/제어' 세 영역의 행동 변수로 구성했고, 이 행동 변수를 기준으로 리뷰를 A/B/C 세 집단으로 분류했어요. 이렇게 구성된 각 집단의 행동 변수가 바로 아래 4-2에서 공개할 퍼소나의 핵심 행동 특성이 돼요.</p>
+            <div className="mt-4 grid gap-4 lg:grid-cols-3 lg:items-stretch">
+              {DATA_IDS.map((p) => {
+                const g = study.dataGroups[p]
+                const narr = method.groupNarratives[p]
+                return (
+                  <div key={p} className="flex flex-col rounded-2xl border border-g200 p-5">
+                    <p className="mb-1 flex items-center gap-2 text-cap text-g500"><span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[p] }} />{g.group} · 1차 분류 {g.count}건({g.share}) · 핵심 리뷰 {core[p].length}건 선정</p>
+                    <h3 className="text-h3">{PNAME[p]}</h3>
+                    <p className="mt-1 text-b3 text-g600">포함 키워드({study.stats.keywordRules[p]}): {study.stats.keywords[p].join(', ')}</p>
+                    <ul className="mt-3 flex flex-wrap gap-2 text-b3 text-g700">
+                      {narr.flowSteps.map((s, i) => <li key={s} className="flex items-center gap-1.5"><span className="rounded-s bg-g50 px-2 py-1">{s}</span>{i < narr.flowSteps.length - 1 && <span className="text-g400">→</span>}</li>)}
+                    </ul>
+                    <p className="mt-3 rounded-xl bg-g50 px-4 py-3 text-b2 text-g900">{g.summary}</p>
+                    <p className="mt-2 text-b3 text-g600">이 집단에 필요한 경험: {narr.need}</p>
+                    <p className="mt-3 flex flex-1 flex-wrap items-start gap-1.5 text-b3 text-g700">
+                      <span className="rounded-s px-2 py-1 font-semibold text-white" style={{ background: PCOLOR[p] }}>행동 변수: {narr.area}</span>
+                      {narr.vars.map((v) => <Badge key={v}>{v}</Badge>)}
+                    </p>
+                  </div>
+                )
+              })}
+            </div>
+            <p className="mt-4 max-w-prose2 text-b3 text-g600">집단 분류는 키워드로 1차 분류한 뒤, 사람이 원문을 다시 읽고 핵심 행동 변수가 실제로 드러나는지 맥락으로 판단했어요. 한 리뷰가 여러 집단에 중복으로 들어갈 수 있어요.</p>
+          </Section>
+
           <section className="mt-8 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
             <h2 className="pt-4 text-t1">4-1단계 평가</h2>
             <div className="max-w-3xl"><FieldList fields={STEP4_PROCESS_QS} get={(id) => state.step4[id] ?? ''} set={setStep4} /></div>

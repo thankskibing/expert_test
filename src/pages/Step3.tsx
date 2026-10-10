@@ -1,4 +1,4 @@
-import { DATA_IDS, PCOLOR, PNAME, core, method, study } from '../lib/data'
+import { method } from '../lib/data'
 import { STEP3_QS } from '../lib/protocol'
 import { useEval } from '../lib/evalStore'
 import { FieldList } from '../components/form'
@@ -23,14 +23,13 @@ function TopicCard({ t }: { t: (typeof method.topics)[number] }) {
 
 export default function Step3() {
   const { state, setStep3 } = useEval()
-  const S = study.stats
   return (
     <div>
-      <PageHead step={3} title="토픽 모델링 및 리뷰 분석 집단 구성 검증">
-        리뷰 3,601건을 두 가지 다른 방식으로 분석했어요. 하나는 전체 리뷰에서 주제(토픽)를 찾는 LDA 토픽모델링이고, 다른 하나는 행동 변수를 기준으로 분석용 집단(A/B/C)을 구성하는 작업이에요. 이 둘은 서로 다른 분석이에요.
+      <PageHead step={3} title="토픽 모델링 검증">
+        리뷰 3,601건 전체에서 LDA 토픽모델링으로 주제(토픽)를 찾았어요. 아래 결과가 리뷰 내용을 잘 설명하는지 확인해 주세요.
       </PageHead>
 
-      <Section title="3-1. LDA 토픽모델링 결과" lead={method.coherenceNote}>
+      <Section title="LDA 토픽모델링 결과" lead={method.coherenceNote}>
         <details className="group mb-5 max-w-prose2">
           <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-b2 font-semibold text-g700 hover:text-g900">
             토픽 LDA 모델이란? <span className="transition-transform duration-200 group-open:rotate-180" aria-hidden>⌄</span>
@@ -44,33 +43,6 @@ export default function Step3() {
         <div className="grid grid-rows-[auto_auto_auto_auto] gap-x-4 gap-y-4 sm:grid-cols-2">
           {method.topics.map((t) => <TopicCard key={t.no} t={t} />)}
         </div>
-      </Section>
-
-      <Section title="3-2. 리뷰 분석 집단(A/B/C) 구성 기준" lead={`단일 유형 분류 ${method.classification.singleTotal} · 복수 유형 분류 ${method.classification.multiTotal} · 하나 이상 근거가 확인된 데이터 ${method.classification.anyMatch}`}>
-        <p className="max-w-prose2 text-b2 text-g700">LDA 토픽모델링 결과를 입력받은 생성형 AI가 리뷰 전반에서 반복되는 행동 패턴을 찾아 '정보 탐색/구매 결정 · 루틴/효과 인식 · 기능 활용/제어' 세 영역의 행동 변수로 구성했고, 이 행동 변수를 기준으로 리뷰를 A/B/C 세 집단으로 분류했어요. 즉 A/B/C는 각각 하나의 행동 변수 영역을 대표하는 집단이고, 그대로 각 퍼소나의 핵심 행동 특성이 돼요.</p>
-        <div className="mt-4 space-y-4">
-          {DATA_IDS.map((p) => {
-            const g = study.dataGroups[p]
-            const narr = method.groupNarratives[p]
-            return (
-              <div key={p} className="rounded-2xl border border-g200 p-5">
-                <p className="mb-1 flex items-center gap-2 text-cap text-g500"><span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[p] }} />{g.group} · 1차 분류 {g.count}건({g.share}) · 핵심 리뷰 {core[p].length}건 선정</p>
-                <h3 className="text-h3">{PNAME[p]}</h3>
-                <p className="mt-1 text-b3 text-g600">포함 키워드({S.keywordRules[p]}): {S.keywords[p].join(', ')}</p>
-                <ul className="mt-3 flex flex-wrap gap-2 text-b3 text-g700">
-                  {narr.flowSteps.map((s, i) => <li key={s} className="flex items-center gap-1.5"><span className="rounded-s bg-g50 px-2 py-1">{s}</span>{i < narr.flowSteps.length - 1 && <span className="text-g400">→</span>}</li>)}
-                </ul>
-                <p className="mt-3 rounded-xl bg-g50 px-4 py-3 text-b2 text-g900">{g.summary}</p>
-                <p className="mt-2 text-b3 text-g600">이 집단에 필요한 경험: {narr.need}</p>
-                <p className="mt-3 flex flex-wrap items-center gap-1.5 text-b3 text-g700">
-                  <span className="rounded-s px-2 py-1 font-semibold text-white" style={{ background: PCOLOR[p] }}>행동 변수: {narr.area}</span>
-                  {narr.vars.map((v) => <Badge key={v}>{v}</Badge>)}
-                </p>
-              </div>
-            )
-          })}
-        </div>
-        <p className="mt-4 max-w-prose2 text-b3 text-g600">집단 분류는 키워드로 1차 분류한 뒤, 사람이 원문을 다시 읽고 핵심 행동 변수가 실제로 드러나는지 맥락으로 판단했어요. 한 리뷰가 여러 집단에 중복으로 들어갈 수 있어요.</p>
       </Section>
 
       <section className="mt-8 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">

@@ -102,6 +102,46 @@ export function FullPersonaCard({ id, header }: { id: string; header?: ReactNode
 }
 
 /**
+ * Side-by-side comparison of two fully revealed personas (own id/colour, source shown). Like PersonaPair,
+ * every section (Bio, Motivation, Goal, …) is one CSS grid row shared by both, so the shorter side
+ * stretches to match the taller one and the two cards line up section by section. Below xl it stacks.
+ */
+export function FullPersonaPair({ aId, bId }: { aId: string; bId: string }) {
+  const A = personaById(aId)
+  const B = personaById(bId)
+  const ca = PCOLOR[aId]
+  const cb = PCOLOR[bId]
+  return (
+    <>
+      <div className="hidden overflow-hidden rounded-xl border border-g200 bg-white xl:grid xl:grid-cols-2 xl:items-stretch xl:[&>*:nth-child(2n)]:border-l xl:[&>*:nth-child(2n)]:border-g200">
+        <Header p={A} label={aId} blind={false} c={ca} />
+        <Header p={B} label={bId} blind={false} c={cb} />
+        <ProfileSection id={aId} p={A} c={ca} />
+        <ProfileSection id={bId} p={B} c={cb} />
+        <Block title="Bio"><p>{A.bio}</p></Block>
+        <Block title="Bio"><p>{B.bio}</p></Block>
+        <Block title="Motivation"><Bullets items={A.motivation} /></Block>
+        <Block title="Motivation"><Bullets items={B.motivation} /></Block>
+        <Block title="Goal"><dl className="space-y-2">{A.goals.map((g) => <div key={g.k}><dt className="font-semibold">{g.k}</dt><dd>{g.v}</dd></div>)}</dl></Block>
+        <Block title="Goal"><dl className="space-y-2">{B.goals.map((g) => <div key={g.k}><dt className="font-semibold">{g.k}</dt><dd>{g.v}</dd></div>)}</dl></Block>
+        <Block title="Pain points"><Bullets items={A.pains} /></Block>
+        <Block title="Pain points"><Bullets items={B.pains} /></Block>
+        <Block title="Needs"><ol className="space-y-2">{A.needs.map((n, i) => <li key={n.title}><p className="font-semibold">{i + 1}. {n.title}</p><p className="text-g700">{n.detail}</p></li>)}</ol></Block>
+        <Block title="Needs"><ol className="space-y-2">{B.needs.map((n, i) => <li key={n.title}><p className="font-semibold">{i + 1}. {n.title}</p><p className="text-g700">{n.detail}</p></li>)}</ol></Block>
+        <Block title="Behavior">{A.behavior.map((b) => <Slider key={b.name} {...b} color={ca} />)}</Block>
+        <Block title="Behavior">{B.behavior.map((b) => <Slider key={b.name} {...b} color={cb} />)}</Block>
+        {A.flag && <p className="mx-5 mb-4 rounded-xl border border-[#FFE58F] bg-[#FFFBE6] px-3 py-2 text-b3">{A.flag}</p>}
+        {B.flag && <p className="mx-5 mb-4 rounded-xl border border-[#FFE58F] bg-[#FFFBE6] px-3 py-2 text-b3">{B.flag}</p>}
+      </div>
+      <div className="grid gap-4 xl:hidden">
+        <FullPersonaCard id={aId} />
+        <FullPersonaCard id={bId} />
+      </div>
+    </>
+  )
+}
+
+/**
  * Side-by-side X/Y comparison. At the xl breakpoint and up, every section (Bio, Motivation, Goal, …)
  * is laid out as one CSS grid row shared by both personas, so the shorter side stretches to match the
  * taller one and the two cards line up section by section. Below xl it falls back to two stacked cards.
