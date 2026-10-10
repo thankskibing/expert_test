@@ -2,7 +2,7 @@ import { DATA_IDS, PAIR, core, type DataPid } from '../lib/data'
 import { STEP6_QS } from '../lib/protocol'
 import { useEval } from '../lib/evalStore'
 import { FieldList } from '../components/form'
-import { FullPersonaCard } from '../components/PersonaCard'
+import { FullPersonaPair } from '../components/PersonaCard'
 import { StepNav } from '../components/flow'
 import { PageHead, PersonaPill } from '../components/ui'
 
@@ -41,11 +41,8 @@ export default function Step6() {
           return (
             <div key={p} className="border-t border-g200 pt-6 first:border-0 first:pt-0">
               <div className="mb-3 flex flex-wrap items-center gap-2"><PersonaPill id={p} /><span className="text-g400">↔</span><PersonaPill id={q} /></div>
-              <div className="grid gap-4 xl:grid-cols-2">
-                <FullPersonaCard id={p} />
-                <FullPersonaCard id={q} />
-              </div>
-              <dl className="mt-4 grid gap-3 text-b2 md:grid-cols-2">
+              <FullPersonaPair aId={p} bId={q} />
+              <dl className="mt-4 grid gap-3 text-b2 md:grid-cols-2 md:items-stretch">
                 <div className="rounded-xl bg-g50 p-4"><dt className="mb-1 font-bold text-g900">공통점</dt><dd className="text-g800">{PAIRS[p].same}</dd></div>
                 <div className="rounded-xl bg-g50 p-4"><dt className="mb-1 font-bold text-g900">차이점</dt><dd className="text-g800">{PAIRS[p].diff}</dd></div>
                 <div className="px-1"><dt className="mb-1 text-b3 font-semibold text-g600">리뷰에서 본 {p}</dt><dd className="text-b3 text-g600">{PAIRS[p].data} (핵심 리뷰 {core[p].length}건)</dd></div>
