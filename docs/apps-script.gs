@@ -8,10 +8,11 @@
  *
  * 만들어지는 시트. 열 이름은 내부 키가 아니라 실제 질문 문구예요.
  * - 0 기본 프로필
- * - 1 연구 개요 / 2 수집전처리 / 3 토픽집단구성 / 4 AI분석 / 4 재분류 / 5 발화분석 / 5 정성퍼소나 / 6 퍼소나비교 / 8 종합평가
+ * - 1 연구 개요 / 2 수집전처리 / 3 토픽집단구성 / 4 AI분석 / 5 발화분석 / 5 정성퍼소나 / 6 퍼소나비교 / 8 종합평가
  * - 7 최종 품질 평가: 문항 1개 = 1행(긴 형식)
  * - 7 최종 품질 평가(메모): 영역별 추가 질문 답변만
- * - 4-4 리뷰별 판정: 리뷰 1건 평가 = 1행
+ * - 4-3 리뷰별 판정: 리뷰 1건 평가 = 1행
+ * - 5-3 참여자별 판정: 참여자 1명 평가 = 1행
  * - 응답(전체): 제출 1건 = 1행짜리 백업용 전체 보기. 평소엔 안 보셔도 돼요.
  * - 오류 로그: 저장 중 오류가 나면 여기 남아요.
  */
@@ -24,7 +25,6 @@ var SECTIONS = [
   { name: '2 수집전처리', test: function (k) { return k.indexOf('step2.') === 0 } },
   { name: '3 토픽집단구성', test: function (k) { return k.indexOf('step3.') === 0 } },
   { name: '4 AI분석', test: function (k) { return k.indexOf('step4.') === 0 } },
-  { name: '4 재분류', test: function (k) { return k.indexOf('step4reclass.') === 0 } },
   { name: '5 발화분석', test: function (k) { return k.indexOf('step5pattern.') === 0 } },
   { name: '5 정성퍼소나', test: function (k) { return k.indexOf('step5qual.') === 0 } },
   { name: '6 퍼소나비교', test: function (k) { return k.indexOf('step6.') === 0 } },
@@ -65,11 +65,17 @@ function doPost(e) {
     var rows = (data.ratingRows || []).map(function (r) { return [received, data.evaluator].concat(r) })
     if (rows.length) long.getRange(long.getLastRow() + 1, 1, rows.length, rows[0].length).setValues(rows)
 
-    // 2b) 4-4 리뷰별 판정: 리뷰 1건 평가 = 1행
+    // 2b) 4-3 리뷰별 판정: 리뷰 1건 평가 = 1행
     var reviewHeader = ['제출 시각', '평가자'].concat(data.reviewHeader || [])
-    var reviewSh = sheet_(ss, '4-4 리뷰별 판정', reviewHeader)
+    var reviewSh = sheet_(ss, '4-3 리뷰별 판정', reviewHeader)
     var reviewRows = (data.reviewRows || []).map(function (r) { return [received, data.evaluator].concat(r) })
     if (reviewRows.length) reviewSh.getRange(reviewSh.getLastRow() + 1, 1, reviewRows.length, reviewRows[0].length).setValues(reviewRows)
+
+    // 2c) 5-3 참여자별 판정: 참여자 1명 평가 = 1행
+    var interviewHeader = ['제출 시각', '평가자'].concat(data.interviewHeader || [])
+    var interviewSh = sheet_(ss, '5-3 참여자별 판정', interviewHeader)
+    var interviewRows = (data.interviewRows || []).map(function (r) { return [received, data.evaluator].concat(r) })
+    if (interviewRows.length) interviewSh.getRange(interviewSh.getLastRow() + 1, 1, interviewRows.length, interviewRows[0].length).setValues(interviewRows)
 
     // 3) 응답(전체): 백업용 전체 보기 (열 이름도 질문 문구)
     var wide = sheet_(ss, '응답(전체)', ['제출 시각'])

@@ -1,5 +1,5 @@
 import { DATA_IDS, PNAME, PSHORT, QUAL_IDS, core, personaById, study } from './data'
-import { DIMS, PROFILE, REVIEW_AGREE_OPTIONS, STEP1_QS, STEP2_QS, STEP3_QS, STEP4_PROCESS_QS, STEP4_RECLASS_QS, STEP5_PATTERN_QS, STEP5_QUAL_QS, STEP6_QS, STEP8_CHECKLIST, STEP8_QS, type Field } from './protocol'
+import { DIMS, PROFILE, REVIEW_AGREE_OPTIONS, STEP1_QS, STEP2_QS, STEP3_QS, STEP4_PROCESS_QS, STEP5_PATTERN_QS, STEP5_QUAL_QS, STEP6_QS, STEP8_CHECKLIST, STEP8_QS, type Field } from './protocol'
 import { PERSONA_ORDER, type EvalState } from './evalStore'
 
 export const SOURCE_LABEL = { data: '온라인 사용자 리뷰 기반', qual: '정성 인터뷰 기반' } as const
@@ -34,7 +34,6 @@ export function buildPayload(s: EvalState) {
   putFields('step2', STEP2_QS, s.step2, '[2. 수집·전처리] ')
   putFields('step3', STEP3_QS, s.step3, '[3. 토픽·집단 구성] ')
   putFields('step4', STEP4_PROCESS_QS, s.step4, '[4-1. AI 분석 과정] ')
-  putFields('step4reclass', STEP4_RECLASS_QS, s.step4reclass, '[4-3. 재분류 결과] ')
   putFields('step5pattern', STEP5_PATTERN_QS, s.step5pattern, '[5-1. 발화→분석→재구성] ')
   putFields('step5qual', STEP5_QUAL_QS, s.step5qual, '[5-2. 정성 퍼소나 검증] ')
   putFields('step6', STEP6_QS, s.step6, '[6. 리뷰-인터뷰 퍼소나 비교] ')
@@ -47,10 +46,23 @@ export function buildPayload(s: EvalState) {
       const key = `${pid}_${r.idx}`
       const j = s.reviewJudge[key]
       if (!j || (j.score === undefined && !j.agree && !j.reason)) continue
-      put(`review.${key}.score`, j.score, `[4-4 · ${PSHORT[pid]} · 리뷰 #${r.idx}] 행동을 얼마나 잘 보여주는지(1~5)`)
-      put(`review.${key}.agree`, j.agree, `[4-4 · ${PSHORT[pid]} · 리뷰 #${r.idx}] 연구자 분류에 대한 동의 여부`)
-      put(`review.${key}.reason`, j.reason, `[4-4 · ${PSHORT[pid]} · 리뷰 #${r.idx}] 이유`)
+      put(`review.${key}.score`, j.score, `[4-3 · ${PSHORT[pid]} · 리뷰 #${r.idx}] 행동을 얼마나 잘 보여주는지(1~5)`)
+      put(`review.${key}.agree`, j.agree, `[4-3 · ${PSHORT[pid]} · 리뷰 #${r.idx}] 연구자 분류에 대한 동의 여부`)
+      put(`review.${key}.reason`, j.reason, `[4-3 · ${PSHORT[pid]} · 리뷰 #${r.idx}] 이유`)
       reviewRows.push([PSHORT[pid], r.idx, j.score ?? '', j.agree ?? '', j.reason ?? ''])
+    }
+  }
+
+  const interviewRows: (string | number)[][] = []
+  for (const pid of QUAL_IDS) {
+    for (const uid of study.qualGroups[pid].members) {
+      const key = `${pid}_${uid}`
+      const j = s.interviewJudge[key]
+      if (!j || (j.score === undefined && !j.agree && !j.reason)) continue
+      put(`interview.${key}.score`, j.score, `[5-3 · ${PSHORT[pid]} · ${uid}] 행동을 얼마나 잘 보여주는지(1~5)`)
+      put(`interview.${key}.agree`, j.agree, `[5-3 · ${PSHORT[pid]} · ${uid}] 연구자 그룹 분류에 대한 동의 여부`)
+      put(`interview.${key}.reason`, j.reason, `[5-3 · ${PSHORT[pid]} · ${uid}] 이유`)
+      interviewRows.push([PSHORT[pid], uid, j.score ?? '', j.agree ?? '', j.reason ?? ''])
     }
   }
 
@@ -78,6 +90,8 @@ export function buildPayload(s: EvalState) {
     ratingRows,
     reviewHeader: ['퍼소나', '리뷰 번호', '점수(1~5)', '동의 여부', '이유'],
     reviewRows,
+    interviewHeader: ['퍼소나', '참여자', '점수(1~5)', '동의 여부', '이유'],
+    interviewRows,
   }
 }
 
