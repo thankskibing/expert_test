@@ -26,7 +26,7 @@ export default function Step1() {
   return (
     <div>
       <PageHead step={1} title="연구 개요 및 전체 분석 프로세스">
-        이 연구는 메디큐브 부스터 프로를 대상으로 온라인 사용자 리뷰와 사용자 심층 인터뷰, 두 가지 데이터로 각각 생성형 AI를 활용해 퍼소나를 만들고 비교해요. 이번 평가에서는 완성된 퍼소나뿐 아니라, 그 퍼소나를 만든 연구 과정 전체가 객관적인지를 단계별로 살펴봐 주세요.
+        {method.aiProcess.purpose} 이번 평가에서는 완성된 퍼소나뿐 아니라, 그 퍼소나를 만든 연구 과정 전체가 객관적인지를 단계별로 살펴봐 주세요.
       </PageHead>
 
       <Section title="전체 절차">
@@ -40,7 +40,7 @@ export default function Step1() {
         </ol>
       </Section>
 
-      <Section title="두 트랙은 AI를 같은 방식으로 쓰지 않아요" lead="가장 먼저 꼭 알아 두셔야 할 점이에요. 리뷰 트랙과 인터뷰 트랙은 AI가 데이터를 보는 순서 자체가 달라요.">
+      <Section title="두 트랙은 AI를 쓰는 순서가 달라요" lead="리뷰 트랙과 인터뷰 트랙 모두 생성형 AI와 연구자가 함께 분석해요. 다만 AI가 데이터를 보는 시점과 순서가 서로 달라요.">
         <div className="grid gap-4 md:grid-cols-2">
           <TrackCard color="#2F54EB" label={method.aiProcess.review.label} steps={method.aiProcess.review.steps} />
           <TrackCard color="#D46B08" label={method.aiProcess.interview.label} steps={method.aiProcess.interview.steps} />
