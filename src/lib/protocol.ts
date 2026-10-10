@@ -52,6 +52,8 @@ export const PROFILE: { title: string; lead: string; fields: Field[] }[] = [
       { id: 'px_ai', q: '생성형 AI를 활용해 퍼소나를 제작해본 경험이 있으신가요?', type: 'radio', options: ['있음', '없음'] },
       { id: 'px_ai_when', q: '어떤 상황에서 AI를 활용해 제작하셨나요?', hint: '경험이 없다면 비워두셔도 돼요.', type: 'textarea' },
       { id: 'px_how', q: '경험이 있다면, 어떤 방식으로 AI를 활용하셨나요?', type: 'checks', options: ['인터뷰 내용 요약', '사용자 데이터 분석', '퍼소나 초안 생성', '프로필 구체화'], other: true, showIf: { id: 'px_ai', value: '있음' } },
+      { id: 'px_source', q: '퍼소나를 제작하실 때 주로 어떤 자료를 바탕으로 만드셨나요?', type: 'checks', options: ['사용자 인터뷰 기반', '데스크 리서치(2차 자료) 기반', '설문조사 기반', '둘 이상 함께 활용'], other: true },
+      { id: 'px_source_diff', q: '그 방식으로 퍼소나를 만들 때 겪었던 어려움은 무엇이었나요?', type: 'textarea' },
     ],
   },
 ]
@@ -87,7 +89,7 @@ export const STEP3_QS: Field[] = [
 /** STEP 4-1. AI 분석 과정 설명에 대한 평가 */
 export const STEP4_PROCESS_QS: Field[] = [
   ...likert('s4_q1', 'LDA 토픽모델링 결과를 생성형 AI에 입력해 리뷰 집단(A/B/C)과 행동 패턴을 구성하게 한 과정이 타당한 분석 방식이다.'),
-  ...likert('s4_q2', 'AI가 도출한 리뷰 집단과 행동유형 후보를 연구자가 원문으로 재검토·재분류하고, 그 결과를 다시 AI로 세분화하는 절차가 AI의 임의 해석(환각)을 통제하는 데 충분하다.'),
+  ...likert('s4_q2', 'AI가 도출한 리뷰 집단과 행동유형 후보를 연구자가 원문 일부로 검토하고 AI가 최종 분류하는 절차가 AI의 임의 해석(환각)을 통제하는 데 충분하다.'),
   ...likert('s4_q3', '이 분석 과정을 거쳐 나온 결과를 실제 업무에서도 신뢰하고 활용할 수 있을 것 같다.'),
   { id: 's4_reflect', q: '직접 이런 방식으로 AI를 활용해 사용자 데이터를 분석한다면, 어떤 점을 더 보완하고 싶으신가요?', type: 'textarea' },
 ]

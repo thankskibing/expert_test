@@ -57,7 +57,7 @@ export interface Method {
   classification: { singleTotal: string; multiTotal: string; anyMatch: string; dupTotals: string; areas: { area: string; vars: string[] }[] }
   groupNarratives: Record<DataPid, { flowSteps: string[]; need: string }>
   interview: { periodNote: string; selectionReason: string; genderAgeReason: string; designTable: { k: string; v: string }[] }
-  aiProcess: { review: { label: string; steps: string[] }; interview: { label: string; steps: string[] }; disclaimer: string }
+  aiProcess: { review: { label: string; steps: string[] }; interview: { label: string; steps: string[] }; disclaimer: string; purpose: string }
   prompting: { openai: { k: string; v: string }[]; cooper: { no: number; step: string; desc: string }[] }
 }
 export const method = methodJson as unknown as Method
