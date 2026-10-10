@@ -1,9 +1,9 @@
 import { method } from '../lib/data'
-import { GROUP_DISCLAIMER, STEP1_QS } from '../lib/protocol'
+import { STEP1_QS } from '../lib/protocol'
 import { useEval } from '../lib/evalStore'
 import { FieldList } from '../components/form'
 import { StepNav } from '../components/flow'
-import { Note, PageHead, Section } from '../components/ui'
+import { PageHead, Section } from '../components/ui'
 
 function TrackCard({ color, label, steps }: { color: string; label: string; steps: string[] }) {
   return (
@@ -31,25 +31,20 @@ export default function Step1() {
 
       <Section title="전체 절차">
         <ol className="flex flex-wrap gap-2 text-b3 text-g700">
-          {['리뷰 수집·전처리', '토픽 분석·리뷰 집단 구성', '리뷰 기반 AI 분석·퍼소나', '인터뷰·정성 퍼소나', '두 퍼소나 비교', '전문가 평가'].map((s, i) => (
+          {['리뷰 수집·전처리', '토픽 분석', '리뷰 기반 AI 분석·퍼소나', '정성 인터뷰 진행', '인터뷰 1차 정리', '인터뷰 기반 AI 분석·퍼소나', '두 퍼소나 비교', '전문가 평가'].map((s, i, arr) => (
             <li key={s} className="flex items-center gap-2">
               <span className="rounded-s bg-g50 px-2.5 py-1.5">{i + 1}. {s}</span>
-              {i < 5 && <span className="text-g400">→</span>}
+              {i < arr.length - 1 && <span className="text-g400">→</span>}
             </li>
           ))}
         </ol>
       </Section>
 
-      <Section title="두 트랙은 AI를 쓰는 순서가 달라요" lead="리뷰 트랙과 인터뷰 트랙 모두 생성형 AI와 연구자가 함께 분석해요. 다만 AI가 데이터를 보는 시점과 순서가 서로 달라요.">
+      <Section title="두 트랙은 AI를 쓰는 순서가 달라요" lead="리뷰 트랙과 인터뷰 트랙 모두 생성형 AI와 연구자가 함께 분석해요.">
         <div className="grid gap-4 md:grid-cols-2">
           <TrackCard color="#2F54EB" label={method.aiProcess.review.label} steps={method.aiProcess.review.steps} />
           <TrackCard color="#D46B08" label={method.aiProcess.interview.label} steps={method.aiProcess.interview.steps} />
         </div>
-        <div className="mt-4"><Note label="핵심">{method.aiProcess.disclaimer}</Note></div>
-      </Section>
-
-      <Section title="A/B/C 리뷰 집단에 대해">
-        <Note label="안내">{GROUP_DISCLAIMER}</Note>
       </Section>
 
       <section className="mt-8 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
