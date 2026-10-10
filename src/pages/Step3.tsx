@@ -1,18 +1,20 @@
 import { DATA_IDS, PCOLOR, PNAME, core, method, study } from '../lib/data'
-import { GROUP_DISCLAIMER, STEP3_QS } from '../lib/protocol'
+import { STEP3_QS } from '../lib/protocol'
 import { useEval } from '../lib/evalStore'
 import { FieldList } from '../components/form'
 import { StepNav } from '../components/flow'
-import { Badge, Note, PageHead, Section } from '../components/ui'
+import { Badge, PageHead, Section } from '../components/ui'
 
 function TopicCard({ t }: { t: (typeof method.topics)[number] }) {
   return (
-    <div className="rounded-2xl border border-g200 p-5">
-      <p className="text-cap text-g500">Topic {t.no} · Proportion {(t.proportion * 100).toFixed(1)}% · Coherence {t.coherence.toFixed(2)}</p>
-      <h3 className="mt-1 text-h3">{t.name}</h3>
-      <p className="mt-2 flex flex-wrap gap-1.5">{t.keywords.map((k) => <Badge key={k}>{k}</Badge>)}</p>
+    <div className="grid grid-rows-subgrid row-span-4 rounded-2xl border border-g200 p-5">
+      <div>
+        <p className="text-cap text-g500">Topic {t.no} · Proportion {(t.proportion * 100).toFixed(1)}% · Coherence {t.coherence.toFixed(2)}</p>
+        <h3 className="mt-1 text-h3">{t.name}</h3>
+      </div>
+      <p className="mt-2 flex flex-wrap content-start gap-1.5">{t.keywords.map((k) => <Badge key={k}>{k}</Badge>)}</p>
       <p className="mt-3 text-b2 text-g700">{t.characteristic}</p>
-      <ul className="mt-3 space-y-2">
+      <ul className="mt-3 space-y-2 content-start">
         {t.comments.map((c) => <li key={c} className="rounded-xl bg-g50 px-3 py-2 text-b3 text-g700">“{c}”</li>)}
       </ul>
     </div>
@@ -29,17 +31,24 @@ export default function Step3() {
       </PageHead>
 
       <Section title="3-1. LDA 토픽모델링 결과" lead={method.coherenceNote}>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <details className="group mb-5 max-w-prose2">
+          <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-b2 font-semibold text-g700 hover:text-g900">
+            토픽 LDA 모델이란? <span className="transition-transform duration-200 group-open:rotate-180" aria-hidden>⌄</span>
+          </summary>
+          <div className="mt-3 space-y-2.5 rounded-xl bg-g50 px-4 py-3 text-b2 text-g800">
+            <p>LDA(토픽모델링)는 사람이 미리 주제를 정해두지 않아도, 글 속에서 어떤 단어들이 자주 함께 쓰이는지를 보고 숨어 있는 주제(토픽)를 찾아내는 통계 기법이에요.</p>
+            <p>비유하면 스무디예요. 완성된 스무디(리뷰)에서는 맛(단어)만 보이고 딸기·바나나가 각각 얼마나 들어갔는지(토픽 비중)는 보이지 않죠. LDA는 그 맛을 거꾸로 분석해서 "이 리뷰는 토픽1이 60%, 토픽2가 40%일 것"이라고 추정하는 방법이에요.</p>
+            <p>그 결과로 ① 리뷰 하나하나가 어떤 토픽을 얼마나 섞어 쓰는지, ② 각 토픽에 어떤 단어가 몰려 있는지 두 가지를 얻을 수 있어요. 토픽의 이름(예: 입문/효과/기능/루틴)은 알고리즘이 정해주지 않아서, 연구자가 키워드를 보고 직접 붙였어요.</p>
+          </div>
+        </details>
+        <div className="grid grid-rows-[auto_auto_auto_auto] gap-x-4 gap-y-4 sm:grid-cols-2">
           {method.topics.map((t) => <TopicCard key={t.no} t={t} />)}
         </div>
       </Section>
 
-      <Section title="3-2. 토픽과 리뷰 집단(A/B/C)은 다른 분석이에요">
-        <Note label="핵심">{GROUP_DISCLAIMER} 위 4개 토픽은 리뷰 전체에서 주제를 찾은 것이고, 아래 A/B/C는 그 토픽 결과를 입력받은 AI가 정보 탐색/구매 결정 · 루틴/효과 인식 · 기능 활용/제어라는 행동 변수를 기준으로 구성한 분석용 집단이에요. 토픽은 '무엇에 대해 말하는지(내용)', 집단은 '어떻게 행동하는지(행동 패턴)'를 기준으로 나눈 거라 같은 리뷰라도 토픽은 하나, 집단은 중복으로 속할 수 있어요.</Note>
-      </Section>
-
-      <Section title="3-3. 리뷰 분석 집단(A/B/C) 구성 기준" lead={`단일 유형 분류 ${method.classification.singleTotal} · 복수 유형 분류 ${method.classification.multiTotal} · 하나 이상 근거가 확인된 데이터 ${method.classification.anyMatch}`}>
-        <div className="space-y-4">
+      <Section title="3-2. 리뷰 분석 집단(A/B/C) 구성 기준" lead={`단일 유형 분류 ${method.classification.singleTotal} · 복수 유형 분류 ${method.classification.multiTotal} · 하나 이상 근거가 확인된 데이터 ${method.classification.anyMatch}`}>
+        <p className="max-w-prose2 text-b2 text-g700">LDA 토픽모델링 결과를 입력받은 생성형 AI가 리뷰 전반에서 반복되는 행동 패턴을 찾아 '정보 탐색/구매 결정 · 루틴/효과 인식 · 기능 활용/제어' 세 영역의 행동 변수로 구성했고, 이 행동 변수를 기준으로 리뷰를 A/B/C 세 집단으로 분류했어요. 즉 A/B/C는 각각 하나의 행동 변수 영역을 대표하는 집단이고, 그대로 각 퍼소나의 핵심 행동 특성이 돼요.</p>
+        <div className="mt-4 space-y-4">
           {DATA_IDS.map((p) => {
             const g = study.dataGroups[p]
             const narr = method.groupNarratives[p]
@@ -53,6 +62,10 @@ export default function Step3() {
                 </ul>
                 <p className="mt-3 rounded-xl bg-g50 px-4 py-3 text-b2 text-g900">{g.summary}</p>
                 <p className="mt-2 text-b3 text-g600">이 집단에 필요한 경험: {narr.need}</p>
+                <p className="mt-3 flex flex-wrap items-center gap-1.5 text-b3 text-g700">
+                  <span className="rounded-s px-2 py-1 font-semibold text-white" style={{ background: PCOLOR[p] }}>행동 변수: {narr.area}</span>
+                  {narr.vars.map((v) => <Badge key={v}>{v}</Badge>)}
+                </p>
               </div>
             )
           })}
