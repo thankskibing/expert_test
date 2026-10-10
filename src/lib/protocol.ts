@@ -48,7 +48,9 @@ export const PROFILE: { title: string; lead: string; fields: Field[] }[] = [
     lead: '',
     fields: [
       { id: 'px_made', q: '업무나 프로젝트에서 퍼소나를 직접 제작하거나 활용해본 경험이 있으신가요?', type: 'radio', options: ['직접 제작해본 적 있음', '활용만 해본 적 있음', '없음'] },
+      { id: 'px_made_when', q: '어떤 상황에서 제작하거나 활용하셨나요?', hint: '경험이 없다면 비워두셔도 돼요.', type: 'textarea' },
       { id: 'px_ai', q: '생성형 AI를 활용해 퍼소나를 제작해본 경험이 있으신가요?', type: 'radio', options: ['있음', '없음'] },
+      { id: 'px_ai_when', q: '어떤 상황에서 AI를 활용해 제작하셨나요?', hint: '경험이 없다면 비워두셔도 돼요.', type: 'textarea' },
       { id: 'px_how', q: '경험이 있다면, 어떤 방식으로 AI를 활용하셨나요?', type: 'checks', options: ['인터뷰 내용 요약', '사용자 데이터 분석', '퍼소나 초안 생성', '프로필 구체화'], other: true, showIf: { id: 'px_ai', value: '있음' } },
     ],
   },
