@@ -6,9 +6,40 @@ import { FieldList } from '../components/form'
 import { FullPersonaRow } from '../components/PersonaCard'
 import TrackStack from '../components/TrackStack'
 import { StepNav } from '../components/flow'
-import { Badge, Note, PageHead, Section, Segmented } from '../components/ui'
+import { Badge, Note, PageHead, PersonaPill, Section, Segmented } from '../components/ui'
 
 const UIDS: Uid[] = ['U1', 'U2', 'U3', 'U4', 'U5', 'U6']
+
+const pick = (u: (typeof study.participants)[number], k: string) => u.info.find((x) => x.k === k)?.v ?? ''
+
+function Avatar({ id, size = 36 }: { id: string; size?: number }) {
+  return <span className="flex shrink-0 items-center justify-center rounded-l text-b2 font-bold text-white" style={{ width: size, height: size, background: PCOLOR[id] }}>{id.slice(1)}</span>
+}
+
+/** 조사 대상 선정 기준 요약 + 참여자 6명 프로필 목록 (인터뷰 분석에 들어가기 전에 먼저 보여줘요). */
+function InterviewTargetProfile() {
+  const ps = study.participants
+  return (
+    <Section title="인터뷰 대상 및 참여자 프로필">
+      <p className="max-w-prose2 text-b2 text-g700">
+        인터뷰 대상은 메디큐브 부스터프로 1 또는 2를 <b>1개월 이상</b> 사용한 사용자로 선정했어요. 온라인 리뷰 중 사용 기간이 확인되는 307건을 보면, 1개월 미만 사용자는 "아직 효과를 잘 모르겠다"처럼 판단을 유보하는 경우가 많았고, 1개월 이상부터 피부결·탄력 등 구체적인 변화 평가가 나타났어요(13.3%는 한 달 후 재후기를 예고). 이를 바탕으로 최소 사용 기간을 1개월로 정했어요.
+        제품 세대(1세대/2세대)는 2세대가 기존 기능을 확장한 후속 모델이라는 점과 장기 사용자 확보가 어렵다는 점을 고려해 구분 없이 모두 포함했고, 성별·연령은 리뷰에서 확인 가능한 사례가 전체의 1.2%뿐이라 별도로 제한하지 않았어요.
+      </p>
+      <ul className="mt-4 divide-y divide-g200 rounded-2xl border border-g200">
+        {ps.map((u) => (
+          <li key={u.id} className="flex items-center gap-3.5 px-5 py-3.5">
+            <Avatar id={u.id} size={40} />
+            <div className="min-w-0 flex-1">
+              <p className="text-b2 font-semibold text-g900">{u.id} · {pick(u, '기본 정보')}</p>
+              <p className="truncate text-b3 text-g600">{pick(u, '사용 제품')} · {pick(u, '사용 기간')} · {pick(u, '현재 사용 빈도·시간')}</p>
+            </div>
+            <span className="hidden sm:block"><PersonaPill id={u.group} withName={false} /></span>
+          </li>
+        ))}
+      </ul>
+    </Section>
+  )
+}
 
 const PARTS = [
   ['pattern', '5-1. 발화 → 1차 분석 → AI 재구성'],
@@ -131,6 +162,8 @@ export default function Step5() {
       <PageHead step={5} title="인터뷰 분석 및 정성 퍼소나 검증">
         인터뷰 트랙은 연구자가 원문을 먼저 분석한 뒤, 그 결과 위에 AI가 참여자 간 공통점과 차이를 비교해 패턴을 재구성해요. 리뷰 트랙과 순서가 반대라는 점을 염두에 두고 봐 주세요.
       </PageHead>
+
+      <InterviewTargetProfile />
 
       <Segmented label="세부 단계" items={PARTS.map((p) => p[0])} value={part} onChange={setPart} render={(v) => PARTS.find((p) => p[0] === v)![1]} />
 
