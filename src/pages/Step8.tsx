@@ -56,14 +56,22 @@ export default function Step8() {
       </PageHead>
 
       <Section title="연구 과정 요약">
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 md:items-stretch">
           <div className="rounded-2xl border border-g200 p-5">
             <p className="mb-2 text-t2">{method.aiProcess.review.label}</p>
-            <ol className="space-y-1.5 text-b3 text-g700">{method.aiProcess.review.steps.map((s, i) => <li key={s}>{i + 1}. {s}</li>)}</ol>
+            <ol className="space-y-2 text-b3 text-g700">
+              {method.aiProcess.review.steps.map((s, i) => (
+                <li key={s} className="flex gap-2.5"><span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-weak text-cap font-bold text-brand">{i + 1}</span>{s}</li>
+              ))}
+            </ol>
           </div>
           <div className="rounded-2xl border border-g200 p-5">
             <p className="mb-2 text-t2">{method.aiProcess.interview.label}</p>
-            <ol className="space-y-1.5 text-b3 text-g700">{method.aiProcess.interview.steps.map((s, i) => <li key={s}>{i + 1}. {s}</li>)}</ol>
+            <ol className="space-y-2 text-b3 text-g700">
+              {method.aiProcess.interview.steps.map((s, i) => (
+                <li key={s} className="flex gap-2.5"><span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-weak text-cap font-bold text-brand">{i + 1}</span>{s}</li>
+              ))}
+            </ol>
           </div>
         </div>
       </Section>
