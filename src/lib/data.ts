@@ -50,7 +50,7 @@ export const core = coreJson as unknown as Record<DataPid, CoreReview[]>
 export interface Topic { no: number; name: string; keywords: string[]; proportion: number; coherence: number; characteristic: string; comments: string[] }
 export interface Method {
   collection: { period: string; reviewPeriod: string; keywords: string[]; youtubeCriteria: string; initialTable: { product: string; commerce: string; youtube: string; total: string }[]; initialScope: string; narrowReason: string }
-  preprocessing: { steps: string[]; table: { cat: string; example: string }[]; counts: { nouns: number; rules: number; stopwords: number; extraStopwords: number } }
+  preprocessing: { steps: string[]; table: { cat: string; rule: string; example: string }[]; counts: { nouns: number; rules: number; stopwords: number; extraStopwords: number } }
   topics: Topic[]
   coherenceNote: string
   journey: { stage: string; desc: string; quote: string }[]

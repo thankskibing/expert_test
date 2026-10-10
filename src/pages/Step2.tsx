@@ -48,9 +48,9 @@ export default function Step2() {
           </summary>
           <div className="mt-3 overflow-x-auto rounded-xl border border-g200">
             <table className="w-full text-left text-b2">
-              <thead className="bg-g50 text-b3 text-g600"><tr><th className="px-4 py-2 font-semibold">구분</th><th className="px-4 py-2 font-semibold">예시</th></tr></thead>
+              <thead className="bg-g50 text-b3 text-g600"><tr><th className="px-4 py-2 font-semibold">구분</th><th className="px-4 py-2 font-semibold">처리 기준</th><th className="px-4 py-2 font-semibold">예시</th></tr></thead>
               <tbody className="divide-y divide-g200">
-                {p.table.map((r) => <tr key={r.cat}><td className="px-4 py-2 font-semibold text-g900">{r.cat}</td><td className="px-4 py-2 text-g700">{r.example}</td></tr>)}
+                {p.table.map((r) => <tr key={r.cat}><td className="px-4 py-2 font-semibold text-g900">{r.cat}</td><td className="px-4 py-2 text-g700">{r.rule}</td><td className="px-4 py-2 text-g700">{r.example}</td></tr>)}
               </tbody>
             </table>
           </div>
