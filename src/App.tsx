@@ -44,7 +44,7 @@ function Progress() {
   const { state } = useEval()
   const rated = Object.values(state.ratings).reduce((a, r) => a + Object.keys(r).length, 0)
   const total = ITEM_COUNT * 6
-  const stepDone = [state.step1.s1_q1, state.step2.s2_q1, state.step3.s3_q1, state.step4.s4_q1, state.step5qual.s5q_q1, state.step6.s6_q1].filter(Boolean).length
+  const stepDone = [state.step1.s1_q2, state.step2.s2_q1, state.step3.s3_q1, state.step4.s4_q1, state.step5qual.s5q_q1, state.step6.s6_q1].filter(Boolean).length
   return (
     <div className="mt-4 rounded-xl border border-g200 bg-g50 p-3">
       <p className="text-b2 font-semibold">{state.evaluator ? `${state.evaluator} 님의 평가` : '평가 진행 상황'}</p>
