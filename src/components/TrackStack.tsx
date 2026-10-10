@@ -83,7 +83,7 @@ export default function TrackStack({ tracks, ids, scale = 1, paths, focus, label
                   })}
                 </div>
                 <span className="hidden text-b3 leading-tight text-g600 sm:block">{t.right}</span>
-                <div className="mt-1 flex justify-between gap-4 text-cap text-g600 sm:hidden">
+                <div className="mt-4 flex justify-between gap-4 text-cap text-g600 sm:hidden">
                   <span>{t.left}</span>
                   <span className="text-right">{t.right}</span>
                 </div>
