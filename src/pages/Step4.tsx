@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { CATLABEL, CATS, DATA_IDS, PCOLOR, PNAME, PSHORT, type Cat, type DataPid, core, method, study } from '../lib/data'
-import { REVIEW_AGREE_OPTIONS, STEP4_PROCESS_QS, STEP4_RECLASS_QS } from '../lib/protocol'
+import { CATLABEL, DATA_IDS, PCOLOR, PNAME, PSHORT, type DataPid, core, method, study } from '../lib/data'
+import { REVIEW_AGREE_OPTIONS, STEP4_PROCESS_QS } from '../lib/protocol'
 import { useEval } from '../lib/evalStore'
 import { sampleReviewIdx } from '../lib/payload'
 import { FieldList } from '../components/form'
@@ -10,7 +10,6 @@ import TrackStack from '../components/TrackStack'
 import { StepNav } from '../components/flow'
 import { Badge, Chip, Highlighted, Note, PageHead, Section, Segmented } from '../components/ui'
 
-const CATCOLOR: Record<Cat, string> = { D: '#3182F6', Q: '#8B95A1', N: '#F04452', X: '#D1D6DB', O: '#E5E8EB', R: '#FF9F2E' }
 const GNUM: Record<string, string> = { A: '1', B: '2', C: '3' }
 
 function GroupEvidence({ p }: { p: DataPid }) {
@@ -72,29 +71,10 @@ function GroupEvidence({ p }: { p: DataPid }) {
   )
 }
 
-function DistBar({ p }: { p: DataPid }) {
-  const r = study.stats.reclass[p]
-  return (
-    <div>
-      <div className="mb-2 flex items-baseline justify-between">
-        <span className="flex items-center gap-2 text-b2 font-semibold"><span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[p] }} />{PSHORT[p]} · {PNAME[p]}</span>
-        <span className="text-b3 text-g500 tabular">{r.n}건</span>
-      </div>
-      <div className="flex h-8 gap-0.5 overflow-hidden rounded-m">
-        {CATS.filter((c) => r.counts[c.id]).map((c) => {
-          const pct = r.counts[c.id] / r.n
-          return <div key={c.id} title={`${c.label} ${r.counts[c.id]}건`} className="flex items-center justify-center text-cap font-bold tabular" style={{ width: `${pct * 100}%`, background: CATCOLOR[c.id], color: c.id === 'X' || c.id === 'O' ? '#4E5968' : '#fff' }}>{pct > 0.07 ? `${Math.round(pct * 100)}%` : ''}</div>
-        })}
-      </div>
-    </div>
-  )
-}
-
 const PARTS = [
   ['process', '4-1. AI 분석 과정'],
   ['reveal', '4-2. 퍼소나 공개'],
-  ['reclass', '4-3. 재분류 결과'],
-  ['review', '4-4. 리뷰별 판정'],
+  ['review', '4-3. 리뷰별 판정'],
 ] as const
 
 function ReviewRow({ pid, idx }: { pid: DataPid; idx: number }) {
@@ -131,7 +111,7 @@ function ReviewRow({ pid, idx }: { pid: DataPid; idx: number }) {
 }
 
 export default function Step4() {
-  const { state, setStep4, setStep4reclass } = useEval()
+  const { state, setStep4 } = useEval()
   const [part, setPart] = useState<(typeof PARTS)[number][0]>('process')
   const [pid, setPid] = useState<DataPid>('A')
 
@@ -195,23 +175,6 @@ export default function Step4() {
         </div>
       )}
 
-      {part === 'reclass' && (
-        <div className="mt-6">
-          <Section title="재분류 결과" lead="키워드로 1차 분류된 리뷰 중 실제 근거는 일부예요. 파란색이 퍼소나 적합이에요.">
-            <div className="max-w-3xl space-y-6">
-              {DATA_IDS.map((p) => <DistBar key={p} p={p} />)}
-              <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-cap text-g600">
-                {CATS.map((c) => <span key={c.id} className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: CATCOLOR[c.id] }} />{c.label}</span>)}
-              </div>
-            </div>
-          </Section>
-          <section className="mt-8 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
-            <h2 className="pt-4 text-t1">4-3단계 평가</h2>
-            <div className="max-w-3xl"><FieldList fields={STEP4_RECLASS_QS} get={(id) => state.step4reclass[id] ?? ''} set={setStep4reclass} /></div>
-          </section>
-        </div>
-      )}
-
       {part === 'review' && (
         <div className="mt-6">
           <Segmented label="퍼소나" items={DATA_IDS} value={pid} onChange={setPid} render={(v) => <span className="flex items-center gap-2 py-1"><span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[v] }} />{PSHORT[v]} · {PNAME[v]}</span>} />
@@ -223,7 +186,7 @@ export default function Step4() {
         </div>
       )}
 
-      <StepNav prev="/step3" next="/step5" nextLabel="5단계: 인터뷰·정성 퍼소나 검증으로" />
+      <StepNav prev="/step3" next="/step5" nextLabel="5단계: 인터뷰 분석 및 정성 퍼소나 검증으로" />
     </div>
   )
 }

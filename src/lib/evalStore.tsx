@@ -6,6 +6,8 @@ export type Answers = Record<string, string>
 
 /** Per-review judgment used in STEP 4-4 (리뷰별 1~5점 + 동의 여부 + 이유), keyed by `${personaId}_${reviewIdx}`. */
 export interface ReviewJudge { score?: number; agree?: string; reason?: string }
+/** Per-participant judgment used in STEP 5-3 (참여자별 1~5점 + 동의 여부 + 이유), keyed by `${qualPersonaId}_${uid}`. Same shape as ReviewJudge. */
+export type InterviewJudge = ReviewJudge
 
 export interface EvalState {
   evaluator: string
@@ -14,10 +16,10 @@ export interface EvalState {
   step2: Answers
   step3: Answers
   step4: Answers
-  step4reclass: Answers
   reviewJudge: Record<string, ReviewJudge>
   step5pattern: Answers
   step5qual: Answers
+  interviewJudge: Record<string, InterviewJudge>
   step6: Answers
   /** ratings[personaId][itemId] = 1..5 (STEP 7, reuses the existing DIMS rubric) */
   ratings: Record<string, Record<string, number>>
@@ -32,8 +34,8 @@ const ALL_PERSONAS = [...DATA_IDS, ...QUAL_IDS]
 function fresh(): EvalState {
   return {
     evaluator: '', profile: {},
-    step1: {}, step2: {}, step3: {}, step4: {}, step4reclass: {}, reviewJudge: {},
-    step5pattern: {}, step5qual: {}, step6: {},
+    step1: {}, step2: {}, step3: {}, step4: {}, reviewJudge: {},
+    step5pattern: {}, step5qual: {}, interviewJudge: {}, step6: {},
     ratings: {}, dimNotes: {},
     step8: {}, submittedAt: null,
   }
@@ -55,10 +57,10 @@ interface Ctx {
   setStep2: (id: string, v: string) => void
   setStep3: (id: string, v: string) => void
   setStep4: (id: string, v: string) => void
-  setStep4reclass: (id: string, v: string) => void
   setReviewJudge: (key: string, patch: Partial<ReviewJudge>) => void
   setStep5pattern: (id: string, v: string) => void
   setStep5qual: (id: string, v: string) => void
+  setInterviewJudge: (key: string, patch: Partial<InterviewJudge>) => void
   setStep6: (id: string, v: string) => void
   setRating: (pid: string, item: string, v: number) => void
   setDimNote: (pid: string, dim: string, v: string) => void
@@ -84,10 +86,10 @@ export function EvalProvider({ children }: { children: ReactNode }) {
     setStep2: section('step2'),
     setStep3: section('step3'),
     setStep4: section('step4'),
-    setStep4reclass: section('step4reclass'),
     setReviewJudge: (key, patch) => setState((s) => ({ ...s, reviewJudge: { ...s.reviewJudge, [key]: { ...s.reviewJudge[key], ...patch } } })),
     setStep5pattern: section('step5pattern'),
     setStep5qual: section('step5qual'),
+    setInterviewJudge: (key, patch) => setState((s) => ({ ...s, interviewJudge: { ...s.interviewJudge, [key]: { ...s.interviewJudge[key], ...patch } } })),
     setStep6: section('step6'),
     setRating: (pid, item, v) => setState((s) => ({ ...s, ratings: { ...s.ratings, [pid]: { ...s.ratings[pid], [item]: v } } })),
     setDimNote: (pid, dim, v) => setState((s) => ({ ...s, dimNotes: { ...s.dimNotes, [pid]: { ...s.dimNotes[pid], [dim]: v } } })),
