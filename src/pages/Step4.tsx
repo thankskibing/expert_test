@@ -1,15 +1,76 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { CATS, DATA_IDS, PCOLOR, PNAME, PSHORT, type Cat, type DataPid, core, method, study } from '../lib/data'
+import { CATLABEL, CATS, DATA_IDS, PCOLOR, PNAME, PSHORT, type Cat, type DataPid, core, method, study } from '../lib/data'
 import { REVIEW_AGREE_OPTIONS, STEP4_PROCESS_QS, STEP4_RECLASS_QS } from '../lib/protocol'
 import { useEval } from '../lib/evalStore'
 import { sampleReviewIdx } from '../lib/payload'
 import { FieldList } from '../components/form'
-import { FullPersonaCard } from '../components/PersonaCard'
+import { FullPersonaRow } from '../components/PersonaCard'
+import TrackStack from '../components/TrackStack'
 import { StepNav } from '../components/flow'
-import { Badge, Highlighted, Note, PageHead, Section, Segmented } from '../components/ui'
+import { Badge, Chip, Highlighted, Note, PageHead, Section, Segmented } from '../components/ui'
 
 const CATCOLOR: Record<Cat, string> = { D: '#3182F6', Q: '#8B95A1', N: '#F04452', X: '#D1D6DB', O: '#E5E8EB', R: '#FF9F2E' }
+const GNUM: Record<string, string> = { A: '1', B: '2', C: '3' }
+
+function GroupEvidence({ p }: { p: DataPid }) {
+  const g = study.dataGroups[p]
+  const list = core[p]
+  const tags = [...new Set(list.flatMap((r) => r.tags))]
+  const [tag, setTag] = useState<string | null>(null)
+  const shown = tag ? list.filter((r) => r.tags.includes(tag)) : list
+  return (
+    <details className="group mt-4 rounded-2xl border border-g200 p-5">
+      <summary className="inline-flex cursor-pointer list-none items-center gap-2 text-b2 font-semibold text-g700 hover:text-g900">
+        <span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[p] }} />
+        {PNAME[p]} · 행동 변수 위치와 근거 리뷰 자세히 보기 <span className="transition-transform duration-200 group-open:rotate-180" aria-hidden>⌄</span>
+      </summary>
+      <div className="mt-4 space-y-6">
+        <div>
+          <h4 className="mb-2 text-b2 font-bold text-g900">행동 변수 8개 중 이 집단의 위치</h4>
+          <div className="rounded-3xl border border-g200 px-4 py-3 sm:px-6">
+            <TrackStack tracks={study.dataVars} ids={DATA_IDS} scale={4} paths={[p]} label={(id) => GNUM[id]} />
+          </div>
+        </div>
+        <div>
+          <h4 className="mb-3 text-b2 font-bold text-g900">기존 자료의 대표 인용과 재분류 결과</h4>
+          <ul className="space-y-3">
+            {g.quotes.map((q) => {
+              const ok = q.status === 'D'
+              return (
+                <li key={q.idx} className="rounded-xl bg-g50 p-4">
+                  <p className="line-clamp-4 whitespace-pre-line text-b3 text-g700">{q.text}</p>
+                  <p className="mt-2 flex items-center gap-2"><span className="text-cap text-g500 tabular">#{q.idx}</span><Badge tone={ok ? 'green' : 'red'}>재분류: {q.status ? CATLABEL[q.status] : '-'}</Badge></p>
+                  {!ok && q.reason && <p className="mt-2 text-cap text-g600">{q.reason}</p>}
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+        <div>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h4 className="text-b2 font-bold text-g900">핵심 리뷰 {list.length}건</h4>
+            <div className="flex flex-wrap gap-1.5">
+              {[null, ...tags].map((t) => <Chip key={t ?? 'all'} on={tag === t} onClick={() => setTag(t)}>{t ?? '전체'}</Chip>)}
+            </div>
+          </div>
+          <ul className="space-y-3">
+            {shown.map((r) => (
+              <li key={r.idx} className="rounded-xl border border-g200 bg-white p-4">
+                <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                  <span className="mr-1 text-cap text-g500 tabular">#{r.idx}</span>
+                  {r.tags.map((t) => <Badge key={t}>{t}</Badge>)}
+                </div>
+                <Highlighted text={r.text} phrases={r.evidence} />
+                <p className="mt-2 text-b3 text-g600"><span className="font-semibold text-g800">선정 이유</span> {r.why}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </details>
+  )
+}
 
 function DistBar({ p }: { p: DataPid }) {
   const r = study.stats.reclass[p]
@@ -117,6 +178,7 @@ export default function Step4() {
               })}
             </div>
             <p className="mt-4 max-w-prose2 text-b3 text-g600">집단 분류는 키워드로 1차 분류한 뒤, 사람이 원문을 다시 읽고 핵심 행동 변수가 실제로 드러나는지 맥락으로 판단했어요. 한 리뷰가 여러 집단에 중복으로 들어갈 수 있어요.</p>
+            {DATA_IDS.map((p) => <GroupEvidence key={p} p={p} />)}
           </Section>
 
           <section className="mt-8 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
@@ -129,9 +191,7 @@ export default function Step4() {
       {part === 'reveal' && (
         <div className="mt-6">
           <Note label="안내">이제부터 연구자 재검토를 거친 리뷰 기반 퍼소나 3개를 보여드려요. 데이터 출처는 숨기지 않아요.</Note>
-          <div className="mt-4 grid gap-4 xl:grid-cols-3">
-            {DATA_IDS.map((p) => <FullPersonaCard key={p} id={p} />)}
-          </div>
+          <div className="mt-4"><FullPersonaRow ids={DATA_IDS} /></div>
         </div>
       )}
 

@@ -142,6 +142,40 @@ export function FullPersonaPair({ aId, bId }: { aId: string; bId: string }) {
 }
 
 /**
+ * N fully revealed personas side by side (3+ at once, e.g. A/B/C). Every section (Bio, Motivation, Goal, …)
+ * is laid out as one CSS grid row shared by all of them, so each one stretches to match the tallest and
+ * they line up section by section. Below xl it falls back to stacked cards.
+ */
+export function FullPersonaRow({ ids }: { ids: string[] }) {
+  const n = ids.length
+  const borderCls = (i: number) => (i % n !== 0 ? 'border-l border-g200' : '')
+  const rows: ((id: string) => ReactNode)[] = [
+    (id) => <Header p={personaById(id)} label={id} blind={false} c={PCOLOR[id]} />,
+    (id) => <ProfileSection id={id} p={personaById(id)} c={PCOLOR[id]} />,
+    (id) => <Block title="Bio"><p>{personaById(id).bio}</p></Block>,
+    (id) => <Block title="Motivation"><Bullets items={personaById(id).motivation} /></Block>,
+    (id) => <Block title="Goal"><dl className="space-y-2">{personaById(id).goals.map((g) => <div key={g.k}><dt className="font-semibold">{g.k}</dt><dd>{g.v}</dd></div>)}</dl></Block>,
+    (id) => <Block title="Pain points"><Bullets items={personaById(id).pains} /></Block>,
+    (id) => <Block title="Needs"><ol className="space-y-2">{personaById(id).needs.map((x, i) => <li key={x.title}><p className="font-semibold">{i + 1}. {x.title}</p><p className="text-g700">{x.detail}</p></li>)}</ol></Block>,
+    (id) => <Block title="Behavior">{personaById(id).behavior.map((b) => <Slider key={b.name} {...b} color={PCOLOR[id]} />)}</Block>,
+  ]
+  return (
+    <>
+      <div className="hidden overflow-hidden rounded-xl border border-g200 bg-white xl:grid xl:items-stretch" style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` }}>
+        {rows.map((render, ri) => ids.map((id, i) => <div key={`${ri}-${id}`} className={borderCls(i)}>{render(id)}</div>))}
+        {ids.map((id, i) => {
+          const flag = personaById(id).flag
+          return flag ? <p key={id} className={`mx-5 mb-4 rounded-xl border border-[#FFE58F] bg-[#FFFBE6] px-3 py-2 text-b3 ${borderCls(i)}`}>{flag}</p> : <div key={id} className={borderCls(i)} />
+        })}
+      </div>
+      <div className="grid gap-4 xl:hidden">
+        {ids.map((id) => <FullPersonaCard key={id} id={id} />)}
+      </div>
+    </>
+  )
+}
+
+/**
  * Side-by-side X/Y comparison. At the xl breakpoint and up, every section (Bio, Motivation, Goal, …)
  * is laid out as one CSS grid row shared by both personas, so the shorter side stretches to match the
  * taller one and the two cards line up section by section. Below xl it falls back to two stacked cards.
