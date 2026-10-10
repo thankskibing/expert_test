@@ -17,7 +17,7 @@ export default function Step8() {
   const rated = ORDER.reduce((a, o) => a + Object.keys(state.ratings[o] ?? {}).length, 0)
   const checks = [
     { label: '기본 프로필', ok: !!state.profile.p_age, to: '/profile' },
-    { label: '1단계: 연구 개요', ok: !!state.step1.s1_q1, to: '/step1' },
+    { label: '1단계: 연구 개요', ok: !!state.step1.s1_q2, to: '/step1' },
     { label: '2단계: 수집·전처리', ok: !!state.step2.s2_q1, to: '/step2' },
     { label: '3단계: 토픽·집단 구성', ok: !!state.step3.s3_q1, to: '/step3' },
     { label: '4단계: AI 분석·근거', ok: !!state.step4.s4_q1, to: '/step4' },
