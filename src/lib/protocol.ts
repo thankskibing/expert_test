@@ -226,5 +226,6 @@ export const REVISE_OPTIONS = [
 ]
 export const STEP8_CHECKLIST: Field[] = [
   { id: 'm_revise', q: '전체 연구 방법 중 수정이나 보완이 필요하다고 생각되는 단계를 모두 선택해 주세요. (복수 선택 가능)', type: 'checks', options: REVISE_OPTIONS, other: true },
+  { id: 'm_ai_approach', q: '전문가님이 이런 리서치를 진행하신다면, 생성형 AI를 어떤 방식으로 활용하셨을 것 같나요?', hint: 'AI에게 맡길 단계와 직접 하실 단계, 검증 방법 등을 자유롭게 적어 주세요.', type: 'textarea' },
   { id: 'm_final', q: '그 밖에 연구 과정이나 퍼소나 전반에 대해 자유롭게 남기고 싶은 의견을 적어 주세요.', type: 'textarea' },
 ]
