@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { CATLABEL, DATA_IDS, HIGHLIGHT_KEYWORDS, PCOLOR, PNAME, PSHORT, type DataPid, core, method, personaById, study } from '../lib/data'
+import { DATA_IDS, HIGHLIGHT_KEYWORDS, PCOLOR, PNAME, PSHORT, type DataPid, core, method, personaById, study } from '../lib/data'
 import { REVIEW_AGREE_OPTIONS, STEP4_PROCESS_QS, STEP4_REVIEW_QS } from '../lib/protocol'
 import { useEval } from '../lib/evalStore'
 import { sampleReviewIdx } from '../lib/payload'
@@ -28,13 +28,13 @@ function ReviewCard({ r }: { r: (typeof core)[DataPid][number] }) {
         <span className="mr-1 text-cap text-g500 tabular">#{r.idx}</span>
         {r.tags.map((t) => <Badge key={t}>{t}</Badge>)}
       </div>
-      <Highlighted text={r.text} phrases={r.evidence} />
+      <div className="max-h-56 overflow-y-auto pr-1 scroll-box"><Highlighted text={r.text} phrases={r.evidence} /></div>
       <p className="mt-2 text-b3 text-g600"><span className="font-semibold text-g800">선정 이유</span> {r.why}</p>
     </li>
   )
 }
 
-/** 4-1. 집단별 분류 기준(Strong/Supporting 조건·재분류 사례)만 상세 보기로 제공. 근거 리뷰 자체는 4-2로 연결한다. */
+/** 4-1. 집단별 분류 기준(Strong/Supporting 조건·대표 리뷰)만 상세 보기로 제공. 그 외 근거 리뷰는 4-2로 연결한다. */
 function ClassificationDetail({ p, onViewPersona }: { p: DataPid; onViewPersona: () => void }) {
   const g = study.dataGroups[p]
   return (
@@ -46,24 +46,21 @@ function ClassificationDetail({ p, onViewPersona }: { p: DataPid; onViewPersona:
         </p>
         <button onClick={onViewPersona} className="text-b3 font-semibold text-brand hover:text-brand-hover">퍼소나 근거 보기 →</button>
       </div>
-      <Disclosure summary="분류 기준 및 Strong/Supporting 조건 · 재분류 사례 자세히 보기">
+      <Disclosure summary="분류 기준 및 Strong/Supporting 조건 · 대표 리뷰 자세히 보기">
         <div className="space-y-3">
           <div className="space-y-1.5 rounded-xl bg-g50 px-4 py-3 text-b3 text-g800">
             <p><span className="font-semibold text-g900">분류 조건</span> {study.stats.keywordRules[p]}</p>
             <p><span className="font-semibold text-g900">포함 키워드</span> {study.stats.keywords[p].join(', ')}</p>
           </div>
-          <p className="text-b3 text-g600">연구자가 AI의 1차 분류 결과를 원문으로 다시 검토해 재분류(D=퍼소나 적합 등)한 사례예요.</p>
+          <p className="text-b3 text-g600">이 행동 유형을 뒷받침하는 대표 리뷰예요.</p>
           <ul className="space-y-3">
-            {g.quotes.map((q) => {
-              const ok = q.status === 'D'
-              return (
-                <li key={q.idx} className="rounded-xl bg-g50 p-4">
-                  <p className="line-clamp-4 whitespace-pre-line text-b3 text-g700">{q.text}</p>
-                  <p className="mt-2 flex items-center gap-2"><span className="text-cap text-g500 tabular">#{q.idx}</span><Badge tone={ok ? 'green' : 'red'}>재분류: {q.status ? CATLABEL[q.status] : '-'}</Badge></p>
-                  {!ok && q.reason && <p className="mt-2 text-cap text-g600">{q.reason}</p>}
-                </li>
-              )
-            })}
+            {g.quotes.map((q) => (
+              <li key={q.idx} className="rounded-xl bg-g50 p-4">
+                <p className="scroll-box max-h-40 overflow-y-auto whitespace-pre-line text-b3 text-g700">{q.text}</p>
+                <p className="mt-2 text-cap text-g500 tabular">#{q.idx}</p>
+                {q.reason && <p className="mt-2 text-cap text-g600">{q.reason}</p>}
+              </li>
+            ))}
           </ul>
         </div>
       </Disclosure>
@@ -135,7 +132,7 @@ function ReviewRow({ pid, idx }: { pid: DataPid; idx: number }) {
         <span className="rounded-s px-2 py-1 text-cap font-semibold text-white" style={{ background: PCOLOR[pid] }}>{PSHORT[pid]} · {PNAME[pid]}</span>
         <span className="text-cap text-g500 tabular">리뷰 #{review.idx}</span>
       </div>
-      <Highlighted text={review.text} phrases={review.evidence} />
+      <div className="max-h-56 overflow-y-auto pr-1 scroll-box"><Highlighted text={review.text} phrases={review.evidence} /></div>
       <p className="mt-2 flex flex-wrap gap-1.5">{review.tags.map((t) => <Badge key={t} tone="blue">{t}</Badge>)}</p>
 
       <Disclosure summary="분류 근거 자세히 보기" className="mt-3">

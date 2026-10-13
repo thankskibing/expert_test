@@ -33,7 +33,7 @@ export default function CorePage() {
                 <span className="mr-1 flex items-center gap-1.5 text-cap text-g500 tabular"><span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[p] }} />#{r.idx}</span>
                 {r.tags.map((t) => <Badge key={t}>{t}</Badge>)}
               </div>
-              <div className="max-w-prose2"><Highlighted text={r.text} phrases={r.evidence} /></div>
+              <div className="max-w-prose2 max-h-56 overflow-y-auto pr-1 scroll-box"><Highlighted text={r.text} phrases={r.evidence} /></div>
               <p className="mt-3 text-b3 text-g600"><span className="font-semibold text-g800">선정 이유</span> {r.why}</p>
             </li>
           )
