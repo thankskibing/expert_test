@@ -127,15 +127,6 @@ export const STEP5_REVIEW_QS: Field[] = [
   { id: 's5_reflect', q: '인터뷰 발화를 생성형 AI로 분석해 사용자 행동 유형을 도출하는 과정에서 보완이 필요하다고 생각하는 부분이 있다면 자유롭게 작성해 주세요.', type: 'textarea' },
 ]
 
-/** STEP 6. 리뷰 기반 퍼소나와 인터뷰 기반 퍼소나 비교 */
-export const STEP6_QS: Field[] = [
-  ...likert('s6_q1', '같은 역할(Primary/Secondary)로 짝지어진 두 퍼소나의 공통점이 타당하게 제시되었다.'),
-  ...likert('s6_q2', '두 퍼소나의 차이점이 데이터 특성(다수의 짧은 리뷰 vs. 소수의 깊은 인터뷰)에서 비롯된 것으로 설명된다.'),
-  ...likert('s6_q3', '리뷰 기반 퍼소나와 인터뷰 기반 퍼소나가 서로를 보완할 수 있는 지점이 명확하게 드러난다.'),
-  { id: 's6_choice', q: '실제 업무에서 두 퍼소나 중 하나를 선택해야 한다면 어떤 퍼소나를 활용하시겠습니까?', type: 'radio', options: ['온라인 리뷰 기반 퍼소나', '인터뷰 기반 퍼소나', '둘 다 함께 활용', '판단하기 어려움'] },
-  { id: 's6_choice_why', q: '그 이유는 무엇인가요?', type: 'textarea' },
-]
-
 export interface Dim {
   id: string; no: number; title: string; en?: string; purpose: string
   items: { id: string; q: string }[]
@@ -237,9 +228,8 @@ export const REVISE_OPTIONS = [
   '3. 토픽 모델링',
   '4. 리뷰 집단·행동 변수 구성 및 AI 분석·퍼소나 근거',
   '5. 인터뷰 분석 및 정성 퍼소나',
-  '6. 리뷰 기반 퍼소나와 인터뷰 기반 퍼소나 비교',
-  '7. 최종 퍼소나 품질',
-  '8. 종합 평가 방식 자체',
+  '6. 최종 퍼소나 품질',
+  '7. 종합 평가 방식 자체',
   '데이터 수집 범위', '전처리 규칙', '토픽모델링 결과 해석', 'AI 프롬프트 설계',
   '재분류·검증 절차', '인터뷰 참여자 구성',
 ]
