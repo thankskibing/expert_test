@@ -129,9 +129,14 @@ export function Highlighted({ text, phrases }: { text: string; phrases: string[]
   return <p className="whitespace-pre-line text-b2 text-g900">{out}</p>
 }
 
-/** Wraps every occurrence of any given keyword in inline <mark>s. Text itself is never changed, only marked up. */
+/**
+ * Wraps every occurrence of any given keyword in inline <mark>s. Text itself is never changed, only marked up.
+ * Always returns a single <span> (never a bare Fragment): when this sits next to a sibling inside a `flex`
+ * container (e.g. a bullet dot + text), a Fragment's children become separate flex items and the marked-up
+ * text visually breaks apart into its own columns. A span keeps it one DOM node so flex layout isn't affected.
+ */
 export function Emphasis({ text, keywords }: { text: string; keywords: string[] }) {
-  if (!keywords.length) return <>{text}</>
+  if (!keywords.length) return <span>{text}</span>
   const ranges: [number, number][] = []
   for (const k of keywords) {
     if (!k) continue
@@ -143,7 +148,7 @@ export function Emphasis({ text, keywords }: { text: string; keywords: string[] 
       from = i + k.length
     }
   }
-  if (!ranges.length) return <>{text}</>
+  if (!ranges.length) return <span>{text}</span>
   ranges.sort((a, b) => a[0] - b[0])
   const merged: [number, number][] = []
   for (const r of ranges) {
@@ -159,7 +164,19 @@ export function Emphasis({ text, keywords }: { text: string; keywords: string[] 
     cur = e
   })
   out.push(text.slice(cur))
-  return <>{out}</>
+  return <span>{out}</span>
+}
+
+/** Collapsed-by-default detail: a summary line that expands to reveal secondary/supporting content. */
+export function Disclosure({ summary, children, className = '' }: { summary: string; children: ReactNode; className?: string }) {
+  return (
+    <details className={`group ${className}`}>
+      <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-b3 font-semibold text-g700 hover:text-g900">
+        {summary} <span className="transition-transform duration-200 group-open:rotate-180" aria-hidden>⌄</span>
+      </summary>
+      <div className="mt-3">{children}</div>
+    </details>
+  )
 }
 
 /** Ant Design Alert (warning): pale semantic background, normal text color, status shown by icon. */

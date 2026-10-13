@@ -8,18 +8,7 @@ import { FieldList } from '../components/form'
 import { DataGroupVariablesCompare } from '../components/GroupVariables'
 import { Body, Header as PersonaHeader, ProfileSection } from '../components/PersonaCard'
 import { StepNav } from '../components/flow'
-import { Badge, Button, Emphasis, Highlighted, Note, PageHead, Section, Segmented } from '../components/ui'
-
-function Disclosure({ summary, children, className = '' }: { summary: string; children: React.ReactNode; className?: string }) {
-  return (
-    <details className={`group ${className}`}>
-      <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-b3 font-semibold text-g700 hover:text-g900">
-        {summary} <span className="transition-transform duration-200 group-open:rotate-180" aria-hidden>⌄</span>
-      </summary>
-      <div className="mt-3">{children}</div>
-    </details>
-  )
-}
+import { Badge, Button, Disclosure, Emphasis, Highlighted, Note, PageHead, Section, Segmented } from '../components/ui'
 
 function ReviewCard({ r }: { r: (typeof core)[DataPid][number] }) {
   return (
