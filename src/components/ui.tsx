@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { PCOLOR, PNAME, PSHORT } from '../lib/data'
 
@@ -176,6 +176,28 @@ export function Disclosure({ summary, children, className = '' }: { summary: str
       </summary>
       <div className="mt-3">{children}</div>
     </details>
+  )
+}
+
+/** Centered popup with a backdrop. Closes on Escape, backdrop click, or the ✕ button. */
+export function Modal({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: ReactNode }) {
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, onClose])
+  if (!open) return null
+  return (
+    <div role="dialog" aria-modal="true" aria-label={title} className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/45 px-4 py-8 sm:py-12" onClick={onClose}>
+      <div className="w-full max-w-2xl rounded-2xl bg-white p-5 shadow-xl sm:p-6" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-4 flex items-start justify-between gap-4">
+          <h3 className="text-t1">{title}</h3>
+          <button onClick={onClose} aria-label="닫기" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-m text-g600 hover:bg-g100 hover:text-g900">✕</button>
+        </div>
+        {children}
+      </div>
+    </div>
   )
 }
 

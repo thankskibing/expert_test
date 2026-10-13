@@ -1,5 +1,5 @@
 import { DATA_IDS, PNAME, PSHORT, QUAL_IDS, core, personaById, study } from './data'
-import { DIMS, PROFILE, REVIEW_AGREE_OPTIONS, STEP1_QS, STEP2_QS, STEP3_QS, STEP4_PROCESS_QS, STEP4_REVIEW_QS, STEP5_GROUP_QS, STEP5_PATTERN_QS, STEP5_REVIEW_QS, STEP6_QS, STEP8_CHECKLIST, STEP8_QS, type Field } from './protocol'
+import { DIMS, PROFILE, REVIEW_AGREE_OPTIONS, STEP1_QS, STEP2_QS, STEP3_QS, STEP4_PROCESS_QS, STEP4_REVIEW_QS, STEP5_GROUP_QS, STEP5_PATTERN_QS, STEP5_REVIEW_QS, STEP8_CHECKLIST, STEP8_QS, type Field } from './protocol'
 import { PERSONA_ORDER, type EvalState } from './evalStore'
 
 export const SOURCE_LABEL = { data: '온라인 사용자 리뷰 기반', qual: '정성 인터뷰 기반' } as const
@@ -51,9 +51,8 @@ export function buildPayload(s: EvalState) {
   putFields('step5pattern', STEP5_PATTERN_QS, s.step5pattern, '[5단계 종합 평가] ')
   putFields('step5pattern', STEP5_GROUP_QS, s.step5pattern, '[5단계 종합 평가] ')
   putFields('step5pattern', STEP5_REVIEW_QS, s.step5pattern, '[5단계 종합 평가] ')
-  putFields('step6', STEP6_QS, s.step6, '[6. 리뷰-인터뷰 퍼소나 비교] ')
-  putFields('step8', STEP8_QS, s.step8, '[8. 종합 평가] ')
-  putFields('step8', STEP8_CHECKLIST, s.step8, '[8. 종합 평가] ')
+  putFields('step8', STEP8_QS, s.step8, '[7. 종합 평가] ')
+  putFields('step8', STEP8_CHECKLIST, s.step8, '[7. 종합 평가] ')
 
   const reviewRows: (string | number)[][] = []
   for (const pid of DATA_IDS) {

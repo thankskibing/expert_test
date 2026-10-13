@@ -1,14 +1,54 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { PCOLOR, PNAME, PSHORT, personaById } from '../lib/data'
+import { PCOLOR, PNAME, PSHORT, core, personaById, study, type DataPid, type QualPid } from '../lib/data'
 import { DIMS, ITEM_COUNT, SCALE } from '../lib/protocol'
 import { useEval } from '../lib/evalStore'
 import { SOURCE_LABEL } from '../lib/payload'
 import { FullPersonaCard } from '../components/PersonaCard'
 import { StepNav } from '../components/flow'
-import { PageHead, TextArea } from '../components/ui'
+import { Badge, Highlighted, Modal, PageHead, TextArea } from '../components/ui'
 
 const ORDER = ['A', 'B', 'C', 'P', 'S1', 'S2']
+
+/** 데이터 근거성 팝업 내용: 데이터 퍼소나는 원문 리뷰(근거 문구 하이라이트), 정성 퍼소나는 참여자 발화 전체를 보여준다. */
+function GroundingEvidence({ pid, kind }: { pid: string; kind: 'data' | 'qual' }) {
+  if (kind === 'data') {
+    const list = core[pid as DataPid]
+    return (
+      <div>
+        <p className="mb-3 text-b3 text-g600">이 퍼소나의 행동 특성과 연결된 원문 리뷰 {list.length}건이에요. 음영 표시는 근거로 쓰인 문구예요.</p>
+        <ul className="space-y-3">
+          {list.map((r) => (
+            <li key={r.idx} className="rounded-xl border border-g200 bg-g50 p-4">
+              <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                <span className="mr-1 text-cap text-g500 tabular">#{r.idx}</span>
+                {r.tags.map((t) => <Badge key={t}>{t}</Badge>)}
+              </div>
+              <div className="max-h-56 overflow-y-auto pr-1 scroll-box"><Highlighted text={r.text} phrases={r.evidence} /></div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+  const grp = study.qualGroups[pid as QualPid]
+  const members = grp.members.map((id) => study.participants.find((u) => u.id === id)!)
+  return (
+    <div>
+      <p className="mb-3 text-b3 text-g600">이 퍼소나의 근거가 된 참여자 {members.length}명({grp.members.join(', ')})의 발화예요.</p>
+      <div className="space-y-4">
+        {members.map((u) => (
+          <div key={u.id} className="rounded-xl border border-g200 bg-g50 p-4">
+            <p className="mb-2 text-b2 font-semibold text-g900">{u.id} · {u.title}</p>
+            <ul className="space-y-1.5">
+              {u.quotes.map((q, i) => <li key={i} className="rounded-m bg-white px-3 py-2 text-b2 text-g900">“{q}”</li>)}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 function ScaleRow({ no, q, value, onChange }: { no: string; q: string; value?: number; onChange: (v: number) => void }) {
   return (
@@ -46,6 +86,7 @@ function moreQ(d: (typeof DIMS)[number], avg: number | null) {
 export default function Step7() {
   const { state, setRating, setDimNote } = useEval()
   const [sp, setSp] = useSearchParams()
+  const [showEvidence, setShowEvidence] = useState(false)
   const count = (id: string) => Object.keys(state.ratings[id] ?? {}).length
   const [initial] = useState(() => ORDER.find((o) => count(o) < ITEM_COUNT) ?? ORDER[0])
   const pid = ORDER.includes(sp.get('p') ?? '') ? sp.get('p')! : initial
@@ -57,7 +98,7 @@ export default function Step7() {
 
   return (
     <div>
-      <PageHead step={7} title="최종 퍼소나 품질 평가">
+      <PageHead step={6} title="최종 퍼소나 품질 평가">
         퍼소나 6개를 하나씩 7개 영역 {ITEM_COUNT}개 문항으로 평가해 주세요. 각 문항은 1점(전혀 그렇지 않다)부터 5점(매우 그렇다)까지예요.
       </PageHead>
 
@@ -86,7 +127,12 @@ export default function Step7() {
           {DIMS.map((d) => (
             <section key={d.id} className="mb-6 rounded-xl border border-g200">
               <header className="border-b border-g200 bg-g50 px-5 py-3" style={{ borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
-                <h2 className="text-t1">{d.no}. {d.title}{d.en && <span className="ml-1.5 text-b2 font-normal text-g600">{d.en}</span>}</h2>
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <h2 className="text-t1">{d.no}. {d.title}{d.en && <span className="ml-1.5 text-b2 font-normal text-g600">{d.en}</span>}</h2>
+                  {d.id === 'grounding' && (
+                    <button onClick={() => setShowEvidence(true)} className="shrink-0 text-b3 font-semibold text-brand hover:text-brand-hover">근거 리뷰 보기 →</button>
+                  )}
+                </div>
                 <p className="mt-0.5 text-b3 text-g600">{d.purpose}</p>
               </header>
               <div className="px-5">
@@ -106,8 +152,12 @@ export default function Step7() {
       </div>
 
       {next
-        ? <StepNav prev={pos === 0 ? '/step6' : undefined} nextLabel={`다음: ${PSHORT[next]} · ${PNAME[next]}`} onNext={() => pick(next)} hint={`전체 ${totalDone}/${ITEM_COUNT * ORDER.length} 문항`} />
-        : <StepNav next="/step8" nextLabel="8단계: 종합 평가로" hint={`전체 ${totalDone}/${ITEM_COUNT * ORDER.length} 문항`} />}
+        ? <StepNav prev={pos === 0 ? '/step5' : undefined} nextLabel={`다음: ${PSHORT[next]} · ${PNAME[next]}`} onNext={() => pick(next)} hint={`전체 ${totalDone}/${ITEM_COUNT * ORDER.length} 문항`} />
+        : <StepNav next="/step8" nextLabel="7단계: 종합 평가로" hint={`전체 ${totalDone}/${ITEM_COUNT * ORDER.length} 문항`} />}
+
+      <Modal open={showEvidence} onClose={() => setShowEvidence(false)} title={`${PSHORT[pid]} · ${PNAME[pid]} 근거 리뷰`}>
+        <GroundingEvidence pid={pid} kind={kind} />
+      </Modal>
     </div>
   )
 }

@@ -388,7 +388,7 @@ export default function Step5() {
         </div>
       )}
 
-      <StepNav prev="/step4" next="/step6" nextLabel="6단계: 두 퍼소나 비교로" />
+      <StepNav prev="/step4" next="/step7" nextLabel="6단계: 최종 퍼소나 품질 평가로" />
     </div>
   )
 }
