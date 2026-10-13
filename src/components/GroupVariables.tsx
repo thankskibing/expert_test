@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { CATLABEL, DATA_IDS, PCOLOR, PNAME, study, type DataPid } from '../lib/data'
+import { DATA_IDS, PCOLOR, PNAME, study, type DataPid } from '../lib/data'
 import TrackStack from './TrackStack'
-import { Badge, PersonaPill, Segmented } from './ui'
+import { PersonaPill, Segmented } from './ui'
 
 const GNUM: Record<string, string> = { A: '1', B: '2', C: '3' }
 
@@ -24,19 +24,6 @@ export function DataGroupCard({ p }: { p: DataPid }) {
   return (
     <GroupCard tag={`${g.group} · ${g.role} · 1차 분류 ${g.count}건(${g.share})`} name={g.name} traits={g.traits} summary={g.summary}>
       <p className="mt-3 text-b3 text-g600">{g.flow}</p>
-      <h4 className="mb-3 mt-6 text-b2 font-bold">기존 자료의 대표 인용과 재분류 결과</h4>
-      <ul className="space-y-3">
-        {g.quotes.map((q) => {
-          const ok = q.status === 'D'
-          return (
-            <li key={q.idx} className="rounded-xl bg-white p-4">
-              <p className="line-clamp-4 whitespace-pre-line text-b3 text-g700">{q.text}</p>
-              <p className="mt-2 flex items-center gap-2"><span className="text-cap text-g500 tabular">#{q.idx}</span><Badge tone={ok ? 'green' : 'red'}>재분류: {q.status ? CATLABEL[q.status] : '-'}</Badge></p>
-              {!ok && q.reason && <p className="mt-2 text-cap text-g600">{q.reason}</p>}
-            </li>
-          )
-        })}
-      </ul>
     </GroupCard>
   )
 }
