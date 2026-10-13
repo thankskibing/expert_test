@@ -27,7 +27,7 @@ const Bullets = ({ items }: { items: string[] }) => (
   <ul className="space-y-1.5">{items.map((m) => <li key={m} className="flex gap-2"><span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-g500" />{m}</li>)}</ul>
 )
 
-function Header({ p, label, blind, c, header }: { p: Persona; label: string; blind: boolean; c: string; header?: ReactNode }) {
+export function Header({ p, label, blind, c, header }: { p: Persona; label: string; blind: boolean; c: string; header?: ReactNode }) {
   return (
     <header className="flex flex-wrap items-center gap-3 border-b border-g200 px-5 py-4" style={{ borderTop: `3px solid ${c}` }}>
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-t1 text-white" style={{ background: c }}>{label}</span>
@@ -40,7 +40,7 @@ function Header({ p, label, blind, c, header }: { p: Persona; label: string; bli
   )
 }
 
-function ProfileSection({ id, p, c }: { id: string; p: Persona; c: string }) {
+export function ProfileSection({ id, p, c }: { id: string; p: Persona; c: string }) {
   return (
     <section className="px-5 py-4">
       <div className="flex items-center gap-4">
@@ -58,7 +58,7 @@ function ProfileSection({ id, p, c }: { id: string; p: Persona; c: string }) {
   )
 }
 
-function Body({ p, blind, c }: { p: Persona; blind: boolean; c: string }) {
+export function Body({ p, blind, c }: { p: Persona; blind: boolean; c: string }) {
   return (
     <>
       <Block title="Bio"><p>{p.bio}</p></Block>

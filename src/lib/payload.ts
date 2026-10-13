@@ -9,9 +9,22 @@ export const SOURCE_DETAIL = {
   qual: `실제 사용자 ${study.stats.interviews}명과의 심층 인터뷰를 분석해 만들었어요.`,
 }
 
-/** Review ids sampled for STEP 4-4 per data persona (first ~10 of the curated 핵심 리뷰 list). */
-export function sampleReviewIdx(pid: (typeof DATA_IDS)[number], n = 10) {
-  return core[pid].slice(0, n).map((r) => r.idx)
+/**
+ * 4-3에서 전문가가 평가하는 리뷰 idx (집단별 5건, 총 15건).
+ * 기존 "집단별 10건"(= core[pid]의 앞 10개) 중에서, 해당 집단의 핵심 행동 특징이 뚜렷하고
+ * 서로 다른 행동 변수 조합을 보여주며 중복이 적은 리뷰를 사람이 검토해 선정했다(사용자 확인 완료).
+ * core.json 자체(집단별 24~27건)는 그대로 유지하며, 선정되지 않은 나머지는 4-1 근거자료의
+ * "추가 근거 보기"/"전체 핵심 리뷰 보기"에서 계속 확인할 수 있다.
+ */
+export const SAMPLED_REVIEW_IDX: Record<(typeof DATA_IDS)[number], number[]> = {
+  A: [30, 82, 166, 614, 219],
+  B: [294, 930, 946, 947, 975],
+  C: [121, 308, 149, 740, 367],
+}
+
+/** Review ids sampled for STEP 4-3 per data persona (fixed curated 5건, see SAMPLED_REVIEW_IDX). */
+export function sampleReviewIdx(pid: (typeof DATA_IDS)[number]) {
+  return SAMPLED_REVIEW_IDX[pid]
 }
 
 export function buildPayload(s: EvalState) {
