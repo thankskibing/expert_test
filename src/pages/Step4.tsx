@@ -5,12 +5,10 @@ import { REVIEW_AGREE_OPTIONS, STEP4_PROCESS_QS } from '../lib/protocol'
 import { useEval } from '../lib/evalStore'
 import { sampleReviewIdx } from '../lib/payload'
 import { FieldList } from '../components/form'
+import { DataGroupVariablesCompare } from '../components/GroupVariables'
 import { Body, Header as PersonaHeader, ProfileSection } from '../components/PersonaCard'
-import TrackStack from '../components/TrackStack'
 import { StepNav } from '../components/flow'
-import { Badge, Button, Chip, Highlighted, Note, PageHead, Section, Segmented } from '../components/ui'
-
-const GNUM: Record<string, string> = { A: '1', B: '2', C: '3' }
+import { Badge, Button, Highlighted, Note, PageHead, Section, Segmented } from '../components/ui'
 
 function Disclosure({ summary, children, className = '' }: { summary: string; children: React.ReactNode; className?: string }) {
   return (
@@ -36,25 +34,19 @@ function ReviewCard({ r }: { r: (typeof core)[DataPid][number] }) {
   )
 }
 
-/** 4-1-3. 근거자료 단계별 공개: 대표 근거(기본) → 분류 기준·행동 변수 위치(자세히) → 추가 근거 → 전체 핵심 리뷰. */
-function GroupEvidence({ p }: { p: DataPid }) {
-  const list = core[p]
+/** 4-1. 집단별 분류 기준(Strong/Supporting 조건·재분류 사례)만 상세 보기로 제공. 근거 리뷰 자체는 4-2로 연결한다. */
+function ClassificationDetail({ p, onViewPersona }: { p: DataPid; onViewPersona: () => void }) {
   const g = study.dataGroups[p]
-  const primary = list.slice(0, 3)
-  const extra = list.slice(3)
-  const tags = [...new Set(list.flatMap((r) => r.tags))]
-  const [tag, setTag] = useState<string | null>(null)
-  const shownAll = tag ? list.filter((r) => r.tags.includes(tag)) : list
-
   return (
     <div className="mt-4 rounded-2xl border border-g200 p-5">
-      <p className="mb-3 flex items-center gap-2 text-b2 font-semibold text-g900">
-        <span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[p] }} />
-        {PNAME[p]} · 대표 근거 리뷰
-      </p>
-      <ul className="space-y-3">{primary.map((r) => <ReviewCard key={r.idx} r={r} />)}</ul>
-
-      <Disclosure summary="분류 기준 및 Strong/Supporting 조건 · 재분류 사례 자세히 보기" className="mt-4">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <p className="flex items-center gap-2 text-b2 font-semibold text-g900">
+          <span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[p] }} />
+          {PNAME[p]}
+        </p>
+        <button onClick={onViewPersona} className="text-b3 font-semibold text-brand hover:text-brand-hover">퍼소나 근거 보기 →</button>
+      </div>
+      <Disclosure summary="분류 기준 및 Strong/Supporting 조건 · 재분류 사례 자세히 보기">
         <div className="space-y-3">
           <div className="space-y-1.5 rounded-xl bg-g50 px-4 py-3 text-b3 text-g800">
             <p><span className="font-semibold text-g900">분류 조건</span> {study.stats.keywordRules[p]}</p>
@@ -75,40 +67,20 @@ function GroupEvidence({ p }: { p: DataPid }) {
           </ul>
         </div>
       </Disclosure>
-
-      <Disclosure summary="8개 행동 변수 중 이 집단의 위치 자세히 보기" className="mt-3">
-        <div className="rounded-3xl border border-g200 px-4 py-3 sm:px-6">
-          <TrackStack tracks={study.dataVars} ids={DATA_IDS} scale={4} paths={[p]} label={(id) => GNUM[id]} />
-        </div>
-      </Disclosure>
-
-      {extra.length > 0 && (
-        <Disclosure summary={`추가 근거 리뷰 ${extra.length}건 보기`} className="mt-3">
-          <ul className="space-y-3">{extra.map((r) => <ReviewCard key={r.idx} r={r} />)}</ul>
-        </Disclosure>
-      )}
-
-      <Disclosure summary={`전체 핵심 리뷰 ${list.length}건 보기`} className="mt-3">
-        <div className="mb-3 flex flex-wrap gap-1.5">
-          {[null, ...tags].map((t) => <Chip key={t ?? 'all'} on={tag === t} onClick={() => setTag(t)}>{t ?? '전체'}</Chip>)}
-        </div>
-        <ul className="space-y-3">{shownAll.map((r) => <ReviewCard key={r.idx} r={r} />)}</ul>
-      </Disclosure>
     </div>
   )
 }
 
-/** 4-2. 행동 유형 → AI 퍼소나 연결, 핵심 행동 특성 ↔ 근거 리뷰, 전체 프로필은 상세 보기. */
+/** 4-2. 행동 유형 → AI 퍼소나 연결, 퍼소나 핵심 요약 + 원문 근거(중복 없이 한 리뷰에 관련 태그를 함께 표시). */
 function PersonaEvidence({ pid }: { pid: DataPid }) {
-  const narr = method.groupNarratives[pid]
-  const g = study.dataGroups[pid]
   const persona = personaById(pid)
   const list = core[pid]
+  const primary = list.slice(0, 5)
+  const extra = list.slice(5)
   const roleLabel = persona.role.replace(/ \d$/, '').replace('Persona', '퍼소나')
-  const evidenceByVar = narr.vars.map((v) => ({ v, reviews: list.filter((r) => r.tags.includes(v)) }))
 
   return (
-    <div className="rounded-2xl border border-g200 p-5">
+    <div id={`persona-${pid}`} className="scroll-mt-24 rounded-2xl border border-g200 p-5">
       <div className="flex flex-wrap items-center gap-2 text-b3 text-g700">
         <span className="rounded-s bg-g50 px-2.5 py-1.5 font-semibold text-g900">행동 유형: {PNAME[pid]}</span>
         <span aria-hidden className="text-g400">→ AI 퍼소나 제작 →</span>
@@ -119,48 +91,20 @@ function PersonaEvidence({ pid }: { pid: DataPid }) {
         <PersonaHeader p={persona} label={pid} blind={false} c={PCOLOR[pid]} />
 
         <section className="border-t border-g200 px-5 py-4">
-          <h4 className="mb-2 text-t2">핵심 행동 특성</h4>
-          <ul className="space-y-1.5">
-            {g.traits.map((t) => <li key={t} className="flex gap-2 text-b2 text-g900"><span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-g500" />{t}</li>)}
-          </ul>
-          <p className="mt-3 flex flex-wrap items-center gap-1.5 text-b3 text-g700">
-            <span className="font-semibold text-g900">주요 행동 변수</span>
-            {narr.vars.map((v) => <Badge key={v} tone="blue">{v}</Badge>)}
-          </p>
+          <blockquote className="rounded-xl px-4 py-3 text-t1 text-g900" style={{ background: `${PCOLOR[pid]}14` }}>“{persona.quote}”</blockquote>
         </section>
 
         <section className="border-t border-g200 px-5 py-4">
-          <h4 className="mb-3 text-t2">행동 특성별 대표 근거 리뷰</h4>
-          <div className="space-y-3">
-            {evidenceByVar.map(({ v, reviews }) => {
-              const rep = reviews[0]
-              return (
-                <div key={v} className="rounded-xl bg-g50 p-4">
-                  <p className="mb-1.5 text-b3 font-semibold text-g900">{v}</p>
-                  {rep ? (
-                    <>
-                      <Highlighted text={rep.text} phrases={rep.evidence} />
-                      {reviews.length > 1 && (
-                        <Disclosure summary={`추가 근거 ${reviews.length - 1}건 보기`} className="mt-2">
-                          <ul className="space-y-2">
-                            {reviews.slice(1).map((r) => (
-                              <li key={r.idx} className="rounded-xl border border-g200 bg-white p-3">
-                                <span className="mr-1 text-cap text-g500 tabular">#{r.idx}</span>
-                                <Highlighted text={r.text} phrases={r.evidence} />
-                              </li>
-                            ))}
-                          </ul>
-                        </Disclosure>
-                      )}
-                    </>
-                  ) : <p className="text-b3 text-g500">이 집단의 핵심 리뷰 중 해당 변수와 직접 연결된 근거가 없어요.</p>}
-                </div>
-              )
-            })}
-          </div>
+          <h4 className="mb-1 text-t2">원문 근거 리뷰</h4>
+          <p className="mb-3 text-b3 text-g600">핵심 리뷰 {list.length}건 중 대표 {primary.length}건이에요. 한 리뷰가 여러 행동 변수의 근거로 함께 쓰이는 경우 리뷰를 반복하지 않고, 관련 변수 태그를 함께 표시했어요.</p>
+          <ul className="space-y-3">{primary.map((r) => <ReviewCard key={r.idx} r={r} />)}</ul>
+          {extra.length > 0 && (
+            <Disclosure summary={`추가 근거 ${extra.length}건 보기`} className="mt-3">
+              <ul className="space-y-3">{extra.map((r) => <ReviewCard key={r.idx} r={r} />)}</ul>
+            </Disclosure>
+          )}
           <p className="mt-3 text-cap text-g500">
-            위 발췌는 생략 없이 리뷰 원문 전체를 보여드리고, 행동 특성과 관련된 부분만 강조했어요.
-            나이·직업 등 퍼소나 프로필 항목은 AI가 구성한 가상 설정으로, 위 리뷰가 그 항목까지 직접 뒷받침하는 것은 아니에요.
+            위 리뷰는 생략 없이 원문 전체를 보여드려요. 나이·직업 등 퍼소나 프로필 항목은 AI가 구성한 가상 설정으로, 위 리뷰가 그 항목까지 직접 뒷받침하는 것은 아니에요.
           </p>
         </section>
 
@@ -194,9 +138,9 @@ function ReviewRow({ pid, idx }: { pid: DataPid; idx: number }) {
       <Highlighted text={review.text} phrases={review.evidence} />
       <p className="mt-2 flex flex-wrap gap-1.5">{review.tags.map((t) => <Badge key={t} tone="blue">{t}</Badge>)}</p>
 
-      <Disclosure summary="연구자의 분류 근거 자세히 보기" className="mt-3">
+      <Disclosure summary="분류 근거 자세히 보기" className="mt-3">
         <div className="space-y-1.5 rounded-xl bg-g50 px-4 py-3 text-b3 text-g700">
-          <p><span className="font-semibold text-g900">연구자 분류 이유</span> {review.why}</p>
+          <p><span className="font-semibold text-g900">분류 이유</span> {review.why}</p>
           {otherGroups.length > 0 && (
             <p><span className="font-semibold text-g900">다른 집단과의 중복</span> 이 리뷰는 {otherGroups.map((p) => PNAME[p]).join(', ')}의 근거 리뷰로도 함께 쓰여요.</p>
           )}
@@ -262,6 +206,13 @@ export default function Step4() {
   const totalDone = DATA_IDS.reduce((s, p) => s + doneOf(p), 0)
   const totalAll = DATA_IDS.reduce((s, p) => s + sampleReviewIdx(p).length, 0)
 
+  const goToPersona = (p: DataPid) => {
+    setPart('reveal')
+    requestAnimationFrame(() => {
+      setTimeout(() => document.getElementById(`persona-${p}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60)
+    })
+  }
+
   return (
     <div>
       <PageHead step={4} title="리뷰 기반 AI 분석 및 퍼소나 근거 검증">
@@ -287,49 +238,39 @@ export default function Step4() {
             </Disclosure>
           </Section>
 
-          <Section title="행동 유형 3개" lead="AI가 리뷰 전반에서 반복되는 행동 패턴을 분석해 구성한 세 집단과 핵심 행동 특성이에요. 이 특성이 바로 다음 4-2의 퍼소나로 이어져요.">
+          <Section title="행동 유형 3개" lead="AI가 리뷰 전반에서 반복되는 행동 패턴을 분석해 구성한 세 집단이에요. 이 특성이 바로 다음 4-2의 퍼소나로 이어져요.">
             <div className="grid gap-4 lg:grid-cols-3 lg:items-stretch">
               {DATA_IDS.map((p) => {
                 const g = study.dataGroups[p]
                 const narr = method.groupNarratives[p]
                 return (
                   <div key={p} className="flex flex-col rounded-2xl border border-g200 p-5">
-                    <p className="mb-1 flex items-center gap-2 text-cap text-g500"><span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[p] }} />{g.group} · 분류 {g.count}건({g.share}) · 핵심 리뷰 {core[p].length}건</p>
+                    <p className="mb-1 flex items-center gap-2 text-cap text-g500"><span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[p] }} />{g.group} · 분류 {g.count}건({g.share})</p>
                     <h3 className="text-h3">{PNAME[p]}</h3>
-                    <ul className="mt-2 space-y-1">
-                      {g.traits.map((t) => <li key={t} className="flex gap-1.5 text-b3 text-g700"><span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-g500" />{t}</li>)}
-                    </ul>
-                    <p className="mt-3 flex flex-1 flex-wrap items-start gap-1.5 text-b3 text-g700">
-                      <span className="rounded-s px-2 py-1 font-semibold text-white" style={{ background: PCOLOR[p] }}>구분 특징: {narr.area}</span>
-                      {narr.vars.map((v) => <Badge key={v}>{v}</Badge>)}
+                    <p className="mt-3 rounded-xl bg-g50 px-4 py-3 text-b2 text-g900">{g.summary}</p>
+                    <p className="mt-3 flex flex-1 flex-wrap items-center gap-1.5 text-b3 text-g700">
+                      <span className="font-semibold text-g900">주요 행동 변수</span>
+                      {narr.vars.map((v) => <Badge key={v} tone="blue">{v}</Badge>)}
                     </p>
-                    <Disclosure summary="더보기" className="mt-3">
-                      <div className="space-y-2 text-b3 text-g700">
-                        <p className="rounded-xl bg-g50 px-3 py-2 text-g900">{g.summary}</p>
-                        <p>필요한 경험: {narr.need}</p>
-                        <ul className="flex flex-wrap gap-1.5">
-                          {narr.flowSteps.map((s, i) => <li key={s} className="flex items-center gap-1.5"><span className="rounded-s bg-g50 px-2 py-1">{s}</span>{i < narr.flowSteps.length - 1 && <span className="text-g400">→</span>}</li>)}
-                        </ul>
-                      </div>
-                    </Disclosure>
                   </div>
                 )
               })}
             </div>
-            <p className="mt-4 text-b2 text-g700">각 행동 유형의 근거 리뷰는 아래에서 확인할 수 있어요.</p>
-            {DATA_IDS.map((p) => <GroupEvidence key={p} p={p} />)}
           </Section>
 
-          <section className="mt-8 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
-            <h2 className="pt-4 text-t1">4-1단계 평가</h2>
-            <div className="max-w-3xl"><FieldList fields={STEP4_PROCESS_QS} get={(id) => state.step4[id] ?? ''} set={setStep4} /></div>
-          </section>
+          <Section title="행동 변수 비교" lead="데이터 퍼소나 8개 행동 변수에서 각 집단이 어디에 위치하는지 비교해서 볼 수 있어요. 참고 자료의 '행동 변수·그룹' 페이지와 같은 내용이에요.">
+            <DataGroupVariablesCompare />
+          </Section>
+
+          <Section title="집단별 분류 기준" lead="자세한 근거 리뷰는 4-2에서 퍼소나와 함께 확인할 수 있어요.">
+            {DATA_IDS.map((p) => <ClassificationDetail key={p} p={p} onViewPersona={() => goToPersona(p)} />)}
+          </Section>
         </div>
       )}
 
       {part === 'reveal' && (
         <div className="mt-6">
-          <Note label="안내">이제부터 연구자 재검토를 거친 리뷰 기반 퍼소나 3개를 보여드려요. 데이터 출처는 숨기지 않아요. 기본 화면에는 핵심 행동 특성과 근거만 표시하고, 전체 프로필은 펼쳐서 확인할 수 있어요.</Note>
+          <Note label="안내">이제부터 연구자 재검토를 거친 리뷰 기반 퍼소나 3개를 보여드려요. 데이터 출처는 숨기지 않아요. 4-1에서 확인한 행동 특성은 반복하지 않고, 퍼소나의 핵심 요약과 원문 근거를 중심으로 보여드려요.</Note>
           <div className="mt-4 space-y-6">
             {DATA_IDS.map((p) => <PersonaEvidence key={p} pid={p} />)}
           </div>
@@ -348,9 +289,14 @@ export default function Step4() {
             <span className="ml-auto font-semibold text-g900">전체 {totalDone}/{totalAll}</span>
           </div>
           <Segmented label="퍼소나" items={DATA_IDS} value={pid} onChange={setPid} render={(v) => <span className="flex items-center gap-2 py-1"><span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[v] }} />{PSHORT[v]} · {PNAME[v]}</span>} />
-          <p className="mt-4 max-w-prose2 text-b2 text-g700">아래 리뷰 {sampleReviewIdx(pid).length}건은 {PSHORT[pid]}의 대표 리뷰예요. 하나씩 읽고 연구자의 분류를 다시 판단해 주세요.</p>
+          <p className="mt-4 max-w-prose2 text-b2 text-g700">아래 리뷰 {sampleReviewIdx(pid).length}건은 {PSHORT[pid]}의 대표 리뷰예요. 하나씩 읽고 분류 근거를 다시 판단해 주세요.</p>
           <ReviewReviewer key={pid} pid={pid} />
           <p className="mt-6 text-b2 text-g700">전체 분류 데이터를 다 보고 싶다면 <Link to="/reviews" className="text-brand hover:text-brand-hover">전체 분류 데이터 확인</Link>에서 모든 리뷰를 분류별로 볼 수 있어요.</p>
+
+          <section className="mt-8 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
+            <h2 className="pt-4 text-t1">4단계 종합 평가</h2>
+            <div className="max-w-3xl"><FieldList fields={STEP4_PROCESS_QS} get={(id) => state.step4[id] ?? ''} set={setStep4} /></div>
+          </section>
         </div>
       )}
 
