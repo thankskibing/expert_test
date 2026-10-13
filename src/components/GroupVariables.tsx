@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { DATA_IDS, PCOLOR, PNAME, study, type DataPid } from '../lib/data'
+import { DATA_IDS, PCOLOR, PNAME, QUAL_IDS, study, type DataPid, type QualPid, type Uid } from '../lib/data'
 import TrackStack from './TrackStack'
 import { PersonaPill, Segmented } from './ui'
 
 const GNUM: Record<string, string> = { A: '1', B: '2', C: '3' }
+const QGNUM: Record<string, string> = { P: '1', S1: '2', S2: '3' }
+const UIDS: Uid[] = ['U1', 'U2', 'U3', 'U4', 'U5', 'U6']
 
 function GroupCard({ tag, name, traits, summary, children }: { tag: string; name: string; traits: string[]; summary: string; children?: React.ReactNode }) {
   return (
@@ -46,6 +48,40 @@ export function DataGroupVariablesCompare() {
         {dp !== 'all' ? <DataGroupCard p={dp} /> : (
           <div className="space-y-3">
             {DATA_IDS.map((p) => <div key={p} className="rounded-2xl bg-g50 p-5"><PersonaPill id={p} /><p className="mt-2 text-b2 text-g800">{study.dataGroups[p].summary}</p></div>)}
+          </div>
+        )}
+      </div>
+    </>
+  )
+}
+
+export function QualGroupCard({ g }: { g: QualPid }) {
+  const grp = study.qualGroups[g]
+  return (
+    <GroupCard tag={`${grp.group} · ${grp.role} · 참여자 ${grp.members.length}명(${grp.members.join(', ')})`} name={grp.name} traits={grp.traits} summary={grp.summary} />
+  )
+}
+
+/**
+ * 정성 퍼소나: 행동 변수 6개와 그룹 P/S1/S2 비교. 데이터 퍼소나 쪽(DataGroupVariablesCompare)과 같은
+ * 그룹 탭 + TrackStack + 요약 카드 구성으로, 5-1(5단계)에서도 4-1과 같은 모양으로 보여주기 위한 컴포넌트.
+ * 참고 자료의 '행동 변수·그룹' 페이지는 참여자 한 명씩 보기 토글이 추가로 있어 별도 구현을 유지한다.
+ */
+export function QualGroupVariablesCompare() {
+  const [qg, setQg] = useState<QualPid | 'all'>('P')
+  const members = qg === 'all' ? null : study.qualGroups[qg].members
+  return (
+    <>
+      <Segmented label="정성 그룹" items={[...QUAL_IDS, 'all'] as (QualPid | 'all')[]} value={qg} onChange={setQg} render={(v) => v === 'all'
+        ? <span className="py-1">전체 비교</span>
+        : <span className="flex items-center gap-2 py-1"><span className="flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold text-white" style={{ background: PCOLOR[v] }}>{QGNUM[v]}</span>{PNAME[v]}</span>} />
+      <div className="mt-6 grid gap-6 xl:grid-cols-[1.25fr_1fr]">
+        <div className="rounded-3xl border border-g200 px-4 py-3 sm:px-6">
+          <TrackStack tracks={study.qualPattern} ids={UIDS} paths={qg === 'all' ? [] : members ?? []} focus={qg === 'all' ? null : members} />
+        </div>
+        {qg !== 'all' ? <QualGroupCard g={qg} /> : (
+          <div className="space-y-3">
+            {QUAL_IDS.map((p) => <div key={p} className="rounded-2xl bg-g50 p-5"><PersonaPill id={p} /><p className="mt-2 text-b2 text-g800">{study.qualGroups[p].summary}</p></div>)}
           </div>
         )}
       </div>

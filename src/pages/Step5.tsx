@@ -3,8 +3,8 @@ import { HIGHLIGHT_KEYWORDS, PCOLOR, PNAME, PSHORT, QUAL_IDS, method, personaByI
 import { REVIEW_AGREE_OPTIONS, STEP5_PATTERN_QS, STEP5_QUAL_QS } from '../lib/protocol'
 import { useEval } from '../lib/evalStore'
 import { FieldList } from '../components/form'
+import { QualGroupVariablesCompare } from '../components/GroupVariables'
 import { Body, Header as PersonaHeader, ProfileSection } from '../components/PersonaCard'
-import TrackStack from '../components/TrackStack'
 import { StepNav } from '../components/flow'
 import { Badge, Button, Disclosure, Emphasis, Note, PageHead, Section, Segmented } from '../components/ui'
 
@@ -88,7 +88,11 @@ function GroupBasicCard({ g, onViewPersona }: { g: QualPid; onViewPersona: () =>
   )
 }
 
-/** 5-1 상세: 행동 유형별 상세 분류 근거(연구자 1차 분석 전체) + 행동 변수 6개 위치 + 참여자 전체 원문·Pain points. */
+/**
+ * 5-1 상세: 행동 유형별 상세 분류 근거(연구자 1차 분석 전체) + 참여자 전체 원문·Pain point.
+ * 행동 변수 6개 위치는 위쪽 '행동 변수 비교' 섹션에서 이미 보여주므로 여기서는 중복하지 않는다.
+ * 참여자별 프로필은 핵심 정보만 한 줄로 요약하고, Pain point는 제목만 칩으로 보여줘 분량을 줄였다.
+ */
 function GroupInterviewDetail({ g }: { g: QualPid }) {
   const grp = study.qualGroups[g]
   const members = grp.members.map((id) => study.participants.find((u) => u.id === id)!)
@@ -102,38 +106,21 @@ function GroupInterviewDetail({ g }: { g: QualPid }) {
           </ul>
         </div>
         <div>
-          <h4 className="mb-2 text-b2 font-bold text-g900">행동 변수 6개 중 이 그룹의 위치</h4>
-          <div className="rounded-3xl border border-g200 px-4 py-3 sm:px-6">
-            <TrackStack tracks={study.qualPattern} ids={UIDS} paths={grp.members} focus={grp.members} />
-          </div>
-        </div>
-        <div>
           <h4 className="mb-3 text-b2 font-bold text-g900">참여자 원문 ({grp.members.join(', ')})</h4>
           <div className="space-y-4">
             {members.map((u) => (
               <div key={u.id} className="rounded-xl border border-g200 bg-g50 p-4">
-                <p className="mb-2 flex items-center gap-2 text-b2 font-semibold text-g900">
+                <p className="mb-1 flex items-center gap-2 text-b2 font-semibold text-g900">
                   <Avatar id={u.id} size={24} />
                   {u.id} · {u.title}
                 </p>
-                <dl className="divide-y divide-g200 rounded-xl bg-white px-4 text-b3">
-                  {u.info.filter((x) => x.k !== '기본 정보').map((x) => (
-                    <div key={x.k} className="grid grid-cols-[7rem_1fr] gap-3 py-2.5"><dt className="text-g600">{x.k}</dt><dd className="text-g900">{x.v}</dd></div>
-                  ))}
-                </dl>
-                <p className="mb-2 mt-3 text-b3 font-semibold text-g900">발화 전체</p>
+                <p className="mb-3 text-b3 text-g600">{pick(u, '피부 타입')} · {pick(u, '주요 피부 고민')} · {pick(u, '사용 기간')}</p>
+                <p className="mb-2 text-b3 font-semibold text-g900">발화 전체</p>
                 <ul className="space-y-2">
                   {u.quotes.map((q, i) => <li key={i} className="rounded-xl border border-g200 bg-white px-4 py-3 text-b2 text-g900">“{q}”</li>)}
                 </ul>
-                <p className="mb-2 mt-3 text-b3 font-semibold text-g900">Pain point</p>
-                <ul className="space-y-3">
-                  {u.pains.map((p) => (
-                    <li key={p.title}>
-                      <p className="flex items-start gap-2 text-b2 font-semibold text-g900"><Badge tone="red">Pain</Badge><span>{p.title}</span></p>
-                      <p className="mt-1 text-b3 text-g600">{p.detail}</p>
-                    </li>
-                  ))}
-                </ul>
+                <p className="mb-1.5 mt-3 text-b3 font-semibold text-g900">Pain point</p>
+                <p className="flex flex-wrap gap-1.5">{u.pains.map((p) => <Badge key={p.title} tone="red">{p.title}</Badge>)}</p>
               </div>
             ))}
           </div>
@@ -143,11 +130,16 @@ function GroupInterviewDetail({ g }: { g: QualPid }) {
   )
 }
 
-/** 5-2 기본 화면: 퍼소나명·행동 유형 → 핵심 행동 특성/관리 목표/주요 불편/필요한 지원 → 근거 참여자·발화. 전체 프로필은 펼침으로. */
+/**
+ * 5-2 기본 화면: 퍼소나명·행동 유형 → 핵심 행동 특성(간소화) → 근거 참여자·발화(대표 참여자 1명 기본,
+ * 나머지는 펼침). 관리 목표·주요 불편·필요한 지원은 대표 발화와 직접 연결되지 않아 전체 프로필
+ * 펼침으로 옮기고, 대표 발화 연결성이 가장 중요한 "근거 참여자 및 발화"를 핵심 행동 특성 바로 다음에 둔다.
+ */
 function QualPersonaEvidence({ pid }: { pid: QualPid }) {
   const persona = personaById(pid)
   const grp = study.qualGroups[pid]
   const members = grp.members.map((id) => study.participants.find((u) => u.id === id)!)
+  const [first, ...rest] = members
   const roleLabel = persona.role.replace(/ \d$/, '').replace('Persona', '퍼소나')
   const kw = HIGHLIGHT_KEYWORDS[pid] ?? []
 
@@ -166,41 +158,32 @@ function QualPersonaEvidence({ pid }: { pid: QualPid }) {
           <blockquote className="rounded-xl px-4 py-3 text-t1 text-g900" style={{ background: `${PCOLOR[pid]}14` }}>“<Emphasis text={persona.quote} keywords={kw} />”</blockquote>
         </section>
 
-        <section className="grid gap-5 border-t border-g200 px-5 py-4 sm:grid-cols-2">
-          <div>
-            <h4 className="mb-1.5 text-t2">핵심 행동 특성</h4>
-            <ul className="space-y-1.5 text-b2 text-g900">{grp.traits.slice(0, 2).map((t) => <li key={t} className="flex gap-2"><span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-g500" /><Emphasis text={t} keywords={kw} /></li>)}</ul>
-          </div>
-          <div>
-            <h4 className="mb-1.5 text-t2">관리 목표</h4>
-            <dl className="space-y-1.5 text-b2">{persona.goals.map((x) => <div key={x.k}><dt className="font-semibold text-g900">{x.k}</dt><dd className="text-g700"><Emphasis text={x.v} keywords={kw} /></dd></div>)}</dl>
-          </div>
-          <div>
-            <h4 className="mb-1.5 text-t2">주요 불편</h4>
-            <ul className="space-y-1.5 text-b2 text-g900">{persona.pains.slice(0, 3).map((p) => <li key={p} className="flex gap-2"><span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-g500" /><Emphasis text={p} keywords={kw} /></li>)}</ul>
-          </div>
-          <div>
-            <h4 className="mb-1.5 text-t2">필요한 지원</h4>
-            <ul className="space-y-1.5 text-b2 text-g900">{persona.needs.slice(0, 2).map((n) => <li key={n.title} className="flex gap-2"><span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-g500" /><Emphasis text={n.title} keywords={kw} /></li>)}</ul>
-          </div>
+        <section className="border-t border-g200 px-5 py-4">
+          <h4 className="mb-1.5 text-t2">핵심 행동 특성</h4>
+          <ul className="space-y-1.5 text-b2 text-g900">{grp.traits.slice(0, 2).map((t) => <li key={t} className="flex gap-2"><span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-g500" /><Emphasis text={t} keywords={kw} /></li>)}</ul>
         </section>
 
         <section className="border-t border-g200 px-5 py-4">
           <h4 className="mb-1 text-t2">근거 참여자 및 발화</h4>
           <p className="mb-3 text-b3 text-g600">
-            이 행동 특성을 뒷받침하는 참여자는 {members.length}명({grp.members.join(', ')})이에요.
-            {members.length === 1 && ' 한 명의 인터뷰를 바탕으로 구성된 퍼소나예요.'}
+            근거 참여자: {grp.members.join(', ')}({members.length}명){members.length === 1 && ' · 한 명의 인터뷰를 바탕으로 구성된 퍼소나예요.'}
           </p>
-          <div className="space-y-3">
-            {members.map((u) => (
-              <div key={u.id} className="rounded-xl border border-g200 bg-g50 p-4">
-                <p className="mb-2 flex items-center gap-2 text-b2 font-semibold text-g900"><Avatar id={u.id} size={24} />{u.id} · {u.title}</p>
-                <ul className="space-y-1.5">
-                  {u.quotes.slice(0, 2).map((q, i) => <li key={i} className="rounded-m bg-white px-3 py-2 text-b2 text-g900">“{q}”</li>)}
-                </ul>
-              </div>
-            ))}
+          <div className="rounded-xl border border-g200 bg-g50 p-4">
+            <p className="mb-2 flex items-center gap-2 text-b2 font-semibold text-g900"><Avatar id={first.id} size={24} />{first.id} · {first.title}</p>
+            <ul className="space-y-1.5">{first.quotes.slice(0, 2).map((q, i) => <li key={i} className="rounded-m bg-white px-3 py-2 text-b2 text-g900">“{q}”</li>)}</ul>
           </div>
+          {rest.length > 0 && (
+            <Disclosure summary={`다른 참여자 발화 보기(${rest.length}명)`} className="mt-3">
+              <div className="space-y-3">
+                {rest.map((u) => (
+                  <div key={u.id} className="rounded-xl border border-g200 bg-g50 p-4">
+                    <p className="mb-2 flex items-center gap-2 text-b2 font-semibold text-g900"><Avatar id={u.id} size={24} />{u.id} · {u.title}</p>
+                    <ul className="space-y-1.5">{u.quotes.slice(0, 2).map((q, i) => <li key={i} className="rounded-m bg-white px-3 py-2 text-b2 text-g900">“{q}”</li>)}</ul>
+                  </div>
+                ))}
+              </div>
+            </Disclosure>
+          )}
           <p className="mt-3 text-cap text-g500">위 퍼소나 프로필(이름·나이·직업 등)은 AI가 구성한 가상 설정이고, 발화는 참여자가 실제로 말한 원문이에요.</p>
         </section>
 
@@ -357,7 +340,11 @@ export default function Step5() {
             </div>
           </Section>
 
-          <Section title="행동 유형별 상세 분류 근거" lead="연구자의 1차 분석 전체, 행동 변수 6개 위치, 참여자 전체 발화와 Pain point는 아래에서 확인할 수 있어요.">
+          <Section title="행동 변수 비교" lead="정성 퍼소나 6개 행동 변수에서 각 집단이 어디에 위치하는지 비교해서 볼 수 있어요. 참고 자료의 '행동 변수·그룹' 페이지와 같은 내용이에요.">
+            <QualGroupVariablesCompare />
+          </Section>
+
+          <Section title="행동 유형별 상세 분류 근거" lead="연구자의 1차 분석 전체와 참여자 전체 발화·Pain point는 아래에서 확인할 수 있어요.">
             {QUAL_IDS.map((g) => <GroupInterviewDetail key={g} g={g} />)}
           </Section>
 
