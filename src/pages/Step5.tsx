@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { HIGHLIGHT_KEYWORDS, PCOLOR, PNAME, PSHORT, QUAL_IDS, method, personaById, study, type QualPid, type Uid } from '../lib/data'
-import { REVIEW_AGREE_OPTIONS, STEP5_PATTERN_QS, STEP5_QUAL_QS } from '../lib/protocol'
+import { REVIEW_AGREE_OPTIONS, STEP5_GROUP_QS, STEP5_PATTERN_QS, STEP5_REVIEW_QS } from '../lib/protocol'
 import { useEval } from '../lib/evalStore'
 import { FieldList } from '../components/form'
 import { QualGroupVariablesCompare } from '../components/GroupVariables'
@@ -291,7 +291,7 @@ function InterviewReviewer() {
 }
 
 export default function Step5() {
-  const { state, setStep5pattern, setStep5qual } = useEval()
+  const { state, setStep5pattern } = useEval()
   const [part, setPart] = useState<(typeof PARTS)[number][0]>('pattern')
 
   const isDone = (uid: Uid) => {
@@ -334,11 +334,19 @@ export default function Step5() {
             </div>
           </Section>
 
+          <section className="rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
+            <div className="max-w-3xl"><FieldList fields={STEP5_PATTERN_QS} get={(id) => state.step5pattern[id] ?? ''} set={setStep5pattern} start={1} /></div>
+          </section>
+
           <Section title="행동 유형 3개" lead="연구자의 1차 분석과 AI의 재구성을 거쳐 도출된 세 집단이에요. 이 특성이 바로 다음 5-2의 퍼소나로 이어져요.">
             <div className="grid gap-4 lg:grid-cols-3 lg:items-stretch">
               {QUAL_IDS.map((g) => <GroupBasicCard key={g} g={g} onViewPersona={() => goToPersona(g)} />)}
             </div>
           </Section>
+
+          <section className="mb-12 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
+            <div className="max-w-3xl"><FieldList fields={STEP5_GROUP_QS} get={(id) => state.step5pattern[id] ?? ''} set={setStep5pattern} start={3} /></div>
+          </section>
 
           <Section title="행동 변수 비교" lead="정성 퍼소나 6개 행동 변수에서 각 집단이 어디에 위치하는지 비교해서 볼 수 있어요. 참고 자료의 '행동 변수·그룹' 페이지와 같은 내용이에요.">
             <QualGroupVariablesCompare />
@@ -347,11 +355,6 @@ export default function Step5() {
           <Section title="행동 유형별 상세 분류 근거" lead="연구자의 1차 분석 전체와 참여자 전체 발화·Pain point는 아래에서 확인할 수 있어요.">
             {QUAL_IDS.map((g) => <GroupInterviewDetail key={g} g={g} />)}
           </Section>
-
-          <section className="mt-8 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
-            <h2 className="pt-4 text-t1">5-1단계 평가</h2>
-            <div className="max-w-3xl"><FieldList fields={STEP5_PATTERN_QS} get={(id) => state.step5pattern[id] ?? ''} set={setStep5pattern} /></div>
-          </section>
         </div>
       )}
 
@@ -361,10 +364,6 @@ export default function Step5() {
           <div className="mt-4 space-y-6">
             {QUAL_IDS.map((p) => <QualPersonaEvidence key={p} pid={p} />)}
           </div>
-          <section className="mt-8 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
-            <h2 className="pt-4 text-t1">5-2단계 평가</h2>
-            <div className="max-w-3xl"><FieldList fields={STEP5_QUAL_QS} get={(id) => state.step5qual[id] ?? ''} set={setStep5qual} /></div>
-          </section>
         </div>
       )}
 
@@ -381,6 +380,11 @@ export default function Step5() {
           </div>
           <p className="mt-4 max-w-prose2 text-b2 text-g700">참여자 6명의 발화를 한 명씩 읽고, 연구자가 분류한 그룹(퍼소나)이 맞는지 판단해 주세요.</p>
           <InterviewReviewer />
+
+          <section className="mt-8 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
+            <h2 className="pt-4 text-t1">5단계 종합 평가</h2>
+            <div className="max-w-3xl"><FieldList fields={STEP5_REVIEW_QS} get={(id) => state.step5pattern[id] ?? ''} set={setStep5pattern} start={5} /></div>
+          </section>
         </div>
       )}
 
