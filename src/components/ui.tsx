@@ -129,6 +129,39 @@ export function Highlighted({ text, phrases }: { text: string; phrases: string[]
   return <p className="whitespace-pre-line text-b2 text-g900">{out}</p>
 }
 
+/** Wraps every occurrence of any given keyword in inline <mark>s. Text itself is never changed, only marked up. */
+export function Emphasis({ text, keywords }: { text: string; keywords: string[] }) {
+  if (!keywords.length) return <>{text}</>
+  const ranges: [number, number][] = []
+  for (const k of keywords) {
+    if (!k) continue
+    let from = 0
+    for (;;) {
+      const i = text.indexOf(k, from)
+      if (i < 0) break
+      ranges.push([i, i + k.length])
+      from = i + k.length
+    }
+  }
+  if (!ranges.length) return <>{text}</>
+  ranges.sort((a, b) => a[0] - b[0])
+  const merged: [number, number][] = []
+  for (const r of ranges) {
+    const last = merged.at(-1)
+    if (last && r[0] <= last[1]) last[1] = Math.max(last[1], r[1])
+    else merged.push([...r])
+  }
+  const out: ReactNode[] = []
+  let cur = 0
+  merged.forEach(([s, e], k) => {
+    if (s > cur) out.push(text.slice(cur, s))
+    out.push(<mark key={k} className="ev">{text.slice(s, e)}</mark>)
+    cur = e
+  })
+  out.push(text.slice(cur))
+  return <>{out}</>
+}
+
 /** Ant Design Alert (warning): pale semantic background, normal text color, status shown by icon. */
 export function Note({ children, label = '확인 필요' }: { children: ReactNode; label?: string }) {
   return (

@@ -81,6 +81,18 @@ export const PIMG: Record<string, string> = { A: imgA, B: imgB, C: imgC, P: imgP
 export const PRANK: Record<string, string> = { A: 'Primary', B: 'Secondary 1', C: 'Secondary 2', P: 'Primary', S1: 'Secondary 1', S2: 'Secondary 2' }
 export const PABBR: Record<string, string> = { A: 'P', B: 'S1', C: 'S2', P: 'P', S1: 'S1', S2: 'S2' }
 export const PSHORT: Record<string, string> = { A: '데이터 Primary', B: '데이터 Secondary 1', C: '데이터 Secondary 2', P: '정성 Primary', S1: '정성 Secondary 1', S2: '정성 Secondary 2' }
+/**
+ * 퍼소나별 고유 태그(tags)가 담고 있는 핵심 의미를, 실제 Bio·Motivation·Goal·Pain Points·Needs
+ * 본문에 쓰인 단어로 옮겨 강조 표시에 쓴다. 본문 문장은 그대로 두고 일치하는 단어만 하이라이트한다.
+ */
+export const HIGHLIGHT_KEYWORDS: Record<string, string[]> = {
+  A: ['꾸준히', '반복', '매일', '루틴', '체감', '효과'],
+  B: ['후기', '가격', '비교', '구매', '확신'],
+  C: ['모드', '강도', '조절', '맞춤', '최적화'],
+  P: ['루틴', '상황', '조절', '맞춤'],
+  S1: ['핵심 기능', '반복', '유지', '장기'],
+  S2: ['핵심 기능', '빠르게', '효과', '집중'],
+}
 
 export const CATS: { id: Cat; label: string; hint: string }[] = [
   { id: 'D', label: '퍼소나 적합', hint: '이 퍼소나의 핵심 행동변수를 원문에서 직접 보여주는 리뷰' },

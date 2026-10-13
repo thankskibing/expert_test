@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { CATLABEL, DATA_IDS, PCOLOR, PNAME, PSHORT, type DataPid, core, method, personaById, study } from '../lib/data'
+import { CATLABEL, DATA_IDS, HIGHLIGHT_KEYWORDS, PCOLOR, PNAME, PSHORT, type DataPid, core, method, personaById, study } from '../lib/data'
 import { REVIEW_AGREE_OPTIONS, STEP4_PROCESS_QS } from '../lib/protocol'
 import { useEval } from '../lib/evalStore'
 import { sampleReviewIdx } from '../lib/payload'
@@ -8,7 +8,7 @@ import { FieldList } from '../components/form'
 import { DataGroupVariablesCompare } from '../components/GroupVariables'
 import { Body, Header as PersonaHeader, ProfileSection } from '../components/PersonaCard'
 import { StepNav } from '../components/flow'
-import { Badge, Button, Highlighted, Note, PageHead, Section, Segmented } from '../components/ui'
+import { Badge, Button, Emphasis, Highlighted, Note, PageHead, Section, Segmented } from '../components/ui'
 
 function Disclosure({ summary, children, className = '' }: { summary: string; children: React.ReactNode; className?: string }) {
   return (
@@ -91,7 +91,7 @@ function PersonaEvidence({ pid }: { pid: DataPid }) {
         <PersonaHeader p={persona} label={pid} blind={false} c={PCOLOR[pid]} />
 
         <section className="border-t border-g200 px-5 py-4">
-          <blockquote className="rounded-xl px-4 py-3 text-t1 text-g900" style={{ background: `${PCOLOR[pid]}14` }}>“{persona.quote}”</blockquote>
+          <blockquote className="rounded-xl px-4 py-3 text-t1 text-g900" style={{ background: `${PCOLOR[pid]}14` }}>“<Emphasis text={persona.quote} keywords={HIGHLIGHT_KEYWORDS[pid] ?? []} />”</blockquote>
         </section>
 
         <section className="border-t border-g200 px-5 py-4">

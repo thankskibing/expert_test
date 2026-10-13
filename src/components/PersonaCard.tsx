@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
-import { PCOLOR, personaById, PIMG, type Persona } from '../lib/data'
+import { HIGHLIGHT_KEYWORDS, PCOLOR, personaById, PIMG, type Persona } from '../lib/data'
+import { Emphasis } from './ui'
 
 export const XY_COLOR: Record<'X' | 'Y', string> = { X: '#13C2C2', Y: '#722ED1' }
 
@@ -23,8 +24,8 @@ function Block({ title, children }: { title: string; children: ReactNode }) {
     </section>
   )
 }
-const Bullets = ({ items }: { items: string[] }) => (
-  <ul className="space-y-1.5">{items.map((m) => <li key={m} className="flex gap-2"><span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-g500" />{m}</li>)}</ul>
+const Bullets = ({ items, keywords = [] }: { items: string[]; keywords?: string[] }) => (
+  <ul className="space-y-1.5">{items.map((m) => <li key={m} className="flex gap-2"><span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-g500" /><Emphasis text={m} keywords={keywords} /></li>)}</ul>
 )
 
 export function Header({ p, label, blind, c, header }: { p: Persona; label: string; blind: boolean; c: string; header?: ReactNode }) {
@@ -53,19 +54,20 @@ export function ProfileSection({ id, p, c }: { id: string; p: Persona; c: string
       <dl className="mt-3 grid grid-cols-[7rem_1fr] gap-x-3 gap-y-1 text-b2">
         {p.profile.map((x) => <div key={x.k} className="contents"><dt className="text-g600">{x.k}</dt><dd className="text-g900">{x.v}</dd></div>)}
       </dl>
-      <blockquote className="mt-4 rounded-xl px-4 py-3 text-t1 text-g900" style={{ background: `${c}14` }}>“{p.quote}”</blockquote>
+      <blockquote className="mt-4 rounded-xl px-4 py-3 text-t1 text-g900" style={{ background: `${c}14` }}>“<Emphasis text={p.quote} keywords={HIGHLIGHT_KEYWORDS[p.id] ?? []} />”</blockquote>
     </section>
   )
 }
 
 export function Body({ p, blind, c }: { p: Persona; blind: boolean; c: string }) {
+  const kw = HIGHLIGHT_KEYWORDS[p.id] ?? []
   return (
     <>
-      <Block title="Bio"><p>{p.bio}</p></Block>
-      <Block title="Motivation"><Bullets items={p.motivation} /></Block>
-      <Block title="Goal"><dl className="space-y-2">{p.goals.map((g) => <div key={g.k}><dt className="font-semibold">{g.k}</dt><dd>{g.v}</dd></div>)}</dl></Block>
-      <Block title="Pain points"><Bullets items={p.pains} /></Block>
-      <Block title="Needs"><ol className="space-y-2">{p.needs.map((n, i) => <li key={n.title}><p className="font-semibold">{i + 1}. {n.title}</p><p className="text-g700">{n.detail}</p></li>)}</ol></Block>
+      <Block title="Bio"><p><Emphasis text={p.bio} keywords={kw} /></p></Block>
+      <Block title="Motivation"><Bullets items={p.motivation} keywords={kw} /></Block>
+      <Block title="Goal"><dl className="space-y-2">{p.goals.map((g) => <div key={g.k}><dt className="font-semibold">{g.k}</dt><dd><Emphasis text={g.v} keywords={kw} /></dd></div>)}</dl></Block>
+      <Block title="Pain points"><Bullets items={p.pains} keywords={kw} /></Block>
+      <Block title="Needs"><ol className="space-y-2">{p.needs.map((n, i) => <li key={n.title}><p className="font-semibold">{i + 1}. <Emphasis text={n.title} keywords={kw} /></p><p className="text-g700"><Emphasis text={n.detail} keywords={kw} /></p></li>)}</ol></Block>
       <Block title="Behavior">{p.behavior.map((b) => <Slider key={b.name} {...b} color={c} />)}</Block>
       {!blind && p.flag && <p className="mx-5 mb-4 rounded-xl border border-[#FFE58F] bg-[#FFFBE6] px-3 py-2 text-b3">{p.flag}</p>}
     </>
