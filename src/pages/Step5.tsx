@@ -244,7 +244,7 @@ function InterviewRow({ pid, uid }: { pid: QualPid; uid: Uid }) {
             </ul>
           </div>
           <div className="space-y-1.5 rounded-xl bg-g50 px-4 py-3 text-b3 text-g700">
-            <p className="font-semibold text-g900">연구자가 이 그룹으로 분류한 근거(연구자 1차 분석)</p>
+            <p className="font-semibold text-g900">이 그룹으로 분류한 근거(1차 분석)</p>
             {grp.traits.map((t) => <p key={t}>· {t}</p>)}
           </div>
         </div>
@@ -260,7 +260,7 @@ function InterviewRow({ pid, uid }: { pid: QualPid; uid: Uid }) {
           </div>
         </div>
         <div>
-          <p className="mb-1.5 text-b3 font-semibold text-g900">연구자의 그룹 분류에 동의하시나요?</p>
+          <p className="mb-1.5 text-b3 font-semibold text-g900">그룹 분류에 동의하시나요?</p>
           <div className="flex flex-wrap gap-1.5">
             {REVIEW_AGREE_OPTIONS.map((o) => (
               <button key={o} onClick={() => setInterviewJudge(key, { agree: o })} className={`h-8 rounded-m border px-2.5 text-b2 ${j.agree === o ? 'border-brand bg-brand-weak text-brand' : 'border-g300 bg-white text-g900'}`}>{o}</button>
@@ -378,7 +378,7 @@ export default function Step5() {
             ))}
             <span className="ml-auto font-semibold text-g900">전체 {totalDone}/{UIDS.length}</span>
           </div>
-          <p className="mt-4 max-w-prose2 text-b2 text-g700">참여자 6명의 발화를 한 명씩 읽고, 연구자가 분류한 그룹(퍼소나)이 맞는지 판단해 주세요.</p>
+          <p className="mt-4 max-w-prose2 text-b2 text-g700">참여자 6명의 발화를 한 명씩 읽고, 분류한 그룹(퍼소나)이 맞는지 판단해 주세요.</p>
           <InterviewReviewer />
 
           <section className="mt-8 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">

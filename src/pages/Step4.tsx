@@ -143,7 +143,7 @@ function ReviewRow({ pid, idx }: { pid: DataPid; idx: number }) {
           </div>
         </div>
         <div>
-          <p className="mb-1.5 text-b3 font-semibold text-g900">연구자의 분류({review.tags.join(', ')})에 동의하시나요?</p>
+          <p className="mb-1.5 text-b3 font-semibold text-g900">분류({review.tags.join(', ')})에 동의하시나요?</p>
           <div className="flex flex-wrap gap-1.5">
             {REVIEW_AGREE_OPTIONS.map((o) => (
               <button key={o} onClick={() => setReviewJudge(key, { agree: o })} className={`h-8 rounded-m border px-2.5 text-b2 ${j.agree === o ? 'border-brand bg-brand-weak text-brand' : 'border-g300 bg-white text-g900'}`}>{o}</button>
