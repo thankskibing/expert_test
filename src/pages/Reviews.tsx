@@ -64,7 +64,7 @@ export default function Reviews() {
           <li key={i} className="flex gap-4 py-5">
             <span className="w-12 shrink-0 pt-0.5 text-cap text-g500 tabular">#{i}</span>
             <div className="min-w-0 max-w-prose2">
-              <p className="whitespace-pre-line text-b2 text-g800">{data!.texts[i]}</p>
+              <div className="max-h-56 overflow-y-auto pr-1 scroll-box"><p className="whitespace-pre-line text-b2 text-g800">{data!.texts[i]}</p></div>
               <details className="group mt-2">
                 <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-b3 font-semibold text-g600 hover:text-g800">
                   판단 이유 <span className="transition-transform duration-200 group-open:rotate-180" aria-hidden>⌄</span>
