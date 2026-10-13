@@ -15,8 +15,13 @@ export default function Step2() {
         퍼소나를 만들기 전, 리뷰 데이터를 어떤 기준으로 모으고 다듬었는지부터 확인해 주세요.
       </PageHead>
 
-      <Section title="데이터 수집 기준" lead={`수집 기간: ${c.period} · 커머스 리뷰는 ${c.reviewPeriod} · 유튜브는 ${c.youtubeCriteria}`}>
-        <p className="max-w-prose2 text-b2 text-g700">검색 키워드: {c.keywords.join(', ')}</p>
+      <Section title="데이터 수집 기준">
+        <ul className="max-w-prose2 space-y-2 text-b2 text-g700">
+          <li><b className="text-g900">수집 기간:</b> {c.period}</li>
+          <li><b className="text-g900">커머스 리뷰:</b> {c.reviewPeriod}</li>
+          <li><b className="text-g900">유튜브 댓글:</b> {c.youtubeCriteria}</li>
+        </ul>
+        <p className="mt-4 max-w-prose2 text-b2 text-g700">검색 키워드: {c.keywords.join(', ')}</p>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[32rem] text-left text-b2">
             <thead className="text-b3 text-g600"><tr className="border-b border-g200"><th className="py-2 pr-4 font-semibold">제품</th><th className="py-2 pr-4 font-semibold">커머스 리뷰</th><th className="py-2 pr-4 font-semibold">유튜브 댓글</th><th className="py-2 font-semibold">합계</th></tr></thead>
@@ -30,10 +35,20 @@ export default function Step2() {
       </Section>
 
       <Section title="왜 국내 메디큐브 부스터프로로 범위를 좁혔나요" lead={c.initialScope}>
-        <p className="max-w-prose2 rounded-xl bg-g50 px-4 py-3 text-b2 text-g900">{c.narrowReason}</p>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[40rem] text-left text-b2">
+            <thead className="text-b3 text-g600"><tr className="border-b border-g200"><th className="py-2 pr-4 font-semibold">제외 대상</th><th className="py-2 font-semibold">주요 제외 이유</th></tr></thead>
+            <tbody className="divide-y divide-g200">
+              {c.exclusions.map((r) => (
+                <tr key={r.product}><td className="py-2 pr-4 align-top font-semibold text-g900">{r.product}</td><td className="py-2 text-g700">{r.reason}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-4 max-w-prose2 rounded-xl bg-g50 px-4 py-3 text-b2 text-g900"><b>{c.finalSelection.label}</b><br />{c.finalSelection.detail}</p>
       </Section>
 
-      <Section title="텍스트 전처리" lead="분석 정확도를 높이기 위해 거친 네 단계예요.">
+      <Section title="텍스트 전처리" lead="분석에 불필요한 정보를 제거하고, 동일한 의미의 표현을 통일하여 텍스트를 정리했습니다. 원문의 의미를 최대한 유지하면서 다음 네 단계로 진행했습니다.">
         <ol className="max-w-prose2 space-y-2.5">
           {p.steps.map((s, i) => (
             <li key={s} className="flex gap-3 text-b2 text-g800">
