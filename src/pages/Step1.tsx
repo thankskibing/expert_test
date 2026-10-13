@@ -5,6 +5,17 @@ import { FieldList } from '../components/form'
 import { StepNav } from '../components/flow'
 import { PageHead, Section } from '../components/ui'
 
+const PROCESS_STEPS = [
+  '1-1. 리뷰 수집·전처리',
+  '1-2. 토픽 분석',
+  '1-3. 리뷰 기반 AI 분석·퍼소나',
+  '2-1. 정성 인터뷰 진행',
+  '2-2. 인터뷰 1차 정리',
+  '2-3. 인터뷰 기반 AI 분석·퍼소나',
+  '3. 두 퍼소나 비교',
+  '4. 전문가 평가',
+]
+
 function TrackCard({ color, label, steps }: { color: string; label: string; steps: string[] }) {
   return (
     <div className="rounded-2xl border border-g200 p-5">
@@ -31,16 +42,16 @@ export default function Step1() {
 
       <Section title="전체 절차">
         <ol className="flex flex-wrap gap-2 text-b3 text-g700">
-          {['리뷰 수집·전처리', '토픽 분석', '리뷰 기반 AI 분석·퍼소나', '정성 인터뷰 진행', '인터뷰 1차 정리', '인터뷰 기반 AI 분석·퍼소나', '두 퍼소나 비교', '전문가 평가'].map((s, i, arr) => (
+          {PROCESS_STEPS.map((s, i, arr) => (
             <li key={s} className="flex items-center gap-2">
-              <span className="rounded-s bg-g50 px-2.5 py-1.5">{i + 1}. {s}</span>
+              <span className="rounded-s bg-g50 px-2.5 py-1.5">{s}</span>
               {i < arr.length - 1 && <span className="text-g400">→</span>}
             </li>
           ))}
         </ol>
       </Section>
 
-      <Section title="두 트랙은 AI를 쓰는 순서가 달라요" lead="리뷰 트랙과 인터뷰 트랙 모두 생성형 AI와 연구자가 함께 분석해요.">
+      <Section title="트랙별 AI 분석 과정">
         <div className="grid gap-4 md:grid-cols-2">
           <TrackCard color="#2F54EB" label={method.aiProcess.review.label} steps={method.aiProcess.review.steps} />
           <TrackCard color="#D46B08" label={method.aiProcess.interview.label} steps={method.aiProcess.interview.steps} />
