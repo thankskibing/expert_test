@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { CATLABEL, DATA_IDS, HIGHLIGHT_KEYWORDS, PCOLOR, PNAME, PSHORT, type DataPid, core, method, personaById, study } from '../lib/data'
-import { REVIEW_AGREE_OPTIONS, STEP4_PROCESS_QS } from '../lib/protocol'
+import { REVIEW_AGREE_OPTIONS, STEP4_PROCESS_QS, STEP4_REVIEW_QS } from '../lib/protocol'
 import { useEval } from '../lib/evalStore'
 import { sampleReviewIdx } from '../lib/payload'
 import { FieldList } from '../components/form'
@@ -265,6 +265,11 @@ export default function Step4() {
           <Section title="집단별 분류 기준" lead="자세한 근거 리뷰는 4-2에서 퍼소나와 함께 확인할 수 있어요.">
             {DATA_IDS.map((p) => <ClassificationDetail key={p} p={p} onViewPersona={() => goToPersona(p)} />)}
           </Section>
+
+          <section className="mt-8 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
+            <h2 className="pt-4 text-t1">4단계 종합 평가</h2>
+            <div className="max-w-3xl"><FieldList fields={STEP4_PROCESS_QS} get={(id) => state.step4[id] ?? ''} set={setStep4} /></div>
+          </section>
         </div>
       )}
 
@@ -295,7 +300,7 @@ export default function Step4() {
 
           <section className="mt-8 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
             <h2 className="pt-4 text-t1">4단계 종합 평가</h2>
-            <div className="max-w-3xl"><FieldList fields={STEP4_PROCESS_QS} get={(id) => state.step4[id] ?? ''} set={setStep4} /></div>
+            <div className="max-w-3xl"><FieldList fields={STEP4_REVIEW_QS} get={(id) => state.step4[id] ?? ''} set={setStep4} start={5} /></div>
           </section>
         </div>
       )}

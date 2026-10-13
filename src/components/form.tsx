@@ -61,8 +61,8 @@ export function FieldInput({ f, get, set, no }: { f: Field; get: (id: string) =>
   )
 }
 
-export function FieldList({ fields, get, set, prefix = 'Q' }: { fields: Field[]; get: (id: string) => string; set: (id: string, v: string) => void; prefix?: string }) {
-  let n = 0
+export function FieldList({ fields, get, set, prefix = 'Q', start = 1 }: { fields: Field[]; get: (id: string) => string; set: (id: string, v: string) => void; prefix?: string; start?: number }) {
+  let n = start - 1
   return (
     <div className="divide-y divide-g200">
       {fields.map((f) => {
