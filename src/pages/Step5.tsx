@@ -1,14 +1,15 @@
 import { useState } from 'react'
-import { PCOLOR, PNAME, QUAL_IDS, study, type QualPid, type Uid } from '../lib/data'
+import { HIGHLIGHT_KEYWORDS, PCOLOR, PNAME, PSHORT, QUAL_IDS, method, personaById, study, type QualPid, type Uid } from '../lib/data'
 import { REVIEW_AGREE_OPTIONS, STEP5_PATTERN_QS, STEP5_QUAL_QS } from '../lib/protocol'
 import { useEval } from '../lib/evalStore'
 import { FieldList } from '../components/form'
-import { FullPersonaRow } from '../components/PersonaCard'
+import { Body, Header as PersonaHeader, ProfileSection } from '../components/PersonaCard'
 import TrackStack from '../components/TrackStack'
 import { StepNav } from '../components/flow'
-import { Badge, Note, PageHead, PersonaPill, Section, Segmented } from '../components/ui'
+import { Badge, Button, Disclosure, Emphasis, Note, PageHead, Section, Segmented } from '../components/ui'
 
 const UIDS: Uid[] = ['U1', 'U2', 'U3', 'U4', 'U5', 'U6']
+const UID_GROUP: Record<Uid, QualPid> = Object.fromEntries(study.participants.map((u) => [u.id, u.group])) as Record<Uid, QualPid>
 
 const pick = (u: (typeof study.participants)[number], k: string) => u.info.find((x) => x.k === k)?.v ?? ''
 
@@ -16,35 +17,35 @@ function Avatar({ id, size = 36 }: { id: string; size?: number }) {
   return <span className="flex shrink-0 items-center justify-center rounded-l text-b2 font-bold text-white" style={{ width: size, height: size, background: PCOLOR[id] }}>{id.slice(1)}</span>
 }
 
-/** 조사 대상 선정 기준 요약 + 참여자 6명 프로필 목록 (인터뷰 분석에 들어가기 전에 먼저 보여줘요). */
-function InterviewTargetProfile() {
-  const ps = study.participants
+/** 조사 대상 선정 기준 + 참여자 6명 프로필. 더 이상 모든 탭 상단에 고정 노출하지 않고, 5-1 '자세히 보기'에만 둔다. */
+function ParticipantSelection() {
+  const m = method.interview
   return (
-    <Section title="인터뷰 대상 및 참여자 프로필">
-      <p className="max-w-prose2 text-b2 text-g700">
-        인터뷰 대상은 메디큐브 부스터프로 1 또는 2를 <b>1개월 이상</b> 사용한 사용자로 선정했어요. 온라인 리뷰 중 사용 기간이 확인되는 307건을 보면, 1개월 미만 사용자는 "아직 효과를 잘 모르겠다"처럼 판단을 유보하는 경우가 많았고, 1개월 이상부터 피부결·탄력 등 구체적인 변화 평가가 나타났어요(13.3%는 한 달 후 재후기를 예고). 이를 바탕으로 최소 사용 기간을 1개월로 정했어요.
-        제품 세대(1세대/2세대)는 2세대가 기존 기능을 확장한 후속 모델이라는 점과 장기 사용자 확보가 어렵다는 점을 고려해 구분 없이 모두 포함했고, 성별·연령은 리뷰에서 확인 가능한 사례가 전체의 1.2%뿐이라 별도로 제한하지 않았어요.
-      </p>
-      <ul className="mt-4 divide-y divide-g200 rounded-2xl border border-g200">
-        {ps.map((u) => (
+    <div className="space-y-5">
+      <div className="space-y-1.5 rounded-xl bg-g50 px-4 py-3 text-b3 text-g800">
+        {m.designTable.map((x) => <p key={x.k}><span className="font-semibold text-g900">{x.k}</span> {x.v}</p>)}
+      </div>
+      <p className="max-w-prose2 text-b3 text-g700">{m.selectionReason}</p>
+      <p className="max-w-prose2 text-b3 text-g700">{m.genderAgeReason}</p>
+      <ul className="divide-y divide-g200 rounded-2xl border border-g200">
+        {study.participants.map((u) => (
           <li key={u.id} className="flex items-center gap-3.5 px-5 py-3.5">
             <Avatar id={u.id} size={40} />
             <div className="min-w-0 flex-1">
               <p className="text-b2 font-semibold text-g900">{u.id} · {pick(u, '기본 정보')}</p>
               <p className="truncate text-b3 text-g600">{pick(u, '사용 제품')} · {pick(u, '사용 기간')} · {pick(u, '현재 사용 빈도·시간')}</p>
             </div>
-            <span className="hidden sm:block"><PersonaPill id={u.group} withName={false} /></span>
           </li>
         ))}
       </ul>
-    </Section>
+    </div>
   )
 }
 
 const PARTS = [
-  ['pattern', '5-1. 발화 → 1차 분석 → AI 재구성'],
-  ['qual', '5-2. 정성 퍼소나 검증'],
-  ['judge', '5-3. 참여자별 판정'],
+  ['pattern', '5-1. 분석 과정 및 행동 유형 도출'],
+  ['qual', '5-2. AI 퍼소나 및 근거 확인'],
+  ['judge', '5-3. 발화별 판정'],
 ] as const
 
 function PatternExample({ g }: { g: QualPid }) {
@@ -63,17 +64,43 @@ function PatternExample({ g }: { g: QualPid }) {
   )
 }
 
-/** Per-group expandable: where this group sits on the 6 behavior-variable axes, plus the members' full interview material (참고 자료의 '정성 인터뷰'·'행동 변수·그룹'에서 옮겨옴). */
-function GroupInterviewEvidence({ g }: { g: QualPid }) {
+/** 5-1 기본 화면: 행동 유형 요약 + 핵심 특징 1개 + 대표 발화(참여자별 1개, 최대 3개). */
+function GroupBasicCard({ g, onViewPersona }: { g: QualPid; onViewPersona: () => void }) {
+  const grp = study.qualGroups[g]
+  const reps = grp.members.map((id) => {
+    const u = study.participants.find((x) => x.id === id)!
+    return { id: u.id, q: u.quotes[0] }
+  })
+  return (
+    <div className="flex flex-col rounded-2xl border border-g200 p-5">
+      <p className="mb-1 flex items-center gap-2 text-cap text-g500"><span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[g] }} />{grp.group} · {grp.role} · 참여자 {grp.members.length}명({grp.members.join(', ')})</p>
+      <h3 className="text-h3">{grp.name}</h3>
+      <p className="mt-3 rounded-xl bg-g50 px-4 py-3 text-b2 text-g900">{grp.summary}</p>
+      <p className="mt-3 flex gap-2 text-b3 text-g700"><span className="mt-[5px] h-1 w-1 shrink-0 rounded-full bg-g500" />{grp.traits[0]}</p>
+      <div className="mt-3 flex-1 space-y-2">
+        <p className="text-b3 font-semibold text-g900">대표 발화</p>
+        {reps.map((r) => (
+          <p key={r.id} className="rounded-xl bg-g50 px-3 py-2 text-b3 text-g800">“{r.q}” <span className="text-g500">— {r.id}</span></p>
+        ))}
+      </div>
+      <button onClick={onViewPersona} className="mt-4 self-start text-b3 font-semibold text-brand hover:text-brand-hover">퍼소나 근거 보기 →</button>
+    </div>
+  )
+}
+
+/** 5-1 상세: 행동 유형별 상세 분류 근거(연구자 1차 분석 전체) + 행동 변수 6개 위치 + 참여자 전체 원문·Pain points. */
+function GroupInterviewDetail({ g }: { g: QualPid }) {
   const grp = study.qualGroups[g]
   const members = grp.members.map((id) => study.participants.find((u) => u.id === id)!)
   return (
-    <details className="group mt-4 rounded-2xl border border-g200 p-5">
-      <summary className="inline-flex cursor-pointer list-none items-center gap-2 text-b2 font-semibold text-g700 hover:text-g900">
-        <span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[g] }} />
-        {PNAME[g]} · 행동 변수 위치와 인터뷰 원문 자세히 보기 <span className="transition-transform duration-200 group-open:rotate-180" aria-hidden>⌄</span>
-      </summary>
-      <div className="mt-4 space-y-6">
+    <Disclosure summary={`${PNAME[g]} · 분류 근거와 참여자 원문 자세히 보기`} className="mt-4 rounded-2xl border border-g200 p-5">
+      <div className="space-y-6">
+        <div>
+          <h4 className="mb-2 text-b2 font-bold text-g900">연구자 1차 분석(행동 특성 전체)</h4>
+          <ul className="space-y-1.5 rounded-xl bg-g50 px-4 py-3 text-b3 text-g800">
+            {grp.traits.map((t) => <li key={t} className="flex gap-2"><span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-g500" />{t}</li>)}
+          </ul>
+        </div>
         <div>
           <h4 className="mb-2 text-b2 font-bold text-g900">행동 변수 6개 중 이 그룹의 위치</h4>
           <div className="rounded-3xl border border-g200 px-4 py-3 sm:px-6">
@@ -86,7 +113,7 @@ function GroupInterviewEvidence({ g }: { g: QualPid }) {
             {members.map((u) => (
               <div key={u.id} className="rounded-xl border border-g200 bg-g50 p-4">
                 <p className="mb-2 flex items-center gap-2 text-b2 font-semibold text-g900">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-l text-cap font-bold text-white" style={{ background: PCOLOR[u.id] }}>{u.id.slice(1)}</span>
+                  <Avatar id={u.id} size={24} />
                   {u.id} · {u.title}
                 </p>
                 <dl className="divide-y divide-g200 rounded-xl bg-white px-4 text-b3">
@@ -94,7 +121,7 @@ function GroupInterviewEvidence({ g }: { g: QualPid }) {
                     <div key={x.k} className="grid grid-cols-[7rem_1fr] gap-3 py-2.5"><dt className="text-g600">{x.k}</dt><dd className="text-g900">{x.v}</dd></div>
                   ))}
                 </dl>
-                <p className="mb-2 mt-3 text-b3 font-semibold text-g900">대표 발화</p>
+                <p className="mb-2 mt-3 text-b3 font-semibold text-g900">발화 전체</p>
                 <ul className="space-y-2">
                   {u.quotes.map((q, i) => <li key={i} className="rounded-xl border border-g200 bg-white px-4 py-3 text-b2 text-g900">“{q}”</li>)}
                 </ul>
@@ -112,25 +139,135 @@ function GroupInterviewEvidence({ g }: { g: QualPid }) {
           </div>
         </div>
       </div>
-    </details>
+    </Disclosure>
   )
 }
 
+/** 5-2 기본 화면: 퍼소나명·행동 유형 → 핵심 행동 특성/관리 목표/주요 불편/필요한 지원 → 근거 참여자·발화. 전체 프로필은 펼침으로. */
+function QualPersonaEvidence({ pid }: { pid: QualPid }) {
+  const persona = personaById(pid)
+  const grp = study.qualGroups[pid]
+  const members = grp.members.map((id) => study.participants.find((u) => u.id === id)!)
+  const roleLabel = persona.role.replace(/ \d$/, '').replace('Persona', '퍼소나')
+  const kw = HIGHLIGHT_KEYWORDS[pid] ?? []
+
+  return (
+    <div id={`qual-persona-${pid}`} className="scroll-mt-24 rounded-2xl border border-g200 p-5">
+      <div className="flex flex-wrap items-center gap-2 text-b3 text-g700">
+        <span className="rounded-s bg-g50 px-2.5 py-1.5 font-semibold text-g900">행동 유형: {PNAME[pid]}</span>
+        <span aria-hidden className="text-g400">→ AI 퍼소나 제작 →</span>
+        <span className="rounded-s px-2.5 py-1.5 font-semibold text-white" style={{ background: PCOLOR[pid] }}>{roleLabel} · {persona.name}</span>
+      </div>
+
+      <div className="mt-4 overflow-hidden rounded-xl border border-g200">
+        <PersonaHeader p={persona} label={pid} blind={false} c={PCOLOR[pid]} />
+
+        <section className="border-t border-g200 px-5 py-4">
+          <blockquote className="rounded-xl px-4 py-3 text-t1 text-g900" style={{ background: `${PCOLOR[pid]}14` }}>“<Emphasis text={persona.quote} keywords={kw} />”</blockquote>
+        </section>
+
+        <section className="grid gap-5 border-t border-g200 px-5 py-4 sm:grid-cols-2">
+          <div>
+            <h4 className="mb-1.5 text-t2">핵심 행동 특성</h4>
+            <ul className="space-y-1.5 text-b2 text-g900">{grp.traits.slice(0, 2).map((t) => <li key={t} className="flex gap-2"><span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-g500" /><Emphasis text={t} keywords={kw} /></li>)}</ul>
+          </div>
+          <div>
+            <h4 className="mb-1.5 text-t2">관리 목표</h4>
+            <dl className="space-y-1.5 text-b2">{persona.goals.map((x) => <div key={x.k}><dt className="font-semibold text-g900">{x.k}</dt><dd className="text-g700"><Emphasis text={x.v} keywords={kw} /></dd></div>)}</dl>
+          </div>
+          <div>
+            <h4 className="mb-1.5 text-t2">주요 불편</h4>
+            <ul className="space-y-1.5 text-b2 text-g900">{persona.pains.slice(0, 3).map((p) => <li key={p} className="flex gap-2"><span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-g500" /><Emphasis text={p} keywords={kw} /></li>)}</ul>
+          </div>
+          <div>
+            <h4 className="mb-1.5 text-t2">필요한 지원</h4>
+            <ul className="space-y-1.5 text-b2 text-g900">{persona.needs.slice(0, 2).map((n) => <li key={n.title} className="flex gap-2"><span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-g500" /><Emphasis text={n.title} keywords={kw} /></li>)}</ul>
+          </div>
+        </section>
+
+        <section className="border-t border-g200 px-5 py-4">
+          <h4 className="mb-1 text-t2">근거 참여자 및 발화</h4>
+          <p className="mb-3 text-b3 text-g600">
+            이 행동 특성을 뒷받침하는 참여자는 {members.length}명({grp.members.join(', ')})이에요.
+            {members.length === 1 && ' 한 명의 인터뷰를 바탕으로 구성된 퍼소나예요.'}
+          </p>
+          <div className="space-y-3">
+            {members.map((u) => (
+              <div key={u.id} className="rounded-xl border border-g200 bg-g50 p-4">
+                <p className="mb-2 flex items-center gap-2 text-b2 font-semibold text-g900"><Avatar id={u.id} size={24} />{u.id} · {u.title}</p>
+                <ul className="space-y-1.5">
+                  {u.quotes.slice(0, 2).map((q, i) => <li key={i} className="rounded-m bg-white px-3 py-2 text-b2 text-g900">“{q}”</li>)}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-cap text-g500">위 퍼소나 프로필(이름·나이·직업 등)은 AI가 구성한 가상 설정이고, 발화는 참여자가 실제로 말한 원문이에요.</p>
+        </section>
+
+        <details className="group border-t border-g200">
+          <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-3 text-b2 font-semibold text-g700 hover:text-g900">
+            퍼소나 전체 프로필 상세 보기(Bio·Motivation·Goal·Pain Points·Needs·Behavior)
+            <span className="transition-transform duration-200 group-open:rotate-180" aria-hidden>⌄</span>
+          </summary>
+          <ProfileSection id={pid} p={persona} c={PCOLOR[pid]} />
+          <Body p={persona} blind={false} c={PCOLOR[pid]} />
+        </details>
+      </div>
+    </div>
+  )
+}
+
+/** 5-3 발화 한 건. 기본: 검토할 행동 유형 + 핵심 특징 + 발화 2~3개 + 기존 평가 항목 / 상세: 나머지 발화 + 참여자 프로필 + 연구자 분류 근거. */
 function InterviewRow({ pid, uid }: { pid: QualPid; uid: Uid }) {
   const { state, setInterviewJudge } = useEval()
   const u = study.participants.find((x) => x.id === uid)!
+  const grp = study.qualGroups[pid]
   const key = `${pid}_${uid}`
   const j = state.interviewJudge[key] ?? {}
+  const shown = u.quotes.slice(0, 3)
+  const extra = u.quotes.slice(3)
+
   return (
-    <li className="rounded-xl border border-g200 p-4">
-      <p className="mb-2 flex items-center gap-2 text-cap text-g500">
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-l text-cap font-bold text-white" style={{ background: PCOLOR[uid] }}>{uid.slice(1)}</span>
-        {uid} · {u.title}
-      </p>
+    <div className="rounded-xl border border-g200 p-5">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <span className="rounded-s px-2 py-1 text-cap font-semibold text-white" style={{ background: PCOLOR[pid] }}>{PSHORT[pid]} · {PNAME[pid]}</span>
+        <span className="text-cap text-g500 tabular">{uid} · {u.title}</span>
+      </div>
+      <p className="mb-2 flex gap-2 text-b3 text-g700"><span className="mt-[5px] h-1 w-1 shrink-0 rounded-full bg-g500" />{grp.traits[0]}</p>
       <ul className="space-y-1.5">
-        {u.quotes.map((q, i) => <li key={i} className="rounded-xl bg-g50 px-3 py-2 text-b2 text-g900">“{q}”</li>)}
+        {shown.map((q, i) => <li key={i} className="rounded-xl bg-g50 px-3 py-2 text-b2 text-g900">“{q}”</li>)}
       </ul>
-      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+
+      <Disclosure summary="발화 더 보기 · 참여자 프로필 · 분류 근거 자세히 보기" className="mt-3">
+        <div className="space-y-4">
+          {extra.length > 0 && (
+            <div>
+              <p className="mb-1.5 text-b3 font-semibold text-g900">추가 발화</p>
+              <ul className="space-y-1.5">{extra.map((q, i) => <li key={i} className="rounded-xl bg-g50 px-3 py-2 text-b2 text-g900">“{q}”</li>)}</ul>
+            </div>
+          )}
+          <div>
+            <p className="mb-1.5 text-b3 font-semibold text-g900">참여자 프로필</p>
+            <dl className="divide-y divide-g200 rounded-xl border border-g200 px-4 text-b3">
+              {u.info.filter((x) => x.k !== '기본 정보').map((x) => (
+                <div key={x.k} className="grid grid-cols-[7rem_1fr] gap-3 py-2.5"><dt className="text-g600">{x.k}</dt><dd className="text-g900">{x.v}</dd></div>
+              ))}
+            </dl>
+          </div>
+          <div>
+            <p className="mb-1.5 text-b3 font-semibold text-g900">Pain point</p>
+            <ul className="space-y-2">
+              {u.pains.map((p) => <li key={p.title}><p className="text-b2 font-semibold text-g900">{p.title}</p><p className="text-b3 text-g600">{p.detail}</p></li>)}
+            </ul>
+          </div>
+          <div className="space-y-1.5 rounded-xl bg-g50 px-4 py-3 text-b3 text-g700">
+            <p className="font-semibold text-g900">연구자가 이 그룹으로 분류한 근거(연구자 1차 분석)</p>
+            {grp.traits.map((t) => <p key={t}>· {t}</p>)}
+          </div>
+        </div>
+      </Disclosure>
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <div>
           <p className="mb-1.5 text-b3 font-semibold text-g900">이 참여자의 발화가 이 퍼소나의 행동을 얼마나 잘 보여주나요?(1~5)</p>
           <div className="flex gap-1.5">
@@ -149,7 +286,24 @@ function InterviewRow({ pid, uid }: { pid: QualPid; uid: Uid }) {
         </div>
       </div>
       <textarea value={j.reason ?? ''} onChange={(e) => setInterviewJudge(key, { reason: e.target.value })} rows={2} placeholder="이유를 적어 주세요(선택)" className="mt-3 w-full rounded-m border border-g300 bg-white px-[11px] py-2 text-b2 outline-none placeholder:text-g400 focus:border-brand" />
-    </li>
+    </div>
+  )
+}
+
+/** 참여자 U1~U6을 순서대로 한 명씩 검토하는 5-3 UI. 응답은 evalStore에 저장되므로 이동해도 유지된다. */
+function InterviewReviewer() {
+  const [i, setI] = useState(0)
+  const uid = UIDS[i]
+  const pid = UID_GROUP[uid]
+  return (
+    <div className="mt-4">
+      <InterviewRow pid={pid} uid={uid} />
+      <div className="mt-4 flex items-center justify-between gap-3">
+        <Button variant="secondary" onClick={() => setI((v) => Math.max(0, v - 1))} disabled={i === 0}>이전 참여자</Button>
+        <p className="text-b3 text-g600 tabular">{uid} · {i + 1}/{UIDS.length}명</p>
+        <Button variant="secondary" onClick={() => setI((v) => Math.min(UIDS.length - 1, v + 1))} disabled={i === UIDS.length - 1}>다음 참여자</Button>
+      </div>
+    </div>
   )
 }
 
@@ -157,25 +311,56 @@ export default function Step5() {
   const { state, setStep5pattern, setStep5qual } = useEval()
   const [part, setPart] = useState<(typeof PARTS)[number][0]>('pattern')
 
+  const isDone = (uid: Uid) => {
+    const j = state.interviewJudge[`${UID_GROUP[uid]}_${uid}`]
+    return !!j && j.score !== undefined && !!j.agree
+  }
+  const totalDone = UIDS.filter(isDone).length
+
+  const goToPersona = (p: QualPid) => {
+    setPart('qual')
+    requestAnimationFrame(() => {
+      setTimeout(() => document.getElementById(`qual-persona-${p}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60)
+    })
+  }
+
   return (
     <div>
       <PageHead step={5} title="인터뷰 분석 및 정성 퍼소나 검증">
-        인터뷰 트랙은 연구자가 원문을 먼저 분석한 뒤, 그 결과 위에 AI가 참여자 간 공통점과 차이를 비교해 패턴을 재구성해요. 리뷰 트랙과 순서가 반대라는 점을 염두에 두고 봐 주세요.
+        정성 인터뷰 분석 → 인터뷰 기반 AI 퍼소나 → 발화별 판정 순서로, 4단계(온라인 리뷰 분석)와 같은 흐름으로 검토해 주세요. 다만 인터뷰 트랙은 연구자가 원문을 먼저 분석한 뒤 AI가 그 위에 패턴을 재구성한다는 점이 리뷰 트랙과 달라요.
       </PageHead>
-
-      <InterviewTargetProfile />
 
       <Segmented label="세부 단계" items={PARTS.map((p) => p[0])} value={part} onChange={setPart} render={(v) => PARTS.find((p) => p[0] === v)![1]} />
 
       {part === 'pattern' && (
         <div className="mt-6">
-          <Section title="그룹별 발화 → 1차 분석 → AI 재구성 예시">
+          <Section title="인터뷰 분석 과정">
+            <ol className="max-w-prose2 space-y-2.5">
+              {method.aiProcess.interview.steps.map((s, i) => (
+                <li key={s} className="flex gap-3 text-b2 text-g800"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-weak text-cap font-bold text-brand">{i + 1}</span>{s}</li>
+              ))}
+            </ol>
+            <Disclosure summary="참여자 및 선정 기준 자세히 보기" className="mt-4 max-w-prose2">
+              <ParticipantSelection />
+            </Disclosure>
+          </Section>
+
+          <Section title="연구자 1차 분석 → AI 재구성 예시" lead="연구자가 원문을 먼저 분석한 결과 위에, AI가 참여자 간 공통점과 차이를 비교해 패턴을 재구성해요.">
             <div className="grid gap-4 sm:grid-cols-3">
               {QUAL_IDS.map((g) => <PatternExample key={g} g={g} />)}
             </div>
-            <p className="mt-4 max-w-prose2 text-b3 text-g600">인터뷰 U1~U6 원문과 행동 변수 위에서의 위치는 아래 그룹별로 펼쳐서 확인할 수 있어요.</p>
-            {QUAL_IDS.map((g) => <GroupInterviewEvidence key={g} g={g} />)}
           </Section>
+
+          <Section title="행동 유형 3개" lead="연구자의 1차 분석과 AI의 재구성을 거쳐 도출된 세 집단이에요. 이 특성이 바로 다음 5-2의 퍼소나로 이어져요.">
+            <div className="grid gap-4 lg:grid-cols-3 lg:items-stretch">
+              {QUAL_IDS.map((g) => <GroupBasicCard key={g} g={g} onViewPersona={() => goToPersona(g)} />)}
+            </div>
+          </Section>
+
+          <Section title="행동 유형별 상세 분류 근거" lead="연구자의 1차 분석 전체, 행동 변수 6개 위치, 참여자 전체 발화와 Pain point는 아래에서 확인할 수 있어요.">
+            {QUAL_IDS.map((g) => <GroupInterviewDetail key={g} g={g} />)}
+          </Section>
+
           <section className="mt-8 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
             <h2 className="pt-4 text-t1">5-1단계 평가</h2>
             <div className="max-w-3xl"><FieldList fields={STEP5_PATTERN_QS} get={(id) => state.step5pattern[id] ?? ''} set={setStep5pattern} /></div>
@@ -185,8 +370,10 @@ export default function Step5() {
 
       {part === 'qual' && (
         <div className="mt-6">
-          <Note label="안내">최종 인터뷰 기반 퍼소나 3개예요. 데이터 출처는 숨기지 않아요.</Note>
-          <div className="mt-4"><FullPersonaRow ids={QUAL_IDS} /></div>
+          <Note label="안내">이제부터 연구자의 1차 분석 위에 AI가 재구성한 인터뷰 기반 퍼소나 3개를 보여드려요. 데이터 출처는 숨기지 않아요. 5-1에서 확인한 행동 특성은 반복하지 않고, 퍼소나의 핵심 요약과 근거 발화를 중심으로 보여드려요.</Note>
+          <div className="mt-4 space-y-6">
+            {QUAL_IDS.map((p) => <QualPersonaEvidence key={p} pid={p} />)}
+          </div>
           <section className="mt-8 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
             <h2 className="pt-4 text-t1">5-2단계 평가</h2>
             <div className="max-w-3xl"><FieldList fields={STEP5_QUAL_QS} get={(id) => state.step5qual[id] ?? ''} set={setStep5qual} /></div>
@@ -196,15 +383,17 @@ export default function Step5() {
 
       {part === 'judge' && (
         <div className="mt-6">
-          <p className="max-w-prose2 text-b2 text-g700">참여자 6명의 발화를 하나씩 읽고, 연구자가 분류한 그룹(퍼소나)이 맞는지 판단해 주세요.</p>
-          {QUAL_IDS.map((g) => (
-            <div key={g} className="mt-6">
-              <h3 className="mb-3 flex items-center gap-2 text-t2"><span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[g] }} />{PNAME[g]}</h3>
-              <ul className="space-y-3">
-                {study.qualGroups[g].members.map((uid) => <InterviewRow key={uid} pid={g} uid={uid} />)}
-              </ul>
-            </div>
-          ))}
+          <div className="flex flex-wrap items-center gap-3 rounded-xl bg-g50 px-4 py-2.5 text-b3 text-g700">
+            {QUAL_IDS.map((p) => (
+              <span key={p} className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[p] }} />
+                {PSHORT[p]} {study.qualGroups[p].members.filter(isDone).length}/{study.qualGroups[p].members.length}
+              </span>
+            ))}
+            <span className="ml-auto font-semibold text-g900">전체 {totalDone}/{UIDS.length}</span>
+          </div>
+          <p className="mt-4 max-w-prose2 text-b2 text-g700">참여자 6명의 발화를 한 명씩 읽고, 연구자가 분류한 그룹(퍼소나)이 맞는지 판단해 주세요.</p>
+          <InterviewReviewer />
         </div>
       )}
 
