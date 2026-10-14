@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { EVAL_ENDPOINT } from '../lib/config'
-import { ITEM_COUNT, STEP8_CHECKLIST, STEP8_QS } from '../lib/protocol'
+import { ITEM_COUNT, STEP8_AI_QS, STEP8_CHECKLIST, STEP8_COMPARE_QS, STEP8_FINAL_QS, STEP8_PROCEDURE_QS, STEP8_USE_QS } from '../lib/protocol'
 import { useEval } from '../lib/evalStore'
 import { buildPayload } from '../lib/payload'
 import { method } from '../lib/data'
@@ -75,13 +75,29 @@ export default function Step8() {
         </div>
       </Section>
 
-      <section className="rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
-        <h2 className="pt-4 text-t1">전체 연구 방법 평가(10문항)</h2>
-        <div className="max-w-3xl"><FieldList fields={STEP8_QS} get={(id) => state.step8[id] ?? ''} set={setStep8} /></div>
+      <section className="rounded-xl border border-g200 bg-g50 px-5 py-4 sm:px-6">
+        <h2 className="text-t1">1. 전체 연구 방법 평가</h2>
+        <p className="mt-1 max-w-prose2 text-b2 text-g700">각 문항을 읽고 연구 방법과 분석 결과에 대한 동의 정도를 평가해 주세요.</p>
+        <p className="mt-1 text-b3 text-g600">평가 척도(5점 리커트 척도) · 1 전혀 그렇지 않다 · 2 그렇지 않다 · 3 보통이다 · 4 그렇다 · 5 매우 그렇다</p>
+
+        <h3 className="mt-6 text-t2">① 연구 절차의 타당성</h3>
+        <div className="max-w-3xl"><FieldList fields={STEP8_PROCEDURE_QS} get={(id) => state.step8[id] ?? ''} set={setStep8} start={1} /></div>
+
+        <h3 className="mt-2 text-t2">② 생성형 AI 분석 및 검증</h3>
+        <div className="max-w-3xl"><FieldList fields={STEP8_AI_QS} get={(id) => state.step8[id] ?? ''} set={setStep8} start={5} /></div>
+
+        <h3 className="mt-2 text-t2">③ 데이터 기반 퍼소나 비교</h3>
+        <div className="max-w-3xl"><FieldList fields={STEP8_COMPARE_QS} get={(id) => state.step8[id] ?? ''} set={setStep8} start={8} /></div>
+
+        <h3 className="mt-2 text-t2">④ 활용 가능성</h3>
+        <div className="max-w-3xl"><FieldList fields={STEP8_USE_QS} get={(id) => state.step8[id] ?? ''} set={setStep8} start={10} /></div>
+
+        <h3 className="mt-2 text-t2">⑤ 종합 평가</h3>
+        <div className="max-w-3xl"><FieldList fields={STEP8_FINAL_QS} get={(id) => state.step8[id] ?? ''} set={setStep8} start={14} /></div>
       </section>
 
-      <section className="mt-6 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
-        <h2 className="pt-4 text-t1">수정이 필요한 단계와 의견</h2>
+      <section className="mt-6 rounded-xl border border-g200 bg-g50 px-5 py-4 sm:px-6">
+        <h2 className="text-t1">2. 수정이 필요한 단계 및 전문가 의견</h2>
         <div className="max-w-3xl"><FieldList fields={STEP8_CHECKLIST} get={(id) => state.step8[id] ?? ''} set={setStep8} /></div>
       </section>
 
