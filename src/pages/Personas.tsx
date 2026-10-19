@@ -1,10 +1,9 @@
 import type { ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { DATA_IDS, PABBR, PAIR, PCOLOR, PIMG, PNAME, PSHORT, QUAL_IDS, core, personaById, study, type DataPid, type QualPid } from '../lib/data'
-import { Button, Note, PageHead } from '../components/ui'
+import { DATA_IDS, PABBR, PCOLOR, PIMG, PNAME, PSHORT, QUAL_IDS, core, personaById, study, type DataPid, type QualPid } from '../lib/data'
+import { Note, PageHead } from '../components/ui'
 
 const ALL = [...DATA_IDS, ...QUAL_IDS] as string[]
-const REV_PAIR: Record<string, string> = { P: 'A', S1: 'B', S2: 'C' }
 
 function Slider({ name, left, right, value, color }: { name: string; left: string; right: string; value: number; color: string }) {
   return (
@@ -41,7 +40,6 @@ export default function Personas() {
   const p = personaById(id)
   const c = PCOLOR[id]
   const isData = p.kind === 'data'
-  const pair = isData ? PAIR[id as DataPid] : REV_PAIR[id]
 
   return (
     <div>
@@ -89,7 +87,6 @@ export default function Personas() {
               study.qualGroups[id as QualPid].members.map((u) => <LinkPill key={u} to={`/interviews#${u}`}>근거: {u} 인터뷰</LinkPill>)
             )}
             <LinkPill to="/variables">근거: 행동 변수</LinkPill>
-            <Button size="s" variant="ghost" onClick={() => setSp({ id: pair }, { replace: true })}>짝 퍼소나 {PSHORT[pair]} 보기</Button>
           </div>
         </header>
 

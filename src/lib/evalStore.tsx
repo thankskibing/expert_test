@@ -20,7 +20,6 @@ export interface EvalState {
   step5pattern: Answers
   step5qual: Answers
   interviewJudge: Record<string, InterviewJudge>
-  step6: Answers
   /** ratings[personaId][itemId] = 1..5 (STEP 7, reuses the existing DIMS rubric) */
   ratings: Record<string, Record<string, number>>
   /** dimNotes[personaId][noteId] = text (STEP 7 퍼소나별 서술형: overall_strong / overall_weak) */
@@ -36,7 +35,6 @@ function fresh(): EvalState {
     evaluator: '', profile: {},
     step1: {}, step2: {}, step3: {}, step4: {}, reviewJudge: {},
     step5pattern: {}, step5qual: {}, interviewJudge: {},
-    step6: {},
     ratings: {}, dimNotes: {},
     step8: {}, submittedAt: null,
   }
@@ -62,7 +60,6 @@ interface Ctx {
   setStep5pattern: (id: string, v: string) => void
   setStep5qual: (id: string, v: string) => void
   setInterviewJudge: (key: string, patch: Partial<InterviewJudge>) => void
-  setStep6: (id: string, v: string) => void
   setRating: (pid: string, item: string, v: number) => void
   setDimNote: (pid: string, dim: string, v: string) => void
   setStep8: (id: string, v: string) => void
@@ -91,7 +88,6 @@ export function EvalProvider({ children }: { children: ReactNode }) {
     setStep5pattern: section('step5pattern'),
     setStep5qual: section('step5qual'),
     setInterviewJudge: (key, patch) => setState((s) => ({ ...s, interviewJudge: { ...s.interviewJudge, [key]: { ...s.interviewJudge[key], ...patch } } })),
-    setStep6: section('step6'),
     setRating: (pid, item, v) => setState((s) => ({ ...s, ratings: { ...s.ratings, [pid]: { ...s.ratings[pid], [item]: v } } })),
     setDimNote: (pid, dim, v) => setState((s) => ({ ...s, dimNotes: { ...s.dimNotes, [pid]: { ...s.dimNotes[pid], [dim]: v } } })),
     setStep8: section('step8'),

@@ -1,163 +1,141 @@
 import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { PCOLOR, PNAME, PSHORT, core, personaById, study, type DataPid, type QualPid } from '../lib/data'
-import { DIMS, ITEM_COUNT, PERSONA_NOTES, SCALE, personaOrder } from '../lib/protocol'
-import { nextLabel, stepByNo } from '../lib/steps'
+import { Link } from 'react-router-dom'
+import { EVAL_ENDPOINT } from '../lib/config'
+import { ITEM_COUNT, PROFILE, STEP1_QS, STEP2_QS, STEP3_QS, STEP4_PROCESS_QS, STEP4_REVIEW_QS, STEP5_GROUP_QS, STEP5_PATTERN_QS, STEP5_REVIEW_QS, STEP8_AI_QS, STEP8_CHECKLIST, STEP8_DIFF_QS, STEP8_FINAL_QS, STEP8_PROCEDURE_QS, STEP8_QS, STEP8_USE_QS, type Field } from '../lib/protocol'
+import { stepByNo } from '../lib/steps'
 import { useEval } from '../lib/evalStore'
-import { SOURCE_LABEL } from '../lib/payload'
-import { FullPersonaCard } from '../components/PersonaCard'
-import { StepNav } from '../components/flow'
-import { Badge, Highlighted, Modal, Note, PageHead, TextArea } from '../components/ui'
+import { buildPayload } from '../lib/payload'
+import { method } from '../lib/data'
+import { FieldList, unanswered } from '../components/form'
+import { Button, Note, PageHead, Section } from '../components/ui'
 
-
-/** 데이터 근거성 팝업 내용: 리뷰 기반 퍼소나는 원문 리뷰(근거 문구 하이라이트), 인터뷰 기반 퍼소나는 참여자 발화 전체를 보여준다. */
-function GroundingEvidence({ pid, kind }: { pid: string; kind: 'data' | 'qual' }) {
-  if (kind === 'data') {
-    const list = core[pid as DataPid]
-    return (
-      <div>
-        <p className="mb-3 text-b3 text-g600">이 퍼소나의 행동 특성과 연결된 원문 리뷰 {list.length}건이에요. 음영 표시는 근거로 쓰인 문구예요.</p>
-        <ul className="space-y-3">
-          {list.map((r) => (
-            <li key={r.idx} className="rounded-xl border border-g200 bg-g50 p-4">
-              <div className="mb-2 flex flex-wrap items-center gap-1.5">
-                <span className="mr-1 text-cap text-g500 tabular">#{r.idx}</span>
-                {r.tags.map((t) => <Badge key={t}>{t}</Badge>)}
-              </div>
-              <div className="max-h-56 overflow-y-auto pr-1 scroll-box"><Highlighted text={r.text} phrases={r.evidence} /></div>
-            </li>
-          ))}
-        </ul>
-      </div>
-    )
-  }
-  const grp = study.qualGroups[pid as QualPid]
-  const members = grp.members.map((id) => study.participants.find((u) => u.id === id)!)
-  return (
-    <div>
-      <p className="mb-3 text-b3 text-g600">이 퍼소나의 근거가 된 참여자 {members.length}명({grp.members.join(', ')})의 발화예요.</p>
-      <div className="space-y-4">
-        {members.map((u) => (
-          <div key={u.id} className="rounded-xl border border-g200 bg-g50 p-4">
-            <p className="mb-2 text-b2 font-semibold text-g900">{u.id} · {u.title}</p>
-            <ul className="space-y-1.5">
-              {u.quotes.map((q, i) => <li key={i} className="rounded-m bg-white px-3 py-2 text-b2 text-g900">“{q}”</li>)}
-            </ul>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function ScaleRow({ no, q, value, onChange }: { no: string; q: string; value?: number; onChange: (v: number) => void }) {
-  return (
-    <div className="border-b border-g200 py-4 last:border-0">
-      <p className="text-b2 text-g900"><b className="mr-1.5 font-semibold text-brand">{no}</b>{q}</p>
-      <div role="radiogroup" aria-label={`${no} ${q}`} className="mt-2.5 grid grid-cols-5 gap-1.5">
-        {SCALE.map((s, i) => {
-          const v = i + 1
-          const on = value === v
-          return (
-            <button key={v} type="button" role="radio" aria-checked={on} onClick={() => onChange(v)} title={s}
-              className={`flex min-h-[3.25rem] flex-col items-center justify-center rounded-m border px-1 py-1.5 text-center transition-colors duration-200 ${on ? 'border-brand bg-brand text-white' : 'border-g300 bg-white text-g900 hover:border-brand-hover hover:text-brand-hover'}`}>
-              <span className="text-b1 font-semibold tabular">{v}</span>
-              <span className={`text-[11px] leading-tight ${on ? 'text-white' : 'text-g600'}`}>{s}</span>
-            </button>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
+const ORDER = ['A', 'B', 'C', 'P', 'S1', 'S2']
 
 export default function Step7() {
-  const { state, setRating, setDimNote } = useEval()
-  // 평가자마다 제시 순서를 회전해 순서 효과를 줄여요(같은 평가자는 항상 같은 순서).
-  const ORDER = personaOrder(state.evaluator)
-  const [sp, setSp] = useSearchParams()
-  const [showEvidence, setShowEvidence] = useState(false)
-  const count = (id: string) => Object.keys(state.ratings[id] ?? {}).length
-  const [initial] = useState(() => ORDER.find((o) => count(o) < ITEM_COUNT) ?? ORDER[0])
-  const pid = ORDER.includes(sp.get('p') ?? '') ? sp.get('p')! : initial
-  const pos = ORDER.indexOf(pid)
-  const kind = personaById(pid).kind
-  const pick = (id: string) => { setSp({ p: id }, { replace: true }); window.scrollTo(0, 0) }
-  const next = ORDER[pos + 1]
-  const totalDone = ORDER.reduce((a, o) => a + count(o), 0)
+  const { state, setStep8, markSubmitted, reset } = useEval()
+  const [status, setStatus] = useState<'idle' | 'sending' | 'done' | 'error'>('idle')
+  const [msg, setMsg] = useState('')
+  const rated = ORDER.reduce((a, o) => a + Object.keys(state.ratings[o] ?? {}).length, 0)
+  // 단계마다 아직 답하지 않은 척도·선택 문항 수를 세서 보여줘요(서술형은 선택이라 세지 않아요).
+  const left = (fields: Field[], src: Record<string, string>) => unanswered(fields, (id) => src[id] ?? '')
+  const row = (no: number, n: number, extra = '') => ({ label: `${no}단계: ${stepByNo(no).short}${extra}`, ok: n === 0, left: n, to: stepByNo(no).to })
+
+  const checks = [
+    row(0, left(PROFILE.flatMap((s) => s.fields), state.profile)),
+    row(1, left(STEP1_QS, state.step1)),
+    row(2, left(STEP2_QS, state.step2)),
+    row(3, left(STEP3_QS, state.step3)),
+    row(4, left([...STEP4_PROCESS_QS, ...STEP4_REVIEW_QS], state.step4)),
+    row(5, left([...STEP5_PATTERN_QS, ...STEP5_GROUP_QS, ...STEP5_REVIEW_QS], state.step5pattern)),
+    row(6, ITEM_COUNT * 6 - rated, ` ${rated}/${ITEM_COUNT * 6}`),
+    row(7, left(STEP8_QS, state.step8)),
+  ]
+
+  const missing = checks.filter((c) => !c.ok)
+
+  async function submit() {
+    if (!state.evaluator.trim()) { setStatus('error'); setMsg('시작 화면에서 평가자 이름을 입력해 주세요.'); return }
+    setStatus('sending')
+    try {
+      await fetch(EVAL_ENDPOINT, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(buildPayload(state)) })
+      markSubmitted(); setStatus('done'); setMsg('제출했어요. 고친 뒤 다시 제출하면 새 응답으로 한 줄 더 기록돼요.')
+    } catch {
+      setStatus('error'); setMsg('네트워크 연결이 끊겨 제출하지 못했어요. 연결을 확인하고 다시 제출해 주세요. 입력한 내용은 이 브라우저에 남아 있어요.')
+    }
+  }
+  function download() {
+    const blob = new Blob([JSON.stringify({ ...buildPayload(state), raw: state }, null, 2)], { type: 'application/json' })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = `퍼소나평가_${state.evaluator || '평가자'}.json`
+    a.click()
+    URL.revokeObjectURL(a.href)
+  }
+  function startOver() {
+    if (window.confirm('이 브라우저에 저장된 응답을 모두 지우고 새 평가자로 시작할까요? 제출하지 않은 내용은 사라져요.')) reset()
+  }
 
   return (
     <div>
       <PageHead step={7} title={stepByNo(7).title}>
-        퍼소나 6개를 하나씩 7개 영역 {ITEM_COUNT}개 문항으로 평가하고, 퍼소나마다 가장 강한 점과 약한 점을 짧게 적어 주세요. 각 문항은 1점(전혀 그렇지 않다)부터 5점(매우 그렇다)까지예요.
+        마지막으로 연구 과정 전체를 돌아보며 종합적으로 평가해 주세요.
       </PageHead>
 
-      <div className="mb-6 space-y-2">
-        <Note label="평가 기준">이름·나이·사진·직업 등 프로필 정보는 원자료 근거가 없는 AI의 가상 설정이에요. 이 정보는 평가에서 빼고, 행동·니즈·불편·인용문 같은 내용을 기준으로 평가해 주세요.</Note>
-        <p className="text-b3 text-g600">퍼소나 제시 순서는 순서 효과를 줄이기 위해 평가자마다 다르게 정해져요. 위 버튼으로 다른 퍼소나로 바로 이동할 수도 있어요.</p>
-      </div>
-
-      <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-6">
-        {ORDER.map((id) => {
-          const on = id === pid
-          const n = count(id)
-          return (
-            <button key={id} onClick={() => pick(id)} className={`rounded-m border px-2.5 py-2 text-left transition-colors duration-200 ${on ? 'border-brand bg-brand-weak' : 'border-g200 hover:bg-black/[0.04]'}`}>
-              <span className="flex items-center gap-1.5 text-b2 font-semibold text-g900">
-                <span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[id] }} />{PSHORT[id]}
-                {n === ITEM_COUNT && <span className="ml-auto text-success">✓</span>}
-              </span>
-              <span className="mt-0.5 block text-b3 text-g600">{PNAME[id]} · <span className="tabular">{n}/{ITEM_COUNT}</span></span>
-            </button>
-          )
-        })}
-      </div>
-
-      <div className="mt-6 grid items-start gap-6 xl:grid-cols-[minmax(0,26rem)_1fr]">
-        <div className="xl:sticky xl:top-4 xl:max-h-[calc(100vh-2rem)] xl:overflow-y-auto xl:rounded-xl">
-          <FullPersonaCard key={pid} id={pid} />
+      <Section title="연구 과정 요약">
+        <div className="grid gap-4 md:grid-cols-2 md:items-stretch">
+          <div className="rounded-2xl border border-g200 p-5">
+            <p className="mb-2 text-t2">{method.aiProcess.review.label}</p>
+            <ol className="space-y-2 text-b3 text-g700">
+              {method.aiProcess.review.steps.map((s, i) => (
+                <li key={s} className="flex gap-2.5"><span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-weak text-cap font-bold text-brand">{i + 1}</span>{s}</li>
+              ))}
+            </ol>
+          </div>
+          <div className="rounded-2xl border border-g200 p-5">
+            <p className="mb-2 text-t2">{method.aiProcess.interview.label}</p>
+            <ol className="space-y-2 text-b3 text-g700">
+              {method.aiProcess.interview.steps.map((s, i) => (
+                <li key={s} className="flex gap-2.5"><span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-weak text-cap font-bold text-brand">{i + 1}</span>{s}</li>
+              ))}
+            </ol>
+          </div>
         </div>
-        <div className="min-w-0">
-          <p className="mb-2 text-b2 text-g700">{PSHORT[pid]} · {PNAME[pid]} ({SOURCE_LABEL[kind]}) · <span className="tabular">{count(pid)}/{ITEM_COUNT}</span> 문항 응답</p>
-          {DIMS.map((d) => (
-            <section key={d.id} className="mb-6 rounded-xl border border-g200">
-              <header className="border-b border-g200 bg-g50 px-5 py-3" style={{ borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <h2 className="text-t1">{d.no}. {d.title}{d.en && <span className="ml-1.5 text-b2 font-normal text-g600">{d.en}</span>}</h2>
-                  {d.id === 'grounding' && (
-                    <button onClick={() => setShowEvidence(true)} className="shrink-0 text-b3 font-semibold text-brand hover:text-brand-hover">근거 리뷰 보기 →</button>
-                  )}
-                </div>
-                <p className="mt-0.5 text-b3 text-g600">{d.purpose}</p>
-              </header>
-              <div className="px-5">
-                {d.items.map((it) => <ScaleRow key={it.id} no={it.id} q={it.q} value={state.ratings[pid]?.[it.id]} onChange={(v) => setRating(pid, it.id, v)} />)}
-              </div>
-            </section>
+      </Section>
+
+      <section className="rounded-xl border border-g200 bg-g50 px-5 py-4 sm:px-6">
+        <h2 className="text-t1">1. 전체 연구 방법 평가</h2>
+        <p className="mt-1 max-w-prose2 text-b2 text-g700">각 문항을 읽고 연구 방법과 분석 결과에 대한 동의 정도를 평가해 주세요.</p>
+        <p className="mt-1 text-b3 text-g600">평가 척도(5점 리커트 척도) · 1 전혀 그렇지 않다 · 2 그렇지 않다 · 3 보통이다 · 4 그렇다 · 5 매우 그렇다</p>
+
+
+        <h3 className="mt-6 text-t2">① 연구 절차의 타당성</h3>
+        <div className="max-w-3xl"><FieldList fields={STEP8_PROCEDURE_QS} get={(id) => state.step8[id] ?? ''} set={setStep8} prefix="7-Q" start={1} /></div>
+
+        <h3 className="mt-2 text-t2">② 생성형 AI 분석 및 검증</h3>
+        <div className="max-w-3xl"><FieldList fields={STEP8_AI_QS} get={(id) => state.step8[id] ?? ''} set={setStep8} prefix="7-Q" start={5} /></div>
+
+        <h3 className="mt-2 text-t2">③ 두 퍼소나의 차이</h3>
+        <div className="max-w-3xl"><FieldList fields={STEP8_DIFF_QS} get={(id) => state.step8[id] ?? ''} set={setStep8} prefix="7-Q" start={8} /></div>
+
+        <h3 className="mt-2 text-t2">④ 활용 가능성</h3>
+        <div className="max-w-3xl"><FieldList fields={STEP8_USE_QS} get={(id) => state.step8[id] ?? ''} set={setStep8} prefix="7-Q" start={10} /></div>
+
+        <h3 className="mt-2 text-t2">⑤ 종합 평가</h3>
+        <div className="max-w-3xl"><FieldList fields={STEP8_FINAL_QS} get={(id) => state.step8[id] ?? ''} set={setStep8} prefix="7-Q" start={16} /></div>
+      </section>
+
+      <section className="mt-6 rounded-xl border border-g200 bg-g50 px-5 py-4 sm:px-6">
+        <h2 className="text-t1">2. 수정이 필요한 단계 및 전문가 의견</h2>
+        <div className="max-w-3xl"><FieldList fields={STEP8_CHECKLIST} get={(id) => state.step8[id] ?? ''} set={setStep8} prefix="7-Q" start={16} /></div>
+      </section>
+
+      <section className="mt-10 max-w-3xl rounded-xl border border-g200 p-5 sm:p-6">
+        <h2 className="text-t1">응답 제출</h2>
+        <ul className="mt-3 space-y-1.5">
+          {checks.map((c) => (
+            <li key={c.label} className="flex items-center gap-2 text-b2">
+              <span className={`flex h-4 w-4 items-center justify-center rounded-full text-[10px] text-white ${c.ok ? 'bg-success' : 'bg-g300'}`}>{c.ok ? '✓' : ''}</span>
+              <span className={c.ok ? 'text-g900' : 'text-g600'}>{c.label}</span>
+              {!c.ok && <span className="text-b3 text-g500 tabular">미응답 {c.left}개</span>}
+              {!c.ok && <Link to={c.to} className="text-b3 text-brand hover:text-brand-hover">이어서 하기</Link>}
+            </li>
           ))}
-          <section className="mb-6 rounded-xl border border-g200">
-            <header className="border-b border-g200 bg-g50 px-5 py-3" style={{ borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
-              <h2 className="text-t1">이 퍼소나에 대한 의견</h2>
-              <p className="mt-0.5 text-b3 text-g600">영역별로 떠오른 생각은 인터뷰 중 말로 나눠 주셔도 돼요. 여기에는 가장 중요한 두 가지만 적어 주세요.</p>
-            </header>
-            {PERSONA_NOTES.map((n, i) => (
-              <div key={n.id} className={`px-5 py-4 ${i ? 'border-t border-g200' : ''}`}>
-                <label htmlFor={`${pid}-${n.id}`} className="block text-b2 font-semibold text-g900">{n.q}</label>
-                <p className="mt-0.5 text-b3 text-g600">{n.hint}</p>
-                <TextArea id={`${pid}-${n.id}`} rows={3} className="mt-2" value={state.dimNotes[pid]?.[n.id] ?? ''} onChange={(e) => setDimNote(pid, n.id, e.target.value)} placeholder="답변 메모" />
-              </div>
-            ))}
-          </section>
+        </ul>
+        {missing.length > 0 && <p className="mt-3 text-b3 text-g600">빠진 응답이 있어도 제출할 수 있어요. 빈 칸은 시트에 빈 값으로 기록돼요.</p>}
+        {msg && <div className="mt-4">{status === 'done' ? <p className="rounded-xl border border-[#B7EB8F] bg-[#F6FFED] px-3 py-2 text-b2 text-g900">{msg}</p> : <Note label="오류">{msg}</Note>}</div>}
+        <div className="mt-5 flex flex-wrap items-center justify-end gap-2">
+          <Button size="l" variant="secondary" onClick={download}>응답 파일로 저장</Button>
+          <Button size="l" variant="primary" onClick={submit} disabled={status === 'sending'}>
+            {status === 'sending' ? '제출하고 있어요' : state.submittedAt ? '다시 제출하기' : '평가 제출하기'}
+          </Button>
         </div>
+      </section>
+
+      {/* 제출 버튼 옆에 두면 잘못 눌러 응답을 지울 수 있어서, 제출 영역 밖 아래쪽으로 떼어 두었어요(누르면 한 번 더 확인해요). */}
+      <div className="mt-16 max-w-3xl border-t border-g200 pt-4">
+        <p className="text-b3 text-g600">다음 전문가의 평가를 이 브라우저에서 시작하려면, 제출을 마친 뒤 저장된 응답을 지워 주세요.</p>
+        <button onClick={startOver} className="mt-1 text-b3 font-semibold text-g600 underline hover:text-[#CF1322]">저장된 응답 지우고 새 평가자로 시작</button>
       </div>
-
-      {next
-        ? <StepNav prev={pos === 0 ? '/step6' : undefined} nextLabel={`다음: ${PSHORT[next]} · ${PNAME[next]}`} onNext={() => pick(next)} hint={`전체 ${totalDone}/${ITEM_COUNT * ORDER.length} 문항`} />
-        : <StepNav next="/step8" nextLabel={nextLabel(8)} hint={`전체 ${totalDone}/${ITEM_COUNT * ORDER.length} 문항`} />}
-
-      <Modal open={showEvidence} onClose={() => setShowEvidence(false)} title={`${PSHORT[pid]} · ${PNAME[pid]} 근거 리뷰`}>
-        <GroundingEvidence pid={pid} kind={kind} />
-      </Modal>
     </div>
   )
 }

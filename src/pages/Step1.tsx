@@ -12,8 +12,7 @@ const PROCESS_STEPS = [
   '3단계 · 토픽 분석',
   '4단계 · 리뷰 기반 AI 분석·퍼소나',
   '5단계 · 인터뷰 진행·1차 분석·AI 분석·퍼소나',
-  '6단계 · 두 퍼소나 비교',
-  '7~8단계 · 전문가 평가',
+  '6~7단계 · 전문가 평가',
 ]
 
 function TrackCard({ color, label, steps }: { color: string; label: string; steps: string[] }) {
