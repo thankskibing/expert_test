@@ -20,6 +20,11 @@ export function RoundTabs({ value, onChange, done }: { value: RoundKey; onChange
   )
 }
 
+/** 하단 버튼 옆에 남은 척도 문항 수를 알려줘요(0개면 표시하지 않아요). */
+export function leftHint(n: number, where = '이 단계') {
+  return n > 0 ? `${where}에 아직 답하지 않은 척도 문항 ${n}개` : undefined
+}
+
 /** Footer with previous/next. Exactly one primary action per page. */
 export function StepNav({ prev, next, nextLabel, onNext, hint }: { prev?: string; next?: string; nextLabel: string; onNext?: () => void; hint?: ReactNode }) {
   return (

@@ -796,7 +796,7 @@
   ],
   "dataGroups": {
     "A": {
-      "group": "Group 1",
+      "group": "리뷰 기반 Primary",
       "name": "일상 루틴 기반 효과 축적형",
       "role": "Primary Persona",
       "color": "A",
@@ -843,7 +843,7 @@
       ]
     },
     "B": {
-      "group": "Group 2",
+      "group": "리뷰 기반 Secondary 1",
       "name": "구매 타당성 검증형",
       "role": "Secondary Persona",
       "color": "B",
@@ -890,7 +890,7 @@
       ]
     },
     "C": {
-      "group": "Group 3",
+      "group": "리뷰 기반 Secondary 2",
       "name": "모드·강도 조합 중심 기능 최적화형",
       "role": "Secondary Persona",
       "color": "C",
@@ -932,7 +932,7 @@
   },
   "qualGroups": {
     "P": {
-      "group": "Group 1",
+      "group": "인터뷰 기반 Primary",
       "name": "루틴 통합형 다기능 관리형",
       "role": "Primary Persona",
       "members": [
@@ -949,7 +949,7 @@
       "summary": "피부 상태와 시간에 따라 여러 기능을 조합해 사용하는 만큼 각 모드의 목적과 사용 순서, 조건을 쉽게 판단할 수 있는 가이드가 필요한 그룹"
     },
     "S1": {
-      "group": "Group 2",
+      "group": "인터뷰 기반 Secondary 1",
       "name": "핵심 기능 유지 관찰형",
       "role": "Secondary Persona",
       "members": [
@@ -964,7 +964,7 @@
       "summary": "자신에게 필요한 핵심 기능을 꾸준히 사용하며 즉각적인 변화보다 장기적인 효과와 현재 상태 유지를 기준으로 제품을 판단하는 그룹"
     },
     "S2": {
-      "group": "Group 3",
+      "group": "인터뷰 기반 Secondary 2",
       "name": "상황 대응형 핵심 기능 집중형",
       "role": "Secondary Persona",
       "members": [

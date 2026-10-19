@@ -1,5 +1,5 @@
 import { DATA_IDS, PNAME, PSHORT, QUAL_IDS, core, personaById, study } from './data'
-import { DIMS, PROFILE, REVIEW_AGREE_OPTIONS, STEP1_QS, STEP2_QS, STEP3_QS, STEP4_PROCESS_QS, STEP4_REVIEW_QS, STEP5_GROUP_QS, STEP5_PATTERN_QS, STEP5_REVIEW_QS, STEP8_CHECKLIST, STEP8_QS, type Field } from './protocol'
+import { DIMS, PERSONA_NOTES, PROFILE, REVIEW_AGREE_OPTIONS, STEP1_QS, STEP2_QS, STEP3_QS, STEP4_PROCESS_QS, STEP4_REVIEW_QS, STEP5_GROUP_QS, STEP5_PATTERN_QS, STEP5_REVIEW_QS, STEP6_QS, STEP8_CHECKLIST, STEP8_QS, personaOrder, type Field } from './protocol'
 import { PERSONA_ORDER, type EvalState } from './evalStore'
 
 export const SOURCE_LABEL = { data: '온라인 사용자 리뷰 기반', qual: '정성 인터뷰 기반' } as const
@@ -41,6 +41,7 @@ export function buildPayload(s: EvalState) {
   put('evaluator', s.evaluator, '평가자')
   put('submittedAt', new Date().toISOString(), '제출 시각(브라우저)')
   put('profile.consent', s.profile.consent, '녹음·기록 동의')
+  put('step7.order', personaOrder(s.evaluator).map((id) => PSHORT[id]).join(' → '), '[7. 최종 품질 평가] 이 평가자에게 제시된 퍼소나 순서')
   PROFILE.forEach((sec) => putFields('profile', sec.fields, s.profile, ''))
 
   putFields('step1', STEP1_QS, s.step1, '[1. 연구 개요] ')
@@ -51,8 +52,9 @@ export function buildPayload(s: EvalState) {
   putFields('step5pattern', STEP5_PATTERN_QS, s.step5pattern, '[5단계 종합 평가] ')
   putFields('step5pattern', STEP5_GROUP_QS, s.step5pattern, '[5단계 종합 평가] ')
   putFields('step5pattern', STEP5_REVIEW_QS, s.step5pattern, '[5단계 종합 평가] ')
-  putFields('step8', STEP8_QS, s.step8, '[7. 종합 평가] ')
-  putFields('step8', STEP8_CHECKLIST, s.step8, '[7. 종합 평가] ')
+  putFields('step6', STEP6_QS, s.step6 ?? {}, '[6. 두 퍼소나 비교] ')
+  putFields('step8', STEP8_QS, s.step8, '[8. 종합 평가] ')
+  putFields('step8', STEP8_CHECKLIST, s.step8, '[8. 종합 평가] ')
 
   const reviewRows: (string | number)[][] = []
   for (const pid of DATA_IDS) {
@@ -86,12 +88,11 @@ export function buildPayload(s: EvalState) {
     for (const d of DIMS) {
       for (const it of d.items) {
         const v = s.ratings[id]?.[it.id]
-        put(`rating.${id}.${it.id}`, v, `[7. 최종 평가 · ${PSHORT[id]}(${SOURCE_SHORT[per.kind]}) · ${d.title}] ${it.id}. ${it.q}`)
+        put(`rating.${id}.${it.id}`, v, `[7. 최종 품질 평가 · ${PSHORT[id]}(${SOURCE_SHORT[per.kind]}) · ${d.title}] ${it.id}. ${it.q}`)
         ratingRows.push([PSHORT[id], SOURCE_LABEL[per.kind], PNAME[id], per.type, `${d.no}. ${d.title}`, it.id, it.q, v ?? ''])
       }
-      put(`note.${id}.${d.id}_1`, s.dimNotes[id]?.[`${d.id}_1`], `[7 · ${PSHORT[id]}] ${d.title} 추가 질문 1 답변`)
-      put(`note.${id}.${d.id}_2`, s.dimNotes[id]?.[`${d.id}_2`], `[7 · ${PSHORT[id]}] ${d.title} 추가 질문 2 답변`)
     }
+    for (const n of PERSONA_NOTES) put(`note.${id}.${n.id}`, s.dimNotes[id]?.[n.id], `[7 · ${PSHORT[id]}] ${n.q}`)
   }
 
   return {

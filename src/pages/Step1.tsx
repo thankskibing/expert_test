@@ -1,19 +1,19 @@
 import { method } from '../lib/data'
 import { STEP1_QS } from '../lib/protocol'
 import { useEval } from '../lib/evalStore'
-import { FieldList } from '../components/form'
-import { StepNav } from '../components/flow'
+import { FieldList, unanswered } from '../components/form'
+import { StepNav, leftHint } from '../components/flow'
+import { nextLabel, stepByNo } from '../lib/steps'
 import { PageHead, Section } from '../components/ui'
 
+/** 연구 절차를 이 사이트의 단계 번호로 표시해요(별도 번호 체계를 두지 않아요). */
 const PROCESS_STEPS = [
-  '1-1. 리뷰 수집·전처리',
-  '1-2. 토픽 분석',
-  '1-3. 리뷰 기반 AI 분석·퍼소나',
-  '2-1. 정성 인터뷰 진행',
-  '2-2. 인터뷰 1차 정리',
-  '2-3. 인터뷰 기반 AI 분석·퍼소나',
-  '3. 두 퍼소나 비교',
-  '4. 전문가 평가',
+  '2단계 · 리뷰 수집·전처리',
+  '3단계 · 토픽 분석',
+  '4단계 · 리뷰 기반 AI 분석·퍼소나',
+  '5단계 · 인터뷰 진행·1차 분석·AI 분석·퍼소나',
+  '6단계 · 두 퍼소나 비교',
+  '7~8단계 · 전문가 평가',
 ]
 
 function TrackCard({ color, label, steps }: { color: string; label: string; steps: string[] }) {
@@ -36,8 +36,8 @@ export default function Step1() {
   const { state, setStep1 } = useEval()
   return (
     <div>
-      <PageHead step={1} title="연구 개요 및 전체 분석 프로세스">
-        {method.aiProcess.purpose} 이번 평가에서는 완성된 퍼소나뿐 아니라, 그 퍼소나를 만든 연구 과정 전체가 객관적인지를 단계별로 살펴봐 주세요.
+      <PageHead step={1} title={stepByNo(1).title}>
+        {method.aiProcess.purpose} 이번 평가에서는 완성된 퍼소나뿐 아니라, 그 퍼소나를 만든 연구 과정 전체가 타당한지를 단계별로 살펴봐 주세요.
       </PageHead>
 
       <Section title="전체 절차">
@@ -51,7 +51,7 @@ export default function Step1() {
         </ol>
       </Section>
 
-      <Section title="트랙별 AI 분석 과정">
+      <Section title="트랙별 AI 분석 과정" lead={method.aiProcess.disclaimer}>
         <div className="grid gap-4 md:grid-cols-2">
           <TrackCard color="#2F54EB" label={method.aiProcess.review.label} steps={method.aiProcess.review.steps} />
           <TrackCard color="#D46B08" label={method.aiProcess.interview.label} steps={method.aiProcess.interview.steps} />
@@ -60,10 +60,10 @@ export default function Step1() {
 
       <section className="mt-8 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
         <h2 className="pt-4 text-t1">1단계 평가</h2>
-        <div className="max-w-3xl"><FieldList fields={STEP1_QS} get={(id) => state.step1[id] ?? ''} set={setStep1} /></div>
+        <div className="max-w-3xl"><FieldList fields={STEP1_QS} get={(id) => state.step1[id] ?? ''} set={setStep1} prefix="1-Q" /></div>
       </section>
 
-      <StepNav prev="/profile" next="/step2" nextLabel="2단계: 수집·전처리 검증으로" />
+      <StepNav prev="/profile" next="/step2" nextLabel={nextLabel(2)} hint={leftHint(unanswered(STEP1_QS, (id) => state.step1[id] ?? ''))} />
     </div>
   )
 }

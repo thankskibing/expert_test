@@ -6,10 +6,11 @@ import { PCOLOR, PNAME, PSHORT } from '../lib/data'
    controls 32px / 6px radius, surfaces 8px radius, tags 4px radius, 1px #D9D9D9 outlines,
    underline tabs, one primary button per screen, flat-first with borders carrying hierarchy. */
 
-export function PageHead({ step, title, children }: { step?: number; title: string; children?: ReactNode }) {
+/** step: 숫자면 "N단계", 문자열이면 그대로(예: "사전 질문") 보여줘요. 메뉴·시작 화면의 번호와 같은 체계를 써요. */
+export function PageHead({ step, title, children }: { step?: number | string; title: string; children?: ReactNode }) {
   return (
     <header className="mb-8 max-w-prose2">
-      {step !== undefined && <p className="mb-1 text-b2 text-g600">{step}단계</p>}
+      {step !== undefined && <p className="mb-1 text-b2 text-g600">{typeof step === 'number' ? `${step}단계` : step}</p>}
       <h1 className="text-h1">{title}</h1>
       {children && <div className="mt-2 text-b2 text-g700">{children}</div>}
     </header>

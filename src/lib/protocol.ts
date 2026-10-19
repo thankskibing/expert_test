@@ -11,7 +11,11 @@ export const ROUNDS: Round[] = [
 export type RoundKey = Round['key']
 
 export type FieldType = 'text' | 'textarea' | 'select' | 'radio' | 'checks' | 'scale'
-export interface Field { id: string; q: string; hint?: string; type: FieldType; options?: string[]; other?: boolean; showIf?: { id: string; value: string } }
+/**
+ * showIf: 다른 문항의 답이 value(여러 개면 그중 하나)와 같거나, 복수 선택 답에 그 값이 들어 있을 때만 보여줘요.
+ * exclusive: 이 보기를 고르면 다른 보기가 해제되고, 다른 보기를 고르면 이 보기가 해제돼요(예: '사용하지 않음', '없음').
+ */
+export interface Field { id: string; q: string; hint?: string; type: FieldType; options?: string[]; other?: boolean; showIf?: { id: string; value: string | string[] }; exclusive?: string[] }
 
 /** A 1~5 Likert item always paired with a reason/comment free-text field right under it. */
 export function likert(id: string, q: string, hint?: string): Field[] {
@@ -27,19 +31,19 @@ export const PROFILE: { title: string; lead: string; fields: Field[] }[] = [
     lead: '먼저 연구 참여자의 기본적인 배경을 확인하기 위해 몇 가지 질문드릴게요.',
     fields: [
       { id: 'p_age', q: '연령대를 말씀해주실 수 있을까요?', type: 'radio', options: ['20대', '30대', '40대', '50대 이상'] },
-      { id: 'p_edu', q: '최종 학력을 말씀해주실 수 있을까요?', type: 'radio', options: ['고등학교 졸업', '전문학사', '학사', '석사', '박사'], other: true },
+      { id: 'p_major', q: 'UX·HCI·디자인 등 사용자 경험과 관련된 분야를 전공하셨나요?', type: 'radio', options: ['관련 분야 전공(학부)', '관련 분야 전공(대학원)', '관련 분야 비전공'], other: true },
       { id: 'p_role', q: '현재 담당하고 계신 직무 또는 역할은 무엇인가요?', type: 'text' },
       { id: 'p_industry', q: '현재 근무하고 계신 업종 또는 산업 분야는 무엇인가요?', type: 'text' },
-      { id: 'p_career', q: '현재 직무와 관련된 총 경력은 어느 정도인가요?', type: 'radio', options: ['3년 미만', '3~5년', '5~10년', '10~15년', '15년 이상'] },
+      { id: 'p_career', q: '현재 직무와 관련된 총 경력은 어느 정도인가요?', type: 'radio', options: ['3년 미만', '3년 이상~5년 미만', '5년 이상~10년 미만', '10년 이상~15년 미만', '15년 이상'] },
     ],
   },
   {
     title: '생성형 AI·LLM 활용 경험',
     lead: '다음으로 평소 생성형 AI를 어떻게 활용하고 계신지 간단히 여쭤볼게요.',
     fields: [
-      { id: 'ai_tools', q: '평소 주로 사용하는 생성형 AI 서비스가 있나요?', type: 'checks', options: ['ChatGPT', 'Claude', 'Gemini', 'Copilot', '사용하지 않음'], other: true },
+      { id: 'ai_tools', q: '평소 주로 사용하는 생성형 AI 서비스를 모두 골라 주세요. (복수 선택 가능)', type: 'checks', options: ['ChatGPT', 'Claude', 'Gemini', 'Microsoft Copilot', 'GitHub Copilot', 'Perplexity', '사용하지 않음'], other: true, exclusive: ['사용하지 않음'] },
       { id: 'ai_freq', q: '업무에서 생성형 AI를 얼마나 자주 사용하시나요?', type: 'radio', options: ['거의 매일', '주 3~4회', '주 1~2회', '월 1~3회', '거의 사용하지 않음'] },
-      { id: 'ai_use', q: '업무에서는 생성형 AI를 주로 어떤 용도로 사용하시나요?', type: 'checks', options: ['자료 조사', '아이디어 도출', '문서 작성', '데이터 분석', '사용자 리서치 정리', '기획 업무'], other: true },
+      { id: 'ai_use', q: '업무에서는 생성형 AI를 주로 어떤 용도로 사용하시나요? (복수 선택 가능)', type: 'checks', options: ['자료 조사', '아이디어 도출', '문서 작성', '데이터 분석', '사용자 리서치 정리', '기획 업무'], other: true },
       { id: 'ai_review', q: '생성형 AI가 만든 결과물을 업무에 활용할 때 어느 정도 검토하거나 수정해서 사용하시는 편인가요?', type: 'radio', options: ['거의 그대로 사용', '일부 수정해서 사용', '상당 부분 수정해서 사용', '참고 자료로만 사용'], other: true },
     ],
   },
@@ -55,19 +59,19 @@ export const PROFILE: { title: string; lead: string; fields: Field[] }[] = [
     title: '생성형 AI를 활용한 퍼소나 경험',
     lead: '',
     fields: [
-      { id: 'px_made', q: '업무나 프로젝트에서 퍼소나를 직접 만들어보거나, 이미 만들어진 퍼소나를 참고하여 기획/디자인/리서치 등에 사용해본 경험이 있으신가요?', type: 'radio', options: ['직접 만들어본 적 있음', '참고해서 사용한 적 있음', '없음'] },
-      { id: 'px_made_when', q: '어떤 상황에서 제작하거나 활용하셨나요?', hint: '경험이 없다면 비워두셔도 돼요.', type: 'textarea' },
+      { id: 'px_made', q: '업무나 프로젝트에서 퍼소나를 다룬 경험을 모두 골라 주세요. (복수 선택 가능)', type: 'checks', options: ['직접 만들어본 적 있음', '다른 사람이 만든 퍼소나를 참고해 기획·디자인·리서치에 사용한 적 있음', '없음'], exclusive: ['없음'] },
+      { id: 'px_made_when', q: '어떤 상황에서 제작하거나 활용하셨나요?', type: 'textarea', showIf: { id: 'px_made', value: ['직접 만들어본 적 있음', '다른 사람이 만든 퍼소나를 참고해 기획·디자인·리서치에 사용한 적 있음'] } },
       { id: 'px_ai', q: '생성형 AI를 활용해 퍼소나를 제작해본 경험이 있으신가요?', type: 'radio', options: ['있음', '없음'] },
-      { id: 'px_ai_when', q: '어떤 상황에서 AI를 활용해 제작하셨나요?', hint: '경험이 없다면 비워두셔도 돼요.', type: 'textarea' },
-      { id: 'px_how', q: '경험이 있다면, 어떤 방식으로 AI를 활용하셨나요?', type: 'checks', options: ['인터뷰 내용 요약', '사용자 데이터 분석', '퍼소나 초안 생성', '프로필 구체화'], other: true, showIf: { id: 'px_ai', value: '있음' } },
-      { id: 'px_source', q: 'AI로 퍼소나 제작 시 어떤 자료를 바탕으로 만드셨나요? (다중 선택)', type: 'checks', options: ['사용자 인터뷰 기반', '데스크 리서치(2차 자료) 기반', '설문조사 기반'], other: true, showIf: { id: 'px_ai', value: '있음' } },
-      { id: 'px_source_diff', q: '그 방식으로 퍼소나를 만들 때 겪었던 어려움은 무엇이었나요?', type: 'textarea' },
+      { id: 'px_ai_when', q: '어떤 상황에서 AI를 활용해 제작하셨나요?', type: 'textarea', showIf: { id: 'px_ai', value: '있음' } },
+      { id: 'px_how', q: '어떤 방식으로 AI를 활용하셨나요? (복수 선택 가능)', type: 'checks', options: ['인터뷰 내용 요약', '사용자 데이터 분석', '퍼소나 초안 생성', '프로필 구체화'], other: true, showIf: { id: 'px_ai', value: '있음' } },
+      { id: 'px_source', q: 'AI로 퍼소나를 만들 때 어떤 자료를 바탕으로 하셨나요? (복수 선택 가능)', type: 'checks', options: ['사용자 인터뷰 기반', '데스크 리서치(2차 자료) 기반', '설문조사 기반'], other: true, showIf: { id: 'px_ai', value: '있음' } },
+      { id: 'px_source_diff', q: '생성형 AI로 퍼소나를 만들 때 겪었던 어려움은 무엇이었나요?', type: 'textarea', showIf: { id: 'px_ai', value: '있음' } },
     ],
   },
 ]
 
 /** A/B/C 리뷰 집단과 토픽모델링 설명에 함께 붙이는 고정 안내문. STEP 1·3에 그대로 쓰여요. */
-export const GROUP_DISCLAIMER = 'A/B/C 집단은 최종 퍼소나나 행동유형이 아니라, LDA 토픽모델링 결과를 입력받은 생성형 AI가 유사한 사용자 경험을 묶어서 분석할 수 있도록 구성한 분석용 리뷰 집단이에요.'
+export const GROUP_DISCLAIMER = '리뷰 기반 행동 유형 3개(Primary·Secondary 1·Secondary 2)는 최종 퍼소나나 행동유형이 아니라, LDA 토픽모델링 결과를 입력받은 생성형 AI가 유사한 사용자 경험을 묶어서 분석할 수 있도록 구성한 분석용 리뷰 집단이에요.'
 
 /** STEP 1. 연구 개요 및 전체 분석 프로세스 */
 export const STEP1_QS: Field[] = [
@@ -96,7 +100,7 @@ export const STEP3_QS: Field[] = [
 export const STEP4_PROCESS_QS: Field[] = [
   { id: 's4_q1', q: 'LDA 토픽 모델링 결과와 사용자 리뷰를 바탕으로 생성형 AI가 리뷰 집단 및 행동 유형을 도출하도록 구성한 분석 방식이 연구 목적에 적절하다.', type: 'scale' },
   { id: 's4_q1_why', q: '위와 같이 평가하신 이유를 작성해 주세요.', type: 'textarea' },
-  { id: 's4_q2', q: '도출된 리뷰 집단(A/B/C)의 행동 특성과 행동 변수가 각 집단의 사용자 행동을 적절하게 설명한다.', type: 'scale' },
+  { id: 's4_q2', q: '도출된 리뷰 기반 행동 유형 3개(Primary·Secondary 1·Secondary 2)의 행동 특성과 행동 변수가 각 유형의 사용자 행동을 적절하게 설명한다.', type: 'scale' },
   { id: 's4_q2_why', q: '위와 같이 평가하신 이유를 작성해 주세요. 특히 행동 특성이 명확하지 않거나 다른 집단과 구분하기 어려운 부분이 있다면 말씀해 주세요.', type: 'textarea' },
 ]
 
@@ -122,9 +126,15 @@ export const STEP5_GROUP_QS: Field[] = [
 ]
 /** 5단계 종합 평가 Q5~Q7(5-3 탭 하단에 배치, STEP5_PATTERN_QS/STEP5_GROUP_QS에 이어지는 번호). */
 export const STEP5_REVIEW_QS: Field[] = [
-  { id: 's5_q3', q: 'AI가 도출한 행동 특성이 실제 인터뷰 발화로 충분히 뒷받침된다.', type: 'scale' },
+  { id: 's5_q3', q: '연구자와 AI가 도출한 행동 특성이 실제 인터뷰 발화로 충분히 뒷받침된다.', type: 'scale' },
   { id: 's5_q3_why', q: '위와 같이 평가하신 이유를 작성해 주세요. 특히 실제 인터뷰 발화에서 확인하기 어렵거나 과도하게 해석되었다고 생각하는 행동 특성이 있다면 말씀해 주세요.', type: 'textarea' },
   { id: 's5_reflect', q: '인터뷰 발화를 생성형 AI로 분석해 사용자 행동 유형을 도출하는 과정에서 보완이 필요하다고 생각하는 부분이 있다면 자유롭게 작성해 주세요.', type: 'textarea' },
+]
+
+/** STEP 6. 두 퍼소나 비교 (기존 종합 평가 Q8~Q9를 비교 화면 바로 아래로 옮겼어요) */
+export const STEP6_QS: Field[] = [
+  { id: 's6_q1', q: '리뷰 기반 퍼소나와 인터뷰 기반 퍼소나의 비교 결과가 두 데이터에서 나타나는 사용자 행동 특성의 차이를 적절하게 설명한다.', type: 'scale' },
+  { id: 's6_q1_why', q: '위와 같이 평가하신 이유를 작성해 주세요. 특히 순위 기준으로 짝지은 방식이나 비교 해석에서 보완이 필요한 부분이 있다면 말씀해 주세요.', type: 'textarea' },
 ]
 
 export interface Dim {
@@ -140,7 +150,7 @@ export interface Dim {
 export const DIMS: Dim[] = [
   { id: 'grounding', no: 1, title: '데이터 근거성', purpose: '퍼소나의 특성과 행동이 제시된 원천 데이터 및 행동변수와 얼마나 타당하게 연결되는지를 평가합니다.',
     items: [
-      { id: '1-1', q: '퍼소나의 핵심 특성·행동·니즈·사용 맥락이 제시된 원천 데이터로 설명된다.' },
+      { id: '1-1', q: '퍼소나의 핵심 특성과 행동이 제시된 원천 데이터로 설명된다.' },
       { id: '1-2', q: '도출된 행동변수와 퍼소나에 표현된 사용자 특성 간의 연결이 타당하다.' },
     ],
     follow: '이 퍼소나가 제시된 데이터와 잘 연결되어 있다고, 또는 연결되지 않는다고 판단하신 이유는 무엇인가요?',
@@ -159,7 +169,7 @@ export const DIMS: Dim[] = [
   { id: 'consistency', no: 3, title: '일관성', en: 'Consistency', purpose: '퍼소나에 포함된 여러 정보와 행동 특성이 서로 모순 없이 연결되는지를 평가합니다.',
     items: [
       { id: '3-1', q: '퍼소나에 제시된 행동, 니즈, 동기, 불만 사항 등의 정보가 서로 모순 없이 일관된다.' },
-      { id: '3-2', q: '퍼소나의 서술(시나리오·스토리 등)이 행동, 니즈 등 프로필의 다른 정보와 어긋나지 않는다.' },
+      { id: '3-2', q: '퍼소나의 서술(Bio·대표 인용문)이 행동, 니즈 등 프로필의 다른 정보와 어긋나지 않는다.' },
     ],
     follow: '퍼소나의 여러 정보가 자연스럽게 연결된다고 느끼셨나요? 그렇게 느낀 이유는 무엇인가요?',
     moreLow: '서로 어긋나거나 연결이 약하다고 느낀 부분이 있다면 무엇인가요?',
@@ -176,7 +186,7 @@ export const DIMS: Dim[] = [
     moreHigh: '특히 충분하다고 느낀 정보나 항목이 있다면 무엇인가요?' },
   { id: 'clarity', no: 5, title: '명확성', en: 'Clarity', purpose: '퍼소나의 핵심 특성과 정보가 얼마나 쉽게 이해되는지를 평가합니다.',
     items: [
-      { id: '5-1', q: '이 퍼소나가 어떤 특징을 가진 사용자인지 쉽게 파악할 수 있고, 핵심 특성이 명확히 드러난다.' },
+      { id: '5-1', q: '이 퍼소나의 핵심 특성이 명확하게 드러난다.' },
       { id: '5-2', q: '퍼소나에 제시된 정보와 설명은 이해하기 쉽게 구성되어 있다.' },
     ],
     follow: '이 퍼소나가 어떤 사용자인지 명확하게 파악할 수 있었나요? 그렇게 느낀 이유는 무엇인가요?',
@@ -185,7 +195,7 @@ export const DIMS: Dim[] = [
     moreHigh: '특히 명확하게 다가온 정보나 표현이 있다면 무엇인가요?' },
   { id: 'empathy', no: 6, title: '공감성', en: 'Empathy', purpose: '전문가가 퍼소나의 상황과 행동 이유, 경험을 사용자 관점에서 이해할 수 있는지를 평가합니다.',
     items: [
-      { id: '6-1', q: '이 퍼소나가 어떤 상황에서 왜 그렇게 행동하는지, 어떤 니즈와 어려움을 가졌는지 사용자 관점에서 이해할 수 있다.' },
+      { id: '6-1', q: '이 퍼소나가 왜 그렇게 행동하는지 사용자 관점에서 이해할 수 있다.' },
       { id: '6-2', q: '이 퍼소나가 제품을 사용하는 상황과 경험을 구체적으로 떠올릴 수 있다.' },
     ],
     follow: '이 퍼소나의 행동이나 상황을 사용자 관점에서 이해할 수 있었나요? 그렇게 느낀 이유는 무엇인가요?',
@@ -205,6 +215,27 @@ export const DIMS: Dim[] = [
     moreHigh: '활용한다면 어떤 업무나 단계에서 가장 유용할 것 같나요?' },
 ]
 export const ITEM_COUNT = DIMS.reduce((a, d) => a + d.items.length, 0)
+
+/**
+ * STEP 7 서술형: 영역마다 2개씩(퍼소나당 14개) 묻던 추가 질문을 퍼소나당 2개로 줄였어요.
+ * 영역별 생각은 인터뷰 중 구두로 묻고, 화면에는 가장 강한 점·약한 점만 남겨요.
+ */
+export const PERSONA_NOTES: { id: string; q: string; hint: string }[] = [
+  { id: 'overall_strong', q: '이 퍼소나에서 가장 설득력 있거나 실무에 쓸 만하다고 느낀 점은 무엇인가요?', hint: '위 7개 영역 중 어느 영역과 관련된 생각인지 함께 적어 주시면 좋아요.' },
+  { id: 'overall_weak', q: '이 퍼소나에서 가장 보완이 필요하다고 느낀 점은 무엇인가요?', hint: '근거 부족, 어색한 정보, 빠진 정보 등 무엇이든 괜찮아요.' },
+]
+
+/**
+ * STEP 7 퍼소나 제시 순서. 같은 순서로만 보면 앞 퍼소나가 기준점이 되는 순서 효과가 생겨서,
+ * 리뷰 기반·인터뷰 기반을 번갈아 둔 기본 순서를 평가자마다 다르게 회전해요(6가지, 각 퍼소나가 모든 위치에 한 번씩).
+ */
+const BASE_ORDER = ['A', 'P', 'B', 'S1', 'C', 'S2']
+export function personaOrder(evaluator: string) {
+  let h = 0
+  for (const ch of evaluator.trim()) h = (h * 31 + ch.codePointAt(0)!) >>> 0
+  const k = h % BASE_ORDER.length
+  return [...BASE_ORDER.slice(k), ...BASE_ORDER.slice(0, k)]
+}
 export const SCALE = ['전혀 그렇지 않다', '그렇지 않다', '보통이다', '그렇다', '매우 그렇다']
 
 /** STEP 8(최종 종합 평가). ① 연구 절차의 타당성 — Q1~Q4 */
@@ -217,43 +248,39 @@ export const STEP8_PROCEDURE_QS: Field[] = [
 /** ② 생성형 AI 분석 및 검증 — Q5~Q7 */
 export const STEP8_AI_QS: Field[] = [
   { id: 's8_q5', q: '생성형 AI가 원문 데이터에 근거하여 행동 유형과 퍼소나를 도출하도록 분석 절차가 구성되어 있다.', type: 'scale' },
-  { id: 's8_q6', q: 'AI 분석 결과에 대한 연구자의 원문 재확인 및 재분류 절차가 결과의 신뢰성을 검토하는 데 적절하다.', type: 'scale' },
+  { id: 's8_q6', q: '연구자가 AI 분석 결과를 원문과 대조해 재확인한 절차가 결과의 신뢰성을 검토하는 데 적절하다.', type: 'scale' },
   { id: 's8_q7', q: '위 AI 분석 및 검증 절차에 대해 평가하신 이유나 근거를 적어 주세요.', type: 'textarea' },
 ]
-/** ③ 데이터 기반 퍼소나 비교 — Q8~Q9 */
-export const STEP8_COMPARE_QS: Field[] = [
-  { id: 's8_q8', q: '온라인 리뷰 기반 퍼소나와 인터뷰 기반 퍼소나의 비교 결과가 두 데이터에서 나타나는 사용자 행동 특성의 차이를 적절하게 설명한다.', type: 'scale' },
-  { id: 's8_q9', q: '그렇게 평가하신 이유나 근거를 적어 주세요.', type: 'textarea' },
-]
-/** ④ 활용 가능성 — Q10~Q13 */
+/** ③ 활용 가능성 — Q8~Q11 (두 퍼소나 비교 문항은 6단계로 옮겼어요) */
 export const STEP8_USE_QS: Field[] = [
   { id: 's8_q10', q: '온라인 리뷰와 생성형 AI를 활용한 퍼소나는 정성 인터뷰 기반 퍼소나를 보완하는 자료로 활용할 가치가 있다.', type: 'scale' },
-  { id: 's8_q11', q: '온라인 리뷰와 생성형 AI를 활용한 퍼소나는 일부 UX 리서치 상황에서 정성 인터뷰 기반 퍼소나를 대체하여 활용할 가능성이 있다.', type: 'scale' },
+  { id: 's8_q11', q: '온라인 리뷰와 생성형 AI를 활용한 퍼소나만으로는 정성 인터뷰 기반 퍼소나를 대체하기 어렵다.', hint: '앞 문항과 반대 방향으로 쓴 문항이에요. 문장 그대로에 동의하는 정도를 골라 주세요.', type: 'scale' },
   { id: 's8_q12', q: '본 연구에서 제시한 퍼소나 생성 절차는 다른 제품이나 서비스의 사용자 분석에도 적용할 가능성이 있다.', type: 'scale' },
   { id: 's8_q13', q: '위 활용 가능성에 대해 평가하신 이유나 근거를 적어 주세요. 특히 정성 인터뷰 기반 퍼소나를 보완하거나 대체할 수 있다고 생각하시는 범위가 있다면 함께 말씀해 주세요.', type: 'textarea' },
 ]
-/** ⑤ 종합 평가 — Q14~Q15 */
+/** ④ 종합 평가 — Q12~Q13 */
 export const STEP8_FINAL_QS: Field[] = [
   { id: 's8_q14', q: '전체 연구 과정과 분석 결과를 종합했을 때, 본 연구의 방법은 연구 목적을 달성하는 데 적절하다.', type: 'scale' },
   { id: 's8_q15', q: '그렇게 평가하신 이유나 근거를 적어 주세요.', type: 'textarea' },
 ]
 /** 전체 연구 방법 평가(1~15문항)를 한 번에 순회할 때 쓰는 통합 배열(제출 데이터 매핑용). */
-export const STEP8_QS: Field[] = [...STEP8_PROCEDURE_QS, ...STEP8_AI_QS, ...STEP8_COMPARE_QS, ...STEP8_USE_QS, ...STEP8_FINAL_QS]
+export const STEP8_QS: Field[] = [...STEP8_PROCEDURE_QS, ...STEP8_AI_QS, ...STEP8_USE_QS, ...STEP8_FINAL_QS]
 
+export const REVISE_NONE = '수정하거나 보완할 부분 없음'
 export const REVISE_OPTIONS = [
-  '1. 연구 개요 및 전체 분석 절차',
-  '2. 온라인 리뷰 수집 범위 및 전처리 기준',
-  '3. 토픽 모델링 및 리뷰 집단 분류',
-  '4. 행동 특성 분석 및 AI 기반 퍼소나 생성',
-  '5. 연구자의 원문 재확인 및 검증 절차',
-  '6. 인터뷰 참여자 구성 및 정성 데이터 분석',
-  '7. 리뷰·인터뷰 기반 퍼소나 비교 방법',
-  '8. 최종 퍼소나 구성 및 품질',
-  '9. 수정하거나 보완할 부분 없음',
+  '1단계: 연구 개요 및 전체 분석 절차',
+  '2단계: 온라인 리뷰 수집 범위 및 전처리 기준',
+  '3단계: 토픽 모델링',
+  '4단계: 리뷰 기반 행동 유형 분류·퍼소나 생성·근거',
+  '5단계: 인터뷰 참여자 구성·분석·인터뷰 기반 퍼소나',
+  '6단계: 두 퍼소나 비교 방법',
+  '7단계: 최종 퍼소나 구성 및 품질',
+  '4·5단계 공통: 연구자의 원문 재확인 및 검증 절차',
+  REVISE_NONE,
 ]
 export const STEP8_CHECKLIST: Field[] = [
-  { id: 'm_revise', q: '전체 연구 과정에서 수정하거나 보완할 필요가 있다고 생각되는 부분을 모두 선택해 주세요. (복수 선택 가능)', type: 'checks', options: REVISE_OPTIONS, other: true },
-  { id: 'm_revise_detail', q: '위에서 선택한 단계에 대해 구체적으로 어떤 부분을 수정하거나 보완하면 좋을지 의견을 적어 주세요.', type: 'textarea' },
+  { id: 'm_revise', q: '전체 연구 과정에서 수정하거나 보완할 필요가 있다고 생각되는 부분을 모두 선택해 주세요. (복수 선택 가능)', type: 'checks', options: REVISE_OPTIONS, other: true, exclusive: [REVISE_NONE] },
+  { id: 'm_revise_detail', q: '위에서 선택한 단계에 대해 구체적으로 어떤 부분을 수정하거나 보완하면 좋을지 의견을 적어 주세요.', type: 'textarea', showIf: { id: 'm_revise', value: REVISE_OPTIONS.filter((o) => o !== REVISE_NONE).concat('기타') } },
   { id: 'm_ai_approach', q: '전문가님이 동일한 사용자 리서치를 진행하신다면, 생성형 AI를 어떤 단계에 활용하시겠습니까?', hint: 'AI에 맡길 분석 과정과 연구자가 직접 수행할 과정, AI 분석 결과의 검증 방법 등을 자유롭게 말씀해 주세요.', type: 'textarea' },
   { id: 'm_final', q: '그 밖에 연구 방법이나 퍼소나 결과에 대해 추가로 남기고 싶은 의견이 있다면 자유롭게 말씀해 주세요.', type: 'textarea' },
 ]

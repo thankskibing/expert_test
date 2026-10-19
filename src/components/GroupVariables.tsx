@@ -24,14 +24,14 @@ function GroupCard({ tag, name, traits, summary, children }: { tag: string; name
 export function DataGroupCard({ p }: { p: DataPid }) {
   const g = study.dataGroups[p]
   return (
-    <GroupCard tag={`${g.group} · ${g.role} · 1차 분류 ${g.count}건(${g.share})`} name={g.name} traits={g.traits} summary={g.summary}>
+    <GroupCard tag={`${g.group} · 1차 키워드 분류 ${g.count}건(중복 포함) → 재분류 적합 ${study.stats.reclass[p].counts.D}건`} name={g.name} traits={g.traits} summary={g.summary}>
       <p className="mt-3 text-b3 text-g600">{g.flow}</p>
     </GroupCard>
   )
 }
 
 /**
- * 데이터 퍼소나: 행동 변수 8개와 그룹 1~3 비교. 참고 자료의 "행동 변수·그룹" 페이지(Variables.tsx)와
+ * 리뷰 기반 퍼소나: 행동 변수 8개와 그룹 1~3 비교. 참고 자료의 "행동 변수·그룹" 페이지(Variables.tsx)와
  * 4단계(4-1)에서 동일하게 재사용한다 — 내용·동작을 그대로 공유하기 위한 컴포넌트.
  */
 export function DataGroupVariablesCompare() {
@@ -58,12 +58,12 @@ export function DataGroupVariablesCompare() {
 export function QualGroupCard({ g }: { g: QualPid }) {
   const grp = study.qualGroups[g]
   return (
-    <GroupCard tag={`${grp.group} · ${grp.role} · 참여자 ${grp.members.length}명(${grp.members.join(', ')})`} name={grp.name} traits={grp.traits} summary={grp.summary} />
+    <GroupCard tag={`${grp.group} · 참여자 ${grp.members.length}명(${grp.members.join(', ')})`} name={grp.name} traits={grp.traits} summary={grp.summary} />
   )
 }
 
 /**
- * 정성 퍼소나: 행동 변수 6개와 그룹 P/S1/S2 비교. 데이터 퍼소나 쪽(DataGroupVariablesCompare)과 같은
+ * 인터뷰 기반 퍼소나: 행동 변수 6개와 그룹 P/S1/S2 비교. 리뷰 기반 퍼소나 쪽(DataGroupVariablesCompare)과 같은
  * 그룹 탭 + TrackStack + 요약 카드 구성으로, 5-1(5단계)에서도 4-1과 같은 모양으로 보여주기 위한 컴포넌트.
  * 참고 자료의 '행동 변수·그룹' 페이지는 참여자 한 명씩 보기 토글이 추가로 있어 별도 구현을 유지한다.
  */
@@ -72,7 +72,7 @@ export function QualGroupVariablesCompare() {
   const members = qg === 'all' ? null : study.qualGroups[qg].members
   return (
     <>
-      <Segmented label="정성 그룹" items={[...QUAL_IDS, 'all'] as (QualPid | 'all')[]} value={qg} onChange={setQg} render={(v) => v === 'all'
+      <Segmented label="인터뷰 기반 그룹" items={[...QUAL_IDS, 'all'] as (QualPid | 'all')[]} value={qg} onChange={setQg} render={(v) => v === 'all'
         ? <span className="py-1">전체 비교</span>
         : <span className="flex items-center gap-2 py-1"><span className="flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold text-white" style={{ background: PCOLOR[v] }}>{QGNUM[v]}</span>{PNAME[v]}</span>} />
       <div className="mt-6 grid gap-6 xl:grid-cols-[1.25fr_1fr]">

@@ -80,7 +80,30 @@ export const PNAME: Record<string, string> = {
 export const PIMG: Record<string, string> = { A: imgA, B: imgB, C: imgC, P: imgP, S1: imgS1, S2: imgS2 }
 export const PRANK: Record<string, string> = { A: 'Primary', B: 'Secondary 1', C: 'Secondary 2', P: 'Primary', S1: 'Secondary 1', S2: 'Secondary 2' }
 export const PABBR: Record<string, string> = { A: 'P', B: 'S1', C: 'S2', P: 'P', S1: 'S1', S2: 'S2' }
-export const PSHORT: Record<string, string> = { A: '데이터 Primary', B: '데이터 Secondary 1', C: '데이터 Secondary 2', P: '정성 Primary', S1: '정성 Secondary 1', S2: '정성 Secondary 2' }
+export const PSHORT: Record<string, string> = { A: '리뷰 기반 Primary', B: '리뷰 기반 Secondary 1', C: '리뷰 기반 Secondary 2', P: '인터뷰 기반 Primary', S1: '인터뷰 기반 Secondary 1', S2: '인터뷰 기반 Secondary 2' }
+
+/**
+ * 연구팀이 남긴 판단 이유(reviews.json·study.json 원본)에는 예전 이름(데이터 퍼소나 A, 정성 퍼소나 등)이 그대로 남아 있다.
+ * 원본 기록은 고치지 않고, 화면에 보일 때만 지금의 이름(리뷰 기반 Primary 등)으로 바꿔 보여준다.
+ */
+const TERM_RULES: [RegExp, string][] = [
+  [/데이터\s*(?:메인\s*)?퍼소나\s*A/g, '리뷰 기반 Primary'],
+  [/데이터\s*(?:서브\s*|세컨더리\s*)?퍼소나\s*B/g, '리뷰 기반 Secondary 1'],
+  [/데이터\s*(?:서브\s*|세컨더리\s*)?퍼소나\s*C/g, '리뷰 기반 Secondary 2'],
+  [/퍼소나\s*A(?![A-Za-z])/g, '리뷰 기반 Primary'],
+  [/퍼소나\s*B(?![A-Za-z])/g, '리뷰 기반 Secondary 1'],
+  [/퍼소나\s*C(?![A-Za-z])/g, '리뷰 기반 Secondary 2'],
+  [/데이터 Primary/g, '리뷰 기반 Primary'],
+  [/데이터 Secondary/g, '리뷰 기반 Secondary'],
+  [/정성 Primary/g, '인터뷰 기반 Primary'],
+  [/정성 Secondary/g, '인터뷰 기반 Secondary'],
+  [/데이터 퍼소나/g, '리뷰 기반 퍼소나'],
+  [/정성 퍼소나/g, '인터뷰 기반 퍼소나'],
+]
+export function terms(text: string | null | undefined) {
+  if (!text) return text ?? ''
+  return TERM_RULES.reduce((s, [re, to]) => s.replace(re, to), text)
+}
 /**
  * 퍼소나별 고유 태그(tags)가 담고 있는 핵심 의미를, 실제 Bio·Motivation·Goal·Pain Points·Needs
  * 본문에 쓰인 단어로 옮겨 강조 표시에 쓴다. 본문 문장은 그대로 두고 일치하는 단어만 하이라이트한다.
@@ -96,7 +119,7 @@ export const HIGHLIGHT_KEYWORDS: Record<string, string[]> = {
 
 export const CATS: { id: Cat; label: string; hint: string }[] = [
   { id: 'D', label: '퍼소나 적합', hint: '이 퍼소나의 핵심 행동변수를 원문에서 직접 보여주는 리뷰' },
-  { id: 'Q', label: '정성 퍼소나 유사', hint: '데이터 퍼소나보다 정성 퍼소나 원자료와 닮은 행동' },
+  { id: 'Q', label: '인터뷰 기반 퍼소나 유사', hint: '리뷰 기반 퍼소나보다 인터뷰 기반 퍼소나 원자료와 닮은 행동' },
   { id: 'N', label: '부정 의견', hint: '이 퍼소나의 핵심 행동과 반대되는 사례' },
   { id: 'X', label: '보조·맥락 근거', hint: '핵심 행동은 아니지만 사용 맥락을 이해하는 데 참고할 정보' },
   { id: 'O', label: '분석 외', hint: '배송·선물·사용 전 기대 등 퍼소나 비교에 쓰기 어려운 내용' },

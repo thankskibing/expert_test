@@ -1,8 +1,9 @@
 import { method } from '../lib/data'
 import { STEP3_QS } from '../lib/protocol'
 import { useEval } from '../lib/evalStore'
-import { FieldList } from '../components/form'
-import { StepNav } from '../components/flow'
+import { FieldList, unanswered } from '../components/form'
+import { StepNav, leftHint } from '../components/flow'
+import { nextLabel, stepByNo } from '../lib/steps'
 import { Badge, PageHead, Section } from '../components/ui'
 
 function TopicCard({ t }: { t: (typeof method.topics)[number] }) {
@@ -25,8 +26,8 @@ export default function Step3() {
   const { state, setStep3 } = useEval()
   return (
     <div>
-      <PageHead step={3} title="토픽 모델링 검증">
-        리뷰 3,601건 전체에서 LDA 토픽모델링으로 주제(토픽)를 찾았어요. 아래 결과가 리뷰 내용을 잘 설명하는지 확인해 주세요.
+      <PageHead step={3} title={stepByNo(3).title}>
+        2단계 전처리를 거친 리뷰 3,601건 전체에서 LDA 토픽모델링으로 주제(토픽)를 찾았어요. 아래 결과가 리뷰 내용을 잘 설명하는지 확인해 주세요.
       </PageHead>
 
       <Section title="LDA 토픽모델링 결과" lead={method.coherenceNote}>
@@ -47,10 +48,10 @@ export default function Step3() {
 
       <section className="mt-8 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
         <h2 className="pt-4 text-t1">3단계 평가</h2>
-        <div className="max-w-3xl"><FieldList fields={STEP3_QS} get={(id) => state.step3[id] ?? ''} set={setStep3} /></div>
+        <div className="max-w-3xl"><FieldList fields={STEP3_QS} get={(id) => state.step3[id] ?? ''} set={setStep3} prefix="3-Q" /></div>
       </section>
 
-      <StepNav prev="/step2" next="/step4" nextLabel="4단계: 리뷰 기반 AI 분석·퍼소나 근거 검증으로" />
+      <StepNav prev="/step2" next="/step4" nextLabel={nextLabel(4)} hint={leftHint(unanswered(STEP3_QS, (id) => state.step3[id] ?? ''))} />
     </div>
   )
 }

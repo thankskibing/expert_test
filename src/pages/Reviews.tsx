@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { CATS, DATA_IDS, PCOLOR, PNAME, PRANK, loadReviews, study, type Cat, type DataPid, type ReviewsData } from '../lib/data'
+import { CATS, DATA_IDS, PCOLOR, PNAME, PRANK, loadReviews, study, terms, type Cat, type DataPid, type ReviewsData } from '../lib/data'
 import { Button, Chip, PageHead, Segmented, TextField } from '../components/ui'
 
 const PAGE = 40
 
 export function PersonaSeg({ value, onChange, count }: { value: DataPid; onChange: (v: DataPid) => void; count: (p: DataPid) => number }) {
   return (
-    <Segmented label="데이터 퍼소나" items={DATA_IDS} value={value} onChange={onChange} render={(v) => (
+    <Segmented label="리뷰 기반 퍼소나" items={DATA_IDS} value={value} onChange={onChange} render={(v) => (
       <span className="flex items-center gap-2 py-1">
         <span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[v] }} />
         <span>{PRANK[v]} · {PNAME[v]}</span>
@@ -40,7 +40,7 @@ export default function Reviews() {
   return (
     <div>
       <PageHead title="리뷰 데이터">
-        키워드 규칙으로 퍼소나별로 1차 분류된 리뷰(A 824 · B 902 · C 607건, 중복 포함)를, 그 퍼소나의 핵심 행동 변수 기준으로 한 건씩 다시 판정했어요. 처음에는 퍼소나 적합 리뷰가 보이고, 다른 분류도 골라 볼 수 있어요.
+        키워드 규칙으로 퍼소나별로 1차 분류된 리뷰(Primary 824 · Secondary 1 902 · Secondary 2 607건, 중복 포함)를, 그 퍼소나의 핵심 행동 변수 기준으로 한 건씩 다시 판정했어요. 처음에는 퍼소나 적합 리뷰가 보이고, 다른 분류도 골라 볼 수 있어요.
       </PageHead>
 
       <PersonaSeg value={p} onChange={(v) => set('p', v)} count={(v) => study.stats.reclass[v].n} />
@@ -69,7 +69,7 @@ export default function Reviews() {
                 <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-b3 font-semibold text-g600 hover:text-g800">
                   판단 이유 <span className="transition-transform duration-200 group-open:rotate-180" aria-hidden>⌄</span>
                 </summary>
-                <p className="mt-2 rounded-m bg-g50 px-4 py-3 text-b3 text-g700">{why}</p>
+                <p className="mt-2 rounded-m bg-g50 px-4 py-3 text-b3 text-g700">{terms(why)}</p>
               </details>
             </div>
           </li>

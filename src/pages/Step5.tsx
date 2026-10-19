@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { HIGHLIGHT_KEYWORDS, PCOLOR, PNAME, PSHORT, QUAL_IDS, method, personaById, study, type QualPid, type Uid } from '../lib/data'
 import { REVIEW_AGREE_OPTIONS, STEP5_GROUP_QS, STEP5_PATTERN_QS, STEP5_REVIEW_QS } from '../lib/protocol'
 import { useEval } from '../lib/evalStore'
-import { FieldList } from '../components/form'
+import { FieldList, unanswered } from '../components/form'
 import { QualGroupVariablesCompare } from '../components/GroupVariables'
 import { Body, Header as PersonaHeader, ProfileSection } from '../components/PersonaCard'
-import { StepNav } from '../components/flow'
+import { StepNav, leftHint } from '../components/flow'
+import { nextLabel, stepByNo } from '../lib/steps'
 import { Badge, Button, Disclosure, Emphasis, Note, PageHead, Section, Segmented } from '../components/ui'
 
 const UIDS: Uid[] = ['U1', 'U2', 'U3', 'U4', 'U5', 'U6']
@@ -48,10 +49,17 @@ const PARTS = [
   ['judge', '5-3. 발화별 판정'],
 ] as const
 
+/**
+ * 예시마다 '② 연구자 1차 분석' 문장을 가장 직접 보여주는 발화를 고른다(참여자 원문 그대로, 순서만 고름).
+ * 예: 인터뷰 기반 Secondary 2의 1차 분석은 '필요가 생겼을 때 사용'이므로, 에어샷 집중 발화보다 계절·긴급 사용 발화가 맞다.
+ */
+const EXAMPLE: Record<QualPid, [Uid, number]> = { P: ['U3', 0], S1: ['U2', 0], S2: ['U5', 1] }
+
 function PatternExample({ g }: { g: QualPid }) {
   const grp = study.qualGroups[g]
-  const member = study.participants.find((u) => u.id === grp.members[0])!
-  const quote = member.quotes[0]
+  const [uid, qi] = EXAMPLE[g]
+  const member = study.participants.find((u) => u.id === uid)!
+  const quote = member.quotes[qi] ?? member.quotes[0]
   return (
     <div className="rounded-2xl border border-g200 p-5">
       <p className="mb-2 flex items-center gap-2 text-cap text-g500"><span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[g] }} />{grp.group} · {PNAME[g]} · {grp.members.join(', ')}</p>
@@ -73,7 +81,7 @@ function GroupBasicCard({ g, onViewPersona }: { g: QualPid; onViewPersona: () =>
   })
   return (
     <div className="flex flex-col rounded-2xl border border-g200 p-5">
-      <p className="mb-1 flex items-center gap-2 text-cap text-g500"><span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[g] }} />{grp.group} · {grp.role} · 참여자 {grp.members.length}명({grp.members.join(', ')})</p>
+      <p className="mb-1 flex items-center gap-2 text-cap text-g500"><span className="h-2 w-2 rounded-full" style={{ background: PCOLOR[g] }} />{grp.group} · 참여자 {grp.members.length}명({grp.members.join(', ')})</p>
       <h3 className="text-h3">{grp.name}</h3>
       <p className="mt-3 rounded-xl bg-g50 px-4 py-3 text-b2 text-g900">{grp.summary}</p>
       <p className="mt-3 flex gap-2 text-b3 text-g700"><span className="mt-[5px] h-1 w-1 shrink-0 rounded-full bg-g500" />{grp.traits[0]}</p>
@@ -252,7 +260,8 @@ function InterviewRow({ pid, uid }: { pid: QualPid; uid: Uid }) {
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <div>
-          <p className="mb-1.5 text-b3 font-semibold text-g900">이 참여자의 발화가 이 퍼소나의 행동을 얼마나 잘 보여주나요?(1~5)</p>
+          <p className="mb-1.5 text-b3 font-semibold text-g900">이 참여자의 발화가 이 퍼소나의 행동을 얼마나 잘 보여주나요?</p>
+          <p className="mb-1.5 text-cap text-g600">1 전혀 보여주지 못한다 · 3 보통이다 · 5 매우 잘 보여준다</p>
           <div className="flex gap-1.5">
             {[1, 2, 3, 4, 5].map((v) => (
               <button key={v} onClick={() => setInterviewJudge(key, { score: v })} className={`flex h-8 w-8 items-center justify-center rounded-m border text-b2 ${j.score === v ? 'border-brand bg-brand text-white' : 'border-g300 bg-white text-g900'}`}>{v}</button>
@@ -260,7 +269,7 @@ function InterviewRow({ pid, uid }: { pid: QualPid; uid: Uid }) {
           </div>
         </div>
         <div>
-          <p className="mb-1.5 text-b3 font-semibold text-g900">그룹 분류에 동의하시나요?</p>
+          <p className="mb-1.5 text-b3 font-semibold text-g900">이 참여자를 {PSHORT[pid]}로 분류한 것에 동의하시나요?</p>
           <div className="flex flex-wrap gap-1.5">
             {REVIEW_AGREE_OPTIONS.map((o) => (
               <button key={o} onClick={() => setInterviewJudge(key, { agree: o })} className={`h-8 rounded-m border px-2.5 text-b2 ${j.agree === o ? 'border-brand bg-brand-weak text-brand' : 'border-g300 bg-white text-g900'}`}>{o}</button>
@@ -268,7 +277,7 @@ function InterviewRow({ pid, uid }: { pid: QualPid; uid: Uid }) {
           </div>
         </div>
       </div>
-      <textarea value={j.reason ?? ''} onChange={(e) => setInterviewJudge(key, { reason: e.target.value })} rows={2} placeholder="이유를 적어 주세요(선택)" className="mt-3 w-full rounded-m border border-g300 bg-white px-[11px] py-2 text-b2 outline-none placeholder:text-g400 focus:border-brand" />
+      <textarea value={j.reason ?? ''} onChange={(e) => setInterviewJudge(key, { reason: e.target.value })} rows={2} placeholder={j.agree && j.agree !== '동의' ? '동의하지 않거나 일부만 동의하신 이유를 적어 주세요' : '이유를 적어 주세요(선택)'} className="mt-3 w-full rounded-m border border-g300 bg-white px-[11px] py-2 text-b2 outline-none placeholder:text-g400 focus:border-brand" />
     </div>
   )
 }
@@ -309,11 +318,11 @@ export default function Step5() {
 
   return (
     <div>
-      <PageHead step={5} title="인터뷰 분석 및 정성 퍼소나 검증">
+      <PageHead step={5} title={stepByNo(5).title}>
         정성 인터뷰 분석 → 인터뷰 기반 AI 퍼소나 → 발화별 판정 순서로, 4단계(온라인 리뷰 분석)와 같은 흐름으로 검토해 주세요. 다만 인터뷰 트랙은 연구자가 원문을 먼저 분석한 뒤 AI가 그 위에 패턴을 재구성한다는 점이 리뷰 트랙과 달라요.
       </PageHead>
 
-      <Segmented label="세부 단계" items={PARTS.map((p) => p[0])} value={part} onChange={setPart} render={(v) => PARTS.find((p) => p[0] === v)![1]} />
+      <Segmented label="세부 단계" items={PARTS.map((p) => p[0])} value={part} onChange={setPart} render={(v) => <span className="flex items-center gap-1.5">{PARTS.find((p) => p[0] === v)![1]}{v !== 'qual' && <span className="rounded-s bg-g100 px-1.5 text-cap text-g600">문항</span>}</span>} />
 
       {part === 'pattern' && (
         <div className="mt-6">
@@ -335,7 +344,7 @@ export default function Step5() {
           </Section>
 
           <section className="rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
-            <div className="max-w-3xl"><FieldList fields={STEP5_PATTERN_QS} get={(id) => state.step5pattern[id] ?? ''} set={setStep5pattern} start={1} /></div>
+            <div className="max-w-3xl"><FieldList fields={STEP5_PATTERN_QS} get={(id) => state.step5pattern[id] ?? ''} set={setStep5pattern} prefix="5-Q" start={1} /></div>
           </section>
 
           <Section title="행동 유형 3개" lead="연구자의 1차 분석과 AI의 재구성을 거쳐 도출된 세 집단이에요. 이 특성이 바로 다음 5-2의 퍼소나로 이어져요.">
@@ -345,10 +354,11 @@ export default function Step5() {
           </Section>
 
           <section className="mb-12 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
-            <div className="max-w-3xl"><FieldList fields={STEP5_GROUP_QS} get={(id) => state.step5pattern[id] ?? ''} set={setStep5pattern} start={3} /></div>
+            <div className="max-w-3xl"><FieldList fields={STEP5_GROUP_QS} get={(id) => state.step5pattern[id] ?? ''} set={setStep5pattern} prefix="5-Q" start={3} /></div>
+            <p className="pb-4 text-b3 text-g600">5단계 문항은 <button onClick={() => { setPart('judge'); window.scrollTo(0, 0) }} className="font-semibold text-brand hover:text-brand-hover">5-3. 발화별 판정</button> 탭 아래(5-Q5~5-Q7)에도 이어져요.</p>
           </section>
 
-          <Section title="행동 변수 비교" lead="정성 퍼소나 6개 행동 변수에서 각 집단이 어디에 위치하는지 비교해서 볼 수 있어요. 참고 자료의 '행동 변수·그룹' 페이지와 같은 내용이에요.">
+          <Section title="행동 변수 비교" lead="인터뷰 기반 퍼소나 6개 행동 변수에서 각 집단이 어디에 위치하는지 비교해서 볼 수 있어요. 참고 자료의 '행동 변수·그룹' 페이지와 같은 내용이에요.">
             <QualGroupVariablesCompare />
           </Section>
 
@@ -383,12 +393,12 @@ export default function Step5() {
 
           <section className="mt-8 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
             <h2 className="pt-4 text-t1">5단계 종합 평가</h2>
-            <div className="max-w-3xl"><FieldList fields={STEP5_REVIEW_QS} get={(id) => state.step5pattern[id] ?? ''} set={setStep5pattern} start={5} /></div>
+            <div className="max-w-3xl"><FieldList fields={STEP5_REVIEW_QS} get={(id) => state.step5pattern[id] ?? ''} set={setStep5pattern} prefix="5-Q" start={5} /></div>
           </section>
         </div>
       )}
 
-      <StepNav prev="/step4" next="/step7" nextLabel="6단계: 최종 퍼소나 품질 평가로" />
+      <StepNav prev="/step4" next="/step6" nextLabel={nextLabel(6)} hint={leftHint(unanswered([...STEP5_PATTERN_QS, ...STEP5_GROUP_QS, ...STEP5_REVIEW_QS], (id) => state.step5pattern[id] ?? ''), '5단계(5-1·5-3 탭)')} />
     </div>
   )
 }

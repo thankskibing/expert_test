@@ -1,16 +1,16 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { PCOLOR, PNAME, PSHORT, core, personaById, study, type DataPid, type QualPid } from '../lib/data'
-import { DIMS, ITEM_COUNT, SCALE } from '../lib/protocol'
+import { DIMS, ITEM_COUNT, PERSONA_NOTES, SCALE, personaOrder } from '../lib/protocol'
+import { nextLabel, stepByNo } from '../lib/steps'
 import { useEval } from '../lib/evalStore'
 import { SOURCE_LABEL } from '../lib/payload'
 import { FullPersonaCard } from '../components/PersonaCard'
 import { StepNav } from '../components/flow'
-import { Badge, Highlighted, Modal, PageHead, TextArea } from '../components/ui'
+import { Badge, Highlighted, Modal, Note, PageHead, TextArea } from '../components/ui'
 
-const ORDER = ['A', 'B', 'C', 'P', 'S1', 'S2']
 
-/** 데이터 근거성 팝업 내용: 데이터 퍼소나는 원문 리뷰(근거 문구 하이라이트), 정성 퍼소나는 참여자 발화 전체를 보여준다. */
+/** 데이터 근거성 팝업 내용: 리뷰 기반 퍼소나는 원문 리뷰(근거 문구 하이라이트), 인터뷰 기반 퍼소나는 참여자 발화 전체를 보여준다. */
 function GroundingEvidence({ pid, kind }: { pid: string; kind: 'data' | 'qual' }) {
   if (kind === 'data') {
     const list = core[pid as DataPid]
@@ -71,20 +71,10 @@ function ScaleRow({ no, q, value, onChange }: { no: string; q: string; value?: n
   )
 }
 
-function dimAvg(state: ReturnType<typeof useEval>['state'], pid: string, d: (typeof DIMS)[number]) {
-  const vs = d.items.map((it) => state.ratings[pid]?.[it.id])
-  if (vs.some((v) => v === undefined)) return null
-  return (vs as number[]).reduce((a, v) => a + v, 0) / vs.length
-}
-function moreQ(d: (typeof DIMS)[number], avg: number | null) {
-  if (avg === null) return d.moreNeutral
-  if (avg < 3) return d.moreLow
-  if (avg > 3) return d.moreHigh
-  return d.moreNeutral
-}
-
 export default function Step7() {
   const { state, setRating, setDimNote } = useEval()
+  // 평가자마다 제시 순서를 회전해 순서 효과를 줄여요(같은 평가자는 항상 같은 순서).
+  const ORDER = personaOrder(state.evaluator)
   const [sp, setSp] = useSearchParams()
   const [showEvidence, setShowEvidence] = useState(false)
   const count = (id: string) => Object.keys(state.ratings[id] ?? {}).length
@@ -98,9 +88,14 @@ export default function Step7() {
 
   return (
     <div>
-      <PageHead step={6} title="최종 퍼소나 품질 평가">
-        퍼소나 6개를 하나씩 7개 영역 {ITEM_COUNT}개 문항으로 평가해 주세요. 각 문항은 1점(전혀 그렇지 않다)부터 5점(매우 그렇다)까지예요.
+      <PageHead step={7} title={stepByNo(7).title}>
+        퍼소나 6개를 하나씩 7개 영역 {ITEM_COUNT}개 문항으로 평가하고, 퍼소나마다 가장 강한 점과 약한 점을 짧게 적어 주세요. 각 문항은 1점(전혀 그렇지 않다)부터 5점(매우 그렇다)까지예요.
       </PageHead>
+
+      <div className="mb-6 space-y-2">
+        <Note label="평가 기준">이름·나이·사진·직업 등 프로필 정보는 원자료 근거가 없는 AI의 가상 설정이에요. 이 정보는 평가에서 빼고, 행동·니즈·불편·인용문 같은 내용을 기준으로 평가해 주세요.</Note>
+        <p className="text-b3 text-g600">퍼소나 제시 순서는 순서 효과를 줄이기 위해 평가자마다 다르게 정해져요. 위 버튼으로 다른 퍼소나로 바로 이동할 수도 있어요.</p>
+      </div>
 
       <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-6">
         {ORDER.map((id) => {
@@ -138,22 +133,27 @@ export default function Step7() {
               <div className="px-5">
                 {d.items.map((it) => <ScaleRow key={it.id} no={it.id} q={it.q} value={state.ratings[pid]?.[it.id]} onChange={(v) => setRating(pid, it.id, v)} />)}
               </div>
-              <div className="border-t border-g200 px-5 py-4">
-                <label htmlFor={`${pid}-${d.id}-1`} className="block text-b2 font-semibold text-g900">추가 질문 1 · {d.follow}</label>
-                <TextArea id={`${pid}-${d.id}-1`} rows={3} className="mt-2" value={state.dimNotes[pid]?.[`${d.id}_1`] ?? ''} onChange={(e) => setDimNote(pid, `${d.id}_1`, e.target.value)} placeholder="답변 메모" />
-              </div>
-              <div className="border-t border-g200 px-5 py-4">
-                <label htmlFor={`${pid}-${d.id}-2`} className="block text-b2 font-semibold text-g900">추가 질문 2 · {moreQ(d, dimAvg(state, pid, d))}</label>
-                <TextArea id={`${pid}-${d.id}-2`} rows={3} className="mt-2" value={state.dimNotes[pid]?.[`${d.id}_2`] ?? ''} onChange={(e) => setDimNote(pid, `${d.id}_2`, e.target.value)} placeholder="답변 메모" />
-              </div>
             </section>
           ))}
+          <section className="mb-6 rounded-xl border border-g200">
+            <header className="border-b border-g200 bg-g50 px-5 py-3" style={{ borderTopLeftRadius: 8, borderTopRightRadius: 8 }}>
+              <h2 className="text-t1">이 퍼소나에 대한 의견</h2>
+              <p className="mt-0.5 text-b3 text-g600">영역별로 떠오른 생각은 인터뷰 중 말로 나눠 주셔도 돼요. 여기에는 가장 중요한 두 가지만 적어 주세요.</p>
+            </header>
+            {PERSONA_NOTES.map((n, i) => (
+              <div key={n.id} className={`px-5 py-4 ${i ? 'border-t border-g200' : ''}`}>
+                <label htmlFor={`${pid}-${n.id}`} className="block text-b2 font-semibold text-g900">{n.q}</label>
+                <p className="mt-0.5 text-b3 text-g600">{n.hint}</p>
+                <TextArea id={`${pid}-${n.id}`} rows={3} className="mt-2" value={state.dimNotes[pid]?.[n.id] ?? ''} onChange={(e) => setDimNote(pid, n.id, e.target.value)} placeholder="답변 메모" />
+              </div>
+            ))}
+          </section>
         </div>
       </div>
 
       {next
-        ? <StepNav prev={pos === 0 ? '/step5' : undefined} nextLabel={`다음: ${PSHORT[next]} · ${PNAME[next]}`} onNext={() => pick(next)} hint={`전체 ${totalDone}/${ITEM_COUNT * ORDER.length} 문항`} />
-        : <StepNav next="/step8" nextLabel="7단계: 종합 평가로" hint={`전체 ${totalDone}/${ITEM_COUNT * ORDER.length} 문항`} />}
+        ? <StepNav prev={pos === 0 ? '/step6' : undefined} nextLabel={`다음: ${PSHORT[next]} · ${PNAME[next]}`} onNext={() => pick(next)} hint={`전체 ${totalDone}/${ITEM_COUNT * ORDER.length} 문항`} />
+        : <StepNav next="/step8" nextLabel={nextLabel(8)} hint={`전체 ${totalDone}/${ITEM_COUNT * ORDER.length} 문항`} />}
 
       <Modal open={showEvidence} onClose={() => setShowEvidence(false)} title={`${PSHORT[pid]} · ${PNAME[pid]} 근거 리뷰`}>
         <GroundingEvidence pid={pid} kind={kind} />
