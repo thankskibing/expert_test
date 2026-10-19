@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useEval } from '../lib/evalStore'
-import { ITEM_COUNT } from '../lib/protocol'
+import { STEPS } from '../lib/steps'
 import { Button, Section, TextField } from '../components/ui'
 
 const IMG = 'https://m.themedicube.co.kr/web/product/extra/big/202604/184e32f2aa5e815b76989286ff650b0d.jpg'
@@ -17,16 +17,6 @@ function ProductImage() {
   )
 }
 
-const STEPS = [
-  ['기본 프로필', '실무 배경과 생성형 AI 활용 경험을 간단히 여쭤봐요.'],
-  ['연구 개요 및 전체 분석 프로세스', '리뷰 트랙과 인터뷰 트랙이 AI를 서로 다른 순서로 쓴다는 점을 포함해 전체 흐름을 살펴봐요.'],
-  ['온라인 리뷰 데이터 수집·전처리 검증', '어떤 기준으로 리뷰를 모으고 다듬었는지 확인해요.'],
-  ['토픽 모델링 및 리뷰 분석 집단 구성 검증', 'LDA 토픽 4개와, 그 결과를 바탕으로 AI가 구성한 A/B/C 분석용 리뷰 집단을 각각 확인해요.'],
-  ['리뷰 기반 AI 분석 및 퍼소나 근거 검증', 'AI 분석 과정을 보고, 리뷰 기반 퍼소나를 처음 공개해요. 재분류 결과와 리뷰별 판정도 확인해요.'],
-  ['인터뷰 분석 및 정성 퍼소나 검증', '연구자의 1차 분석 위에 AI가 패턴을 재구성한 과정을 보고, 정성 퍼소나를 확인해요.'],
-  ['최종 퍼소나 품질 평가', `퍼소나 6개를 7개 영역 ${ITEM_COUNT}개 문항으로 평가해요(1~5점).`],
-  ['전체 연구방법 종합 평가', '연구 과정 전체를 10문항으로 종합 평가하고, 응답을 제출해요.'],
-]
 
 export default function Start() {
   const { state, setEvaluator, setProfile } = useEval()
@@ -73,10 +63,10 @@ export default function Start() {
 
       <Section title="진행 순서">
         <ol className="max-w-prose2 space-y-3">
-          {STEPS.map(([t, d], i) => (
-            <li key={t} className="flex gap-3">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-weak text-b3 font-semibold text-brand">{i + 1}</span>
-              <p className="text-b2"><b className="font-semibold text-g900">{t}</b><span className="block text-g600">{d}</span></p>
+          {STEPS.map((s) => (
+            <li key={s.to} className="flex gap-3">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-weak text-b3 font-semibold text-brand">{s.no}</span>
+              <p className="text-b2"><b className="font-semibold text-g900">{s.title}</b><span className="block text-g600">{s.desc}</span></p>
             </li>
           ))}
         </ol>

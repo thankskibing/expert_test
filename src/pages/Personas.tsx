@@ -46,7 +46,7 @@ export default function Personas() {
   return (
     <div>
       <PageHead title="결과 퍼소나">
-        리뷰에서 나온 데이터 퍼소나 3개와 인터뷰에서 나온 정성 퍼소나 3개예요. 이름·나이·사진·직업 등 프로필 정보는 원자료 근거가 없는 가상 정보라 평가에서 빼 주세요.
+        리뷰에서 나온 리뷰 기반 퍼소나 3개와 인터뷰에서 나온 인터뷰 기반 퍼소나 3개예요. 이름·나이·사진·직업 등 프로필 정보는 원자료 근거가 없는 가상 정보라 평가에서 빼 주세요.
       </PageHead>
 
       <div className="mb-10 grid gap-4 sm:grid-cols-2">
@@ -77,7 +77,7 @@ export default function Personas() {
 
       <article>
         <header className="mb-6">
-          <p className="text-b3 font-semibold" style={{ color: c }}>{isData ? '데이터' : '정성'} {p.role}</p>
+          <p className="text-b3 font-semibold" style={{ color: c }}>{isData ? '리뷰 기반' : '인터뷰 기반'} {p.role}</p>
           <h2 className="mt-1 text-h1">{p.type}</h2>
           <div className="mt-4 flex flex-wrap gap-2">
             {isData ? (

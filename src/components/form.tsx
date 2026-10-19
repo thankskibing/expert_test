@@ -20,12 +20,31 @@ function ScaleInput({ value, onChange, label }: { value: string; onChange: (v: s
   )
 }
 
+/** showIf를 만족하는지: 대상 문항의 답(단일 또는 "a | b" 복수 선택)에 지정한 값 중 하나가 들어 있으면 보여요. */
+export function visible(f: Field, get: (id: string) => string) {
+  if (!f.showIf) return true
+  const ans = (get(f.showIf.id) ?? '').split(' | ').filter(Boolean)
+  const want = Array.isArray(f.showIf.value) ? f.showIf.value : [f.showIf.value]
+  return ans.some((a) => want.includes(a))
+}
+
+/** 응답해야 할(보이는) 척도·선택 문항 중 아직 답하지 않은 개수. 서술형은 선택 응답이라 세지 않아요. */
+export function unanswered(fields: Field[], get: (id: string) => string) {
+  return fields.filter((f) => f.type !== 'textarea' && f.type !== 'text' && visible(f, get) && !get(f.id)).length
+}
+
 /** Renders one protocol question. Multi-select answers are stored as "a | b"; "기타" text under `${id}_other`. */
 export function FieldInput({ f, get, set, no }: { f: Field; get: (id: string) => string; set: (id: string, v: string) => void; no?: string }) {
   const v = get(f.id) ?? ''
-  if (f.showIf && get(f.showIf.id) !== f.showIf.value) return null
+  if (!visible(f, get)) return null
   const picked = v ? v.split(' | ') : []
-  const toggle = (o: string) => set(f.id, (picked.includes(o) ? picked.filter((x) => x !== o) : [...picked, o]).join(' | '))
+  const excl = f.exclusive ?? []
+  const toggle = (o: string) => {
+    if (picked.includes(o)) return set(f.id, picked.filter((x) => x !== o).join(' | '))
+    // '없음'처럼 단독으로만 고를 수 있는 보기는 다른 보기와 함께 선택되지 않게 해요.
+    const next = excl.includes(o) ? [o] : [...picked.filter((x) => !excl.includes(x)), o]
+    set(f.id, next.join(' | '))
+  }
   const opt = (o: string, on: boolean, onClick: () => void, multi: boolean) => (
     <button key={o} type="button" role={multi ? 'checkbox' : 'radio'} aria-checked={on} onClick={onClick}
       className={`inline-flex min-h-8 items-center gap-2 rounded-m border px-3 py-1 text-left text-b2 transition-colors duration-200 ${on ? 'border-brand bg-brand-weak text-brand' : 'border-g300 bg-white text-g900 hover:border-brand-hover hover:text-brand-hover'}`}>
@@ -66,7 +85,7 @@ export function FieldList({ fields, get, set, prefix = 'Q', start = 1 }: { field
   return (
     <div className="divide-y divide-g200">
       {fields.map((f) => {
-        if (f.showIf && get(f.showIf.id) !== f.showIf.value) return null
+        if (!visible(f, get)) return null
         n += 1
         return <FieldInput key={f.id} f={f} get={get} set={set} no={`${prefix}${n}`} />
       })}

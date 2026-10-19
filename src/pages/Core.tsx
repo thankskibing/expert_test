@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { DATA_IDS, PCOLOR, core, study, type DataPid } from '../lib/data'
+import { DATA_IDS, PCOLOR, core, study, terms, type DataPid } from '../lib/data'
 import { Badge, Chip, Highlighted, PageHead } from '../components/ui'
 import { PersonaSeg } from './Reviews'
 
@@ -34,7 +34,7 @@ export default function CorePage() {
                 {r.tags.map((t) => <Badge key={t}>{t}</Badge>)}
               </div>
               <div className="max-w-prose2 max-h-56 overflow-y-auto pr-1 scroll-box"><Highlighted text={r.text} phrases={r.evidence} /></div>
-              <p className="mt-3 text-b3 text-g600"><span className="font-semibold text-g800">선정 이유</span> {r.why}</p>
+              <p className="mt-3 text-b3 text-g600"><span className="font-semibold text-g800">선정 이유</span> {terms(r.why)}</p>
             </li>
           )
         })}

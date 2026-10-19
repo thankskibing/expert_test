@@ -1,8 +1,9 @@
 import { method } from '../lib/data'
 import { STEP2_QS } from '../lib/protocol'
 import { useEval } from '../lib/evalStore'
-import { FieldList } from '../components/form'
-import { StepNav } from '../components/flow'
+import { FieldList, unanswered } from '../components/form'
+import { StepNav, leftHint } from '../components/flow'
+import { nextLabel, stepByNo } from '../lib/steps'
 import { PageHead, Section } from '../components/ui'
 
 export default function Step2() {
@@ -11,7 +12,7 @@ export default function Step2() {
   const p = method.preprocessing
   return (
     <div>
-      <PageHead step={2} title="온라인 리뷰 데이터 수집·전처리 검증">
+      <PageHead step={2} title={stepByNo(2).title}>
         퍼소나를 만들기 전, 리뷰 데이터를 어떤 기준으로 모으고 다듬었는지부터 확인해 주세요.
       </PageHead>
 
@@ -46,9 +47,13 @@ export default function Step2() {
           </table>
         </div>
         <p className="mt-4 max-w-prose2 rounded-xl bg-g50 px-4 py-3 text-b2 text-g900"><b>{c.finalSelection.label}</b><br />{c.finalSelection.detail}</p>
+        <ul className="mt-3 max-w-prose2 space-y-1.5 text-b2 text-g700">
+          <li className="flex gap-2"><span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-g500" /><span><b className="text-g900">수집 4,060건 → 분석 대상 3,601건:</b> 아래 텍스트 전처리(플랫폼 메타데이터·완전히 같은 중복 리뷰 제거 등)를 거쳐 3,601건을 분석에 썼어요. 3단계 이후의 건수는 모두 3,601건 기준이에요.</span></li>
+          <li className="flex gap-2"><span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-g500" /><span><b className="text-g900">모델 구분:</b> 2025년 1월 이후 리뷰를 모았기 때문에 기존 부스터프로와 2026년 3월 출시된 부스터프로 X2 리뷰가 함께 들어 있어요. 전처리에서 'X2'를 포함한 제품명을 '부스터프로'로 통일했어요.</span></li>
+        </ul>
       </Section>
 
-      <Section title="텍스트 전처리" lead="분석에 불필요한 정보를 제거하고, 동일한 의미의 표현을 통일하여 텍스트를 정리했습니다. 원문의 의미를 최대한 유지하면서 다음 네 단계로 진행했습니다.">
+      <Section title="텍스트 전처리" lead="분석에 불필요한 정보를 제거하고, 같은 의미의 표현을 통일해 텍스트를 정리했어요. 원문의 의미를 최대한 유지하면서 다음 네 단계로 진행했어요.">
         <ol className="max-w-prose2 space-y-2.5">
           {p.steps.map((s, i) => (
             <li key={s} className="flex gap-3 text-b2 text-g800">
@@ -75,10 +80,10 @@ export default function Step2() {
 
       <section className="mt-8 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
         <h2 className="pt-4 text-t1">2단계 평가</h2>
-        <div className="max-w-3xl"><FieldList fields={STEP2_QS} get={(id) => state.step2[id] ?? ''} set={setStep2} /></div>
+        <div className="max-w-3xl"><FieldList fields={STEP2_QS} get={(id) => state.step2[id] ?? ''} set={setStep2} prefix="2-Q" /></div>
       </section>
 
-      <StepNav prev="/step1" next="/step3" nextLabel="3단계: 토픽 모델링 검증으로" />
+      <StepNav prev="/step1" next="/step3" nextLabel={nextLabel(3)} hint={leftHint(unanswered(STEP2_QS, (id) => state.step2[id] ?? ''))} />
     </div>
   )
 }

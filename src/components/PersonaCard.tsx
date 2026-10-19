@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { HIGHLIGHT_KEYWORDS, PCOLOR, personaById, PIMG, type Persona } from '../lib/data'
+import { HIGHLIGHT_KEYWORDS, PABBR, PCOLOR, personaById, PIMG, PSHORT, type Persona } from '../lib/data'
 import { Emphasis } from './ui'
 
 export const XY_COLOR: Record<'X' | 'Y', string> = { X: '#13C2C2', Y: '#722ED1' }
@@ -31,10 +31,10 @@ const Bullets = ({ items, keywords = [] }: { items: string[]; keywords?: string[
 export function Header({ p, label, blind, c, header }: { p: Persona; label: string; blind: boolean; c: string; header?: ReactNode }) {
   return (
     <header className="flex flex-wrap items-center gap-3 border-b border-g200 px-5 py-4" style={{ borderTop: `3px solid ${c}` }}>
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-t1 text-white" style={{ background: c }}>{label}</span>
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-b2 font-semibold text-white" style={{ background: c }}>{PABBR[label] ?? label}</span>
       <div className="min-w-0 flex-1">
-        <p className="text-b3 text-g600">{p.role.replace(/ \d$/, '').replace('Persona', '퍼소나')}{blind ? '' : ` · ${p.kind === 'data' ? '온라인 리뷰 기반' : '정성 인터뷰 기반'}`}</p>
-        <h3 className="text-h3">퍼소나 {label} · {p.type}</h3>
+        <p className="text-b3 text-g600">{blind ? p.role.replace(/ \d$/, '').replace('Persona', '퍼소나') : (p.kind === 'data' ? '온라인 리뷰 기반 퍼소나' : '정성 인터뷰 기반 퍼소나')}</p>
+        <h3 className="text-h3">{PSHORT[label] ?? `퍼소나 ${label}`} · {p.type}</h3>
       </div>
       {header}
     </header>

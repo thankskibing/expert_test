@@ -30,14 +30,14 @@ export default function Variables() {
   return (
     <div>
       <PageHead title="행동 변수와 그룹">
-        데이터 퍼소나는 리뷰에서, 정성 퍼소나는 인터뷰에서 각각 행동 변수를 세우고 그룹의 위치를 비교해 도출했어요. 그룹을 고르면 그 그룹이 변수들을 지나가는 선이 그려져요.
+        리뷰 기반 퍼소나는 리뷰에서, 인터뷰 기반 퍼소나는 인터뷰에서 각각 행동 변수를 세우고 그룹의 위치를 비교해 도출했어요. 그룹을 고르면 그 그룹이 변수들을 지나가는 선이 그려져요.
       </PageHead>
 
-      <Section title="데이터 퍼소나: 행동 변수 8개와 그룹 1~3" lead="원자료는 리뷰 3,601건 중 키워드 규칙으로 분류된 2,333건(중복 포함)이에요. 점 안의 숫자는 그룹 번호예요.">
+      <Section title="리뷰 기반 퍼소나: 행동 변수 8개와 유형 3개" lead="원자료는 리뷰 3,601건 중 키워드 규칙으로 1차 분류된 1,702건(유형별 중복 포함 시 2,333건)이에요. 점 안의 숫자는 1 Primary · 2 Secondary 1 · 3 Secondary 2를 뜻해요.">
         <DataGroupVariablesCompare />
       </Section>
 
-      <Section title="정성 퍼소나: 행동 변수 6개와 그룹 P/S1/S2" lead="원자료는 U1~U6 인터뷰예요. 점 안의 숫자는 참여자 번호예요. 인터뷰 내용을 AI로 정리해 도출한 이 6개 행동 변수에서 가까이 모이는 참여자끼리 그룹으로 묶었어요.">
+      <Section title="인터뷰 기반 퍼소나: 행동 변수 6개와 그룹 P/S1/S2" lead="원자료는 U1~U6 인터뷰예요. 점 안의 숫자는 참여자 번호예요. 인터뷰 내용을 AI로 정리해 도출한 이 6개 행동 변수에서 가까이 모이는 참여자끼리 그룹으로 묶었어요.">
         <div className="flex flex-wrap gap-2">
           {QUAL_IDS.map((g) => (
             <Chip key={g} on={qg === g && qu === 'all'} onClick={() => { setQg(g); setQu('all') }}>
