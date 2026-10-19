@@ -1,6 +1,5 @@
 import { CATS, DATA_IDS, PCOLOR, PNAME, PSHORT, core, method, study, type Cat, type DataPid } from '../lib/data'
 import { PageHead, Section } from '../components/ui'
-import { CompareMemo, ComparePairs, PAIR_NOTE } from '../components/Compare'
 
 const S = study.stats
 // Toss bar-chart rule: grey bars by default, only the emphasised segment (퍼소나 적합) in brand blue. No axis lines.
@@ -39,8 +38,8 @@ const rate = (p: DataPid, lv: 'Strong' | 'Supporting') => {
 export default function Process() {
   return (
     <div>
-      <PageHead title="도출 과정과 교차 검증">
-        리뷰 기반 퍼소나를 뒷받침하는 리뷰가 실제로 얼마나 되는지 다시 확인하고, 짝으로 묶은 인터뷰 기반 퍼소나와 어디가 같고 다른지 정리했어요. 이 페이지의 비교와 해석은 연구팀의 분석 메모예요.
+      <PageHead title="도출 과정과 재분류 결과">
+        리뷰 기반 퍼소나를 어떤 절차로 도출했는지, 그리고 키워드로 1차 분류된 리뷰 중 실제 근거가 되는 리뷰가 얼마나 되는지 정리했어요.
       </PageHead>
 
       <Section title="리뷰 기반 퍼소나를 도출한 절차">
@@ -98,14 +97,6 @@ export default function Process() {
           </table>
           <p className="mt-3 text-cap text-g500">Strong·Supporting은 키워드 규칙의 판정 수준이에요. 플래그 밖에서 찾은 적합 리뷰는 이 사이트의 퍼소나별 목록에 넣지 않았어요.</p>
         </div>
-      </Section>
-
-      <Section title="리뷰 기반 퍼소나와 인터뷰 기반 퍼소나 쌍 비교" lead={PAIR_NOTE}>
-        <ComparePairs />
-      </Section>
-
-      <Section title="두 결과가 다르게 나온 이유(분석 메모)">
-        <CompareMemo />
       </Section>
     </div>
   )

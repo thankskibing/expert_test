@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter, NavLink, Route, Routes, useLocation } from 'react-router-dom'
+import { BrowserRouter, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import { EvalProvider, useEval } from './lib/evalStore'
 import Start from './pages/Start'
 import Profile from './pages/Profile'
@@ -10,7 +10,6 @@ import Step4 from './pages/Step4'
 import Step5 from './pages/Step5'
 import Step6 from './pages/Step6'
 import Step7 from './pages/Step7'
-import Step8 from './pages/Step8'
 import Reviews from './pages/Reviews'
 import CorePage from './pages/Core'
 import Interviews from './pages/Interviews'
@@ -30,25 +29,25 @@ export const REF = [
   { to: '/interviews', label: '정성 인터뷰' },
   { to: '/variables', label: '행동 변수·그룹' },
   { to: '/personas', label: '결과 퍼소나' },
-  { to: '/process', label: '도출 과정·교차 검증(연구팀 메모)' },
+  { to: '/process', label: '도출 과정·재분류 결과' },
 ]
 
 function Progress() {
   const { state } = useEval()
   const rated = Object.values(state.ratings).reduce((a, r) => a + Object.keys(r).length, 0)
   const total = ITEM_COUNT * 6
-  const stepDone = [state.step1.s1_q1, state.step2.s2_q1, state.step3.s3_q1, state.step4.s4_q1, state.step5pattern.s5_q1, state.step6.s6_q1].filter(Boolean).length
+  const stepDone = [state.step1.s1_q1, state.step2.s2_q1, state.step3.s3_q1, state.step4.s4_q1, state.step5pattern.s5_q1].filter(Boolean).length
   return (
     <div className="mt-4 rounded-xl border border-g200 bg-g50 p-3">
       <p className="text-b2 font-semibold">{state.evaluator ? `${state.evaluator} 님의 평가` : '평가 진행 상황'}</p>
-      <p className="mt-1 text-b3 text-g600 tabular">1~6단계 진행 {stepDone}/6</p>
+      <p className="mt-1 text-b3 text-g600 tabular">1~5단계 진행 {stepDone}/5</p>
       <div className="mt-2 flex items-center gap-2">
         <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-g200" aria-hidden>
           <div className="h-full rounded-full bg-brand transition-all duration-200" style={{ width: `${(rated / total) * 100}%` }} />
         </div>
         <span className="text-b3 text-g700 tabular">{rated}/{total}</span>
       </div>
-      <p className="mt-1 text-b3 text-g600">7단계 퍼소나 품질 평가 문항</p>
+      <p className="mt-1 text-b3 text-g600">6단계 퍼소나 품질 평가 문항</p>
       {state.submittedAt && <p className="mt-1 text-b3 text-success">제출했어요</p>}
     </div>
   )
@@ -111,7 +110,7 @@ function Shell() {
             <Route path="/step5" element={<Step5 />} />
             <Route path="/step6" element={<Step6 />} />
             <Route path="/step7" element={<Step7 />} />
-            <Route path="/step8" element={<Step8 />} />
+            <Route path="/step8" element={<Navigate to="/step7" replace />} />
             <Route path="/reviews" element={<Reviews />} />
             <Route path="/core" element={<CorePage />} />
             <Route path="/interviews" element={<Interviews />} />

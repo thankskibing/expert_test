@@ -131,12 +131,6 @@ export const STEP5_REVIEW_QS: Field[] = [
   { id: 's5_reflect', q: '인터뷰 발화를 생성형 AI로 분석해 사용자 행동 유형을 도출하는 과정에서 보완이 필요하다고 생각하는 부분이 있다면 자유롭게 작성해 주세요.', type: 'textarea' },
 ]
 
-/** STEP 6. 두 퍼소나 비교 (기존 종합 평가 Q8~Q9를 비교 화면 바로 아래로 옮겼어요) */
-export const STEP6_QS: Field[] = [
-  { id: 's6_q1', q: '리뷰 기반 퍼소나와 인터뷰 기반 퍼소나의 비교 결과가 두 데이터에서 나타나는 사용자 행동 특성의 차이를 적절하게 설명한다.', type: 'scale' },
-  { id: 's6_q1_why', q: '위와 같이 평가하신 이유를 작성해 주세요. 특히 순위 기준으로 짝지은 방식이나 비교 해석에서 보완이 필요한 부분이 있다면 말씀해 주세요.', type: 'textarea' },
-]
-
 export interface Dim {
   id: string; no: number; title: string; en?: string; purpose: string
   items: { id: string; q: string }[]
@@ -217,7 +211,7 @@ export const DIMS: Dim[] = [
 export const ITEM_COUNT = DIMS.reduce((a, d) => a + d.items.length, 0)
 
 /**
- * STEP 7 서술형: 영역마다 2개씩(퍼소나당 14개) 묻던 추가 질문을 퍼소나당 2개로 줄였어요.
+ * STEP 6(최종 품질 평가) 서술형: 영역마다 2개씩(퍼소나당 14개) 묻던 추가 질문을 퍼소나당 2개로 줄였어요.
  * 영역별 생각은 인터뷰 중 구두로 묻고, 화면에는 가장 강한 점·약한 점만 남겨요.
  */
 export const PERSONA_NOTES: { id: string; q: string; hint: string }[] = [
@@ -226,7 +220,7 @@ export const PERSONA_NOTES: { id: string; q: string; hint: string }[] = [
 ]
 
 /**
- * STEP 7 퍼소나 제시 순서. 같은 순서로만 보면 앞 퍼소나가 기준점이 되는 순서 효과가 생겨서,
+ * STEP 6(최종 품질 평가) 퍼소나 제시 순서. 같은 순서로만 보면 앞 퍼소나가 기준점이 되는 순서 효과가 생겨서,
  * 리뷰 기반·인터뷰 기반을 번갈아 둔 기본 순서를 평가자마다 다르게 회전해요(6가지, 각 퍼소나가 모든 위치에 한 번씩).
  */
 const BASE_ORDER = ['A', 'P', 'B', 'S1', 'C', 'S2']
@@ -251,20 +245,26 @@ export const STEP8_AI_QS: Field[] = [
   { id: 's8_q6', q: '연구자가 AI 분석 결과를 원문과 대조해 재확인한 절차가 결과의 신뢰성을 검토하는 데 적절하다.', type: 'scale' },
   { id: 's8_q7', q: '위 AI 분석 및 검증 절차에 대해 평가하신 이유나 근거를 적어 주세요.', type: 'textarea' },
 ]
-/** ③ 활용 가능성 — Q8~Q11 (두 퍼소나 비교 문항은 6단계로 옮겼어요) */
+/** ③ 두 퍼소나의 차이 — Q8~Q9 (비교 화면 없이, 평가를 마친 뒤 느낀 차이를 물어요) */
+export const DIFF_OPTIONS = ['차이를 거의 느끼지 못했다', '일부 차이가 느껴졌다', '명확하게 다르게 느껴졌다']
+export const STEP8_DIFF_QS: Field[] = [
+  { id: 's8_diff', q: '지금까지 살펴본 리뷰 기반 퍼소나와 인터뷰 기반 퍼소나 사이에 차이가 느껴지셨나요?', type: 'radio', options: DIFF_OPTIONS },
+  { id: 's8_diff_why', q: '어떤 점에서 차이가 느껴졌는지, 또는 왜 비슷하게 느껴졌는지 말씀해 주세요.', hint: '행동 특성, 니즈, 구체성, 현실감 등 무엇이든 괜찮아요.', type: 'textarea' },
+]
+/** ④ 활용 가능성 — Q10~Q13 */
 export const STEP8_USE_QS: Field[] = [
   { id: 's8_q10', q: '온라인 리뷰와 생성형 AI를 활용한 퍼소나는 정성 인터뷰 기반 퍼소나를 보완하는 자료로 활용할 가치가 있다.', type: 'scale' },
   { id: 's8_q11', q: '온라인 리뷰와 생성형 AI를 활용한 퍼소나만으로는 정성 인터뷰 기반 퍼소나를 대체하기 어렵다.', hint: '앞 문항과 반대 방향으로 쓴 문항이에요. 문장 그대로에 동의하는 정도를 골라 주세요.', type: 'scale' },
   { id: 's8_q12', q: '본 연구에서 제시한 퍼소나 생성 절차는 다른 제품이나 서비스의 사용자 분석에도 적용할 가능성이 있다.', type: 'scale' },
   { id: 's8_q13', q: '위 활용 가능성에 대해 평가하신 이유나 근거를 적어 주세요. 특히 정성 인터뷰 기반 퍼소나를 보완하거나 대체할 수 있다고 생각하시는 범위가 있다면 함께 말씀해 주세요.', type: 'textarea' },
 ]
-/** ④ 종합 평가 — Q12~Q13 */
+/** ⑤ 종합 평가 — Q14~Q15 */
 export const STEP8_FINAL_QS: Field[] = [
   { id: 's8_q14', q: '전체 연구 과정과 분석 결과를 종합했을 때, 본 연구의 방법은 연구 목적을 달성하는 데 적절하다.', type: 'scale' },
   { id: 's8_q15', q: '그렇게 평가하신 이유나 근거를 적어 주세요.', type: 'textarea' },
 ]
 /** 전체 연구 방법 평가(1~15문항)를 한 번에 순회할 때 쓰는 통합 배열(제출 데이터 매핑용). */
-export const STEP8_QS: Field[] = [...STEP8_PROCEDURE_QS, ...STEP8_AI_QS, ...STEP8_USE_QS, ...STEP8_FINAL_QS]
+export const STEP8_QS: Field[] = [...STEP8_PROCEDURE_QS, ...STEP8_AI_QS, ...STEP8_DIFF_QS, ...STEP8_USE_QS, ...STEP8_FINAL_QS]
 
 export const REVISE_NONE = '수정하거나 보완할 부분 없음'
 export const REVISE_OPTIONS = [
@@ -273,8 +273,7 @@ export const REVISE_OPTIONS = [
   '3단계: 토픽 모델링',
   '4단계: 리뷰 기반 행동 유형 분류·퍼소나 생성·근거',
   '5단계: 인터뷰 참여자 구성·분석·인터뷰 기반 퍼소나',
-  '6단계: 두 퍼소나 비교 방법',
-  '7단계: 최종 퍼소나 구성 및 품질',
+  '6단계: 최종 퍼소나 구성 및 품질',
   '4·5단계 공통: 연구자의 원문 재확인 및 검증 절차',
   REVISE_NONE,
 ]
