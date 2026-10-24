@@ -11,20 +11,7 @@ import { StepNav, leftHint } from '../components/flow'
 import { nextLabel, stepByNo } from '../lib/steps'
 import { Badge, Button, Disclosure, Emphasis, Highlighted, Note, PageHead, Section, Segmented } from '../components/ui'
 
-function ReviewCard({ r }: { r: (typeof core)[DataPid][number] }) {
-  return (
-    <li className="rounded-xl border border-g200 bg-white p-4">
-      <div className="mb-2 flex flex-wrap items-center gap-1.5">
-        <span className="mr-1 text-cap text-g500 tabular">#{r.idx}</span>
-        {r.tags.map((t) => <Badge key={t}>{t}</Badge>)}
-      </div>
-      <div className="max-h-56 overflow-y-auto pr-1 scroll-box"><Highlighted text={r.text} phrases={r.evidence} /></div>
-      <p className="mt-2 text-b3 text-g600"><span className="font-semibold text-g800">선정 이유</span> {terms(r.why)}</p>
-    </li>
-  )
-}
-
-/** 4-1. 집단별 분류 기준(Strong/Supporting 조건·대표 리뷰)만 상세 보기로 제공. 그 외 근거 리뷰는 4-2로 연결한다. */
+/** 4-1. 집단별 분류 기준(Strong/Supporting 조건·대표 리뷰)만 상세 보기로 제공. 그 외 근거 리뷰는 4-3으로 연결한다. */
 function ClassificationDetail({ p, onViewPersona }: { p: DataPid; onViewPersona: () => void }) {
   const g = study.dataGroups[p]
   return (
@@ -58,12 +45,9 @@ function ClassificationDetail({ p, onViewPersona }: { p: DataPid; onViewPersona:
   )
 }
 
-/** 4-2. 행동 유형 → AI 퍼소나 연결, 퍼소나 핵심 요약 + 원문 근거(중복 없이 한 리뷰에 관련 태그를 함께 표시). */
-function PersonaEvidence({ pid }: { pid: DataPid }) {
+/** 4-2. 행동 유형 → AI 퍼소나 연결, 퍼소나 핵심 요약을 보여준다. 원문 근거 리뷰는 4-3에서 한 건씩 평가한다. */
+function PersonaEvidence({ pid, onViewReviews }: { pid: DataPid; onViewReviews: () => void }) {
   const persona = personaById(pid)
-  const list = core[pid]
-  const primary = list.slice(0, 5)
-  const extra = list.slice(5)
   const roleLabel = persona.role.replace(/ \d$/, '').replace('Persona', '퍼소나')
 
   return (
@@ -79,20 +63,7 @@ function PersonaEvidence({ pid }: { pid: DataPid }) {
 
         <section className="border-t border-g200 px-5 py-4">
           <blockquote className="rounded-xl px-4 py-3 text-t1 text-g900" style={{ background: `${PCOLOR[pid]}14` }}>“<Emphasis text={persona.quote} keywords={HIGHLIGHT_KEYWORDS[pid] ?? []} />”</blockquote>
-        </section>
-
-        <section className="border-t border-g200 px-5 py-4">
-          <h4 className="mb-1 text-t2">원문 근거 리뷰</h4>
-          <p className="mb-3 text-b3 text-g600">핵심 리뷰 {list.length}건 중 대표 {primary.length}건이에요. 한 리뷰가 여러 행동 변수의 근거로 함께 쓰이는 경우 리뷰를 반복하지 않고, 관련 변수 태그를 함께 표시했어요.</p>
-          <ul className="space-y-3">{primary.map((r) => <ReviewCard key={r.idx} r={r} />)}</ul>
-          {extra.length > 0 && (
-            <Disclosure summary={`추가 근거 ${extra.length}건 보기`} className="mt-3">
-              <ul className="space-y-3">{extra.map((r) => <ReviewCard key={r.idx} r={r} />)}</ul>
-            </Disclosure>
-          )}
-          <p className="mt-3 text-cap text-g500">
-            위 리뷰는 생략 없이 원문 전체를 보여드려요. 나이·직업 등 퍼소나 프로필 항목은 AI가 구성한 가상 설정으로, 위 리뷰가 그 항목까지 직접 뒷받침하는 것은 아니에요.
-          </p>
+          <button onClick={onViewReviews} className="mt-3 text-b3 font-semibold text-brand hover:text-brand-hover">원문 근거 리뷰 보기(4-3) →</button>
         </section>
 
         <details className="group border-t border-g200">
@@ -201,6 +172,12 @@ export default function Step4() {
     })
   }
 
+  const goToReview = (p: DataPid) => {
+    setPid(p)
+    setPart('review')
+    window.scrollTo(0, 0)
+  }
+
   return (
     <div>
       <PageHead step={4} title={stepByNo(4).title}>
@@ -252,7 +229,7 @@ export default function Step4() {
             <DataGroupVariablesCompare />
           </Section>
 
-          <Section title="집단별 분류 기준" lead="자세한 근거 리뷰는 4-2에서 퍼소나와 함께 확인할 수 있어요.">
+          <Section title="집단별 분류 기준" lead="자세한 근거 리뷰는 4-3에서 퍼소나별로 한 건씩 확인하고 평가할 수 있어요.">
             {DATA_IDS.map((p) => <ClassificationDetail key={p} p={p} onViewPersona={() => goToPersona(p)} />)}
           </Section>
 
@@ -266,9 +243,9 @@ export default function Step4() {
 
       {part === 'reveal' && (
         <div className="mt-6">
-          <Note label="안내">이제부터 연구자 재검토를 거친 리뷰 기반 퍼소나 3개를 보여드려요. 데이터 출처는 숨기지 않아요. 4-1에서 확인한 행동 특성은 반복하지 않고, 퍼소나의 핵심 요약과 원문 근거를 중심으로 보여드려요. 리뷰에 붙은 태그에는 8개 행동 변수 외에, 근거를 고를 때 함께 본 세부 특성(예: 첫 기기 부담, 강도 조절)도 표시돼요.</Note>
+          <Note label="안내">이제부터 연구자 재검토를 거친 리뷰 기반 퍼소나 3개를 보여드려요. 데이터 출처는 숨기지 않아요. 4-1에서 확인한 행동 특성은 반복하지 않고, 퍼소나의 핵심 요약을 중심으로 보여드려요. 원문 근거 리뷰는 4-3에서 퍼소나별로 한 건씩 확인하고 평가할 수 있어요.</Note>
           <div className="mt-4 space-y-6">
-            {DATA_IDS.map((p) => <PersonaEvidence key={p} pid={p} />)}
+            {DATA_IDS.map((p) => <PersonaEvidence key={p} pid={p} onViewReviews={() => goToReview(p)} />)}
           </div>
         </div>
       )}
