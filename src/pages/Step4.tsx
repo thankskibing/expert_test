@@ -48,6 +48,8 @@ function ClassificationDetail({ p, onViewPersona }: { p: DataPid; onViewPersona:
 /** 4-2. 행동 유형 → AI 퍼소나 연결, 퍼소나 핵심 요약을 보여준다. 원문 근거 리뷰는 4-3에서 한 건씩 평가한다. */
 function PersonaEvidence({ pid, onViewReviews }: { pid: DataPid; onViewReviews: () => void }) {
   const persona = personaById(pid)
+  const g = study.dataGroups[pid]
+  const kw = HIGHLIGHT_KEYWORDS[pid] ?? []
   const roleLabel = persona.role.replace(/ \d$/, '').replace('Persona', '퍼소나')
 
   return (
@@ -62,7 +64,12 @@ function PersonaEvidence({ pid, onViewReviews }: { pid: DataPid; onViewReviews: 
         <PersonaHeader p={persona} label={pid} blind={false} c={PCOLOR[pid]} />
 
         <section className="border-t border-g200 px-5 py-4">
-          <blockquote className="rounded-xl px-4 py-3 text-t1 text-g900" style={{ background: `${PCOLOR[pid]}14` }}>“<Emphasis text={persona.quote} keywords={HIGHLIGHT_KEYWORDS[pid] ?? []} />”</blockquote>
+          <blockquote className="rounded-xl px-4 py-3 text-t1 text-g900" style={{ background: `${PCOLOR[pid]}14` }}>“<Emphasis text={persona.quote} keywords={kw} />”</blockquote>
+        </section>
+
+        <section className="border-t border-g200 px-5 py-4">
+          <h4 className="mb-1.5 text-t2">핵심 행동 특성</h4>
+          <ul className="space-y-1.5 text-b2 text-g900">{g.traits.slice(0, 2).map((t) => <li key={t} className="flex gap-2"><span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-g500" /><Emphasis text={t} keywords={kw} /></li>)}</ul>
           <button onClick={onViewReviews} className="mt-3 text-b3 font-semibold text-brand hover:text-brand-hover">원문 근거 리뷰 보기(4-3) →</button>
         </section>
 

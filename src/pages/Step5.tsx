@@ -9,7 +9,8 @@ import { StepNav, leftHint } from '../components/flow'
 import { nextLabel, stepByNo } from '../lib/steps'
 import { Badge, Button, Disclosure, Emphasis, Note, PageHead, Section, Segmented } from '../components/ui'
 
-const UIDS: Uid[] = ['U1', 'U2', 'U3', 'U4', 'U5', 'U6']
+/** 5-3에서 참여자를 퍼소나(P→S1→S2)별로 묶어서 순서대로 보여주기 위한 순서. U1,U2...가 아니라 그룹 단위로 이어진다. */
+const UIDS: Uid[] = QUAL_IDS.flatMap((g) => study.qualGroups[g].members)
 const UID_GROUP: Record<Uid, QualPid> = Object.fromEntries(study.participants.map((u) => [u.id, u.group])) as Record<Uid, QualPid>
 
 const pick = (u: (typeof study.participants)[number], k: string) => u.info.find((x) => x.k === k)?.v ?? ''
@@ -139,15 +140,12 @@ function GroupInterviewDetail({ g }: { g: QualPid }) {
 }
 
 /**
- * 5-2 기본 화면: 퍼소나명·행동 유형 → 핵심 행동 특성(간소화) → 근거 참여자·발화(대표 참여자 1명 기본,
- * 나머지는 펼침). 관리 목표·주요 불편·필요한 지원은 대표 발화와 직접 연결되지 않아 전체 프로필
- * 펼침으로 옮기고, 대표 발화 연결성이 가장 중요한 "근거 참여자 및 발화"를 핵심 행동 특성 바로 다음에 둔다.
+ * 5-2 기본 화면: 퍼소나명·행동 유형 → 핵심 행동 특성(간소화)만 보여준다. 근거 참여자·발화는
+ * 5-3에서 참여자별로 한 명씩 확인하고 평가하므로 여기서는 중복으로 보여주지 않고 이동 버튼만 둔다.
  */
-function QualPersonaEvidence({ pid }: { pid: QualPid }) {
+function QualPersonaEvidence({ pid, onViewInterview }: { pid: QualPid; onViewInterview: () => void }) {
   const persona = personaById(pid)
   const grp = study.qualGroups[pid]
-  const members = grp.members.map((id) => study.participants.find((u) => u.id === id)!)
-  const [first, ...rest] = members
   const roleLabel = persona.role.replace(/ \d$/, '').replace('Persona', '퍼소나')
   const kw = HIGHLIGHT_KEYWORDS[pid] ?? []
 
@@ -169,30 +167,7 @@ function QualPersonaEvidence({ pid }: { pid: QualPid }) {
         <section className="border-t border-g200 px-5 py-4">
           <h4 className="mb-1.5 text-t2">핵심 행동 특성</h4>
           <ul className="space-y-1.5 text-b2 text-g900">{grp.traits.slice(0, 2).map((t) => <li key={t} className="flex gap-2"><span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-g500" /><Emphasis text={t} keywords={kw} /></li>)}</ul>
-        </section>
-
-        <section className="border-t border-g200 px-5 py-4">
-          <h4 className="mb-1 text-t2">근거 참여자 및 발화</h4>
-          <p className="mb-3 text-b3 text-g600">
-            근거 참여자: {grp.members.join(', ')}({members.length}명){members.length === 1 && ' · 한 명의 인터뷰를 바탕으로 구성된 퍼소나예요.'}
-          </p>
-          <div className="rounded-xl border border-g200 bg-g50 p-4">
-            <p className="mb-2 flex items-center gap-2 text-b2 font-semibold text-g900"><Avatar id={first.id} size={24} />{first.id} · {first.title}</p>
-            <ul className="space-y-1.5">{first.quotes.slice(0, 2).map((q, i) => <li key={i} className="rounded-m bg-white px-3 py-2 text-b2 text-g900">“{q}”</li>)}</ul>
-          </div>
-          {rest.length > 0 && (
-            <Disclosure summary={`다른 참여자 발화 보기(${rest.length}명)`} className="mt-3">
-              <div className="space-y-3">
-                {rest.map((u) => (
-                  <div key={u.id} className="rounded-xl border border-g200 bg-g50 p-4">
-                    <p className="mb-2 flex items-center gap-2 text-b2 font-semibold text-g900"><Avatar id={u.id} size={24} />{u.id} · {u.title}</p>
-                    <ul className="space-y-1.5">{u.quotes.slice(0, 2).map((q, i) => <li key={i} className="rounded-m bg-white px-3 py-2 text-b2 text-g900">“{q}”</li>)}</ul>
-                  </div>
-                ))}
-              </div>
-            </Disclosure>
-          )}
-          <p className="mt-3 text-cap text-g500">위 퍼소나 프로필(이름·나이·직업 등)은 AI가 구성한 가상 설정이고, 발화는 참여자가 실제로 말한 원문이에요.</p>
+          <button onClick={onViewInterview} className="mt-3 text-b3 font-semibold text-brand hover:text-brand-hover">근거 발화 보기(5-3) →</button>
         </section>
 
         <details className="group border-t border-g200">
@@ -282,17 +257,22 @@ function InterviewRow({ pid, uid }: { pid: QualPid; uid: Uid }) {
   )
 }
 
-/** 참여자 U1~U6을 순서대로 한 명씩 검토하는 5-3 UI. 응답은 evalStore에 저장되므로 이동해도 유지된다. */
-function InterviewReviewer() {
-  const [i, setI] = useState(0)
+/**
+ * 참여자를 퍼소나(P→S1→S2)별로 묶어서 한 명씩 검토하는 5-3 UI. 응답은 evalStore에 저장되므로
+ * 이동해도 유지된다. 인덱스는 상위(Step5)에서 관리해, 5-2에서 "근거 발화 보기"로 특정 참여자로
+ * 바로 점프할 수 있게 한다.
+ */
+function InterviewReviewer({ i, setI }: { i: number; setI: (fn: (v: number) => number) => void }) {
   const uid = UIDS[i]
   const pid = UID_GROUP[uid]
+  const grp = study.qualGroups[pid]
+  const posInGroup = grp.members.indexOf(uid) + 1
   return (
     <div className="mt-4">
       <InterviewRow pid={pid} uid={uid} />
       <div className="mt-4 flex items-center justify-between gap-3">
         <Button variant="secondary" onClick={() => setI((v) => Math.max(0, v - 1))} disabled={i === 0}>이전 참여자</Button>
-        <p className="text-b3 text-g600 tabular">{uid} · {i + 1}/{UIDS.length}명</p>
+        <p className="text-b3 text-g600 tabular">{PSHORT[pid]} {posInGroup}/{grp.members.length}명 · {uid} · 전체 {i + 1}/{UIDS.length}</p>
         <Button variant="secondary" onClick={() => setI((v) => Math.min(UIDS.length - 1, v + 1))} disabled={i === UIDS.length - 1}>다음 참여자</Button>
       </div>
     </div>
@@ -302,6 +282,7 @@ function InterviewReviewer() {
 export default function Step5() {
   const { state, setStep5pattern } = useEval()
   const [part, setPart] = useState<(typeof PARTS)[number][0]>('pattern')
+  const [i, setI] = useState(0)
 
   const isDone = (uid: Uid) => {
     const j = state.interviewJudge[`${UID_GROUP[uid]}_${uid}`]
@@ -314,6 +295,12 @@ export default function Step5() {
     requestAnimationFrame(() => {
       setTimeout(() => document.getElementById(`qual-persona-${p}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60)
     })
+  }
+
+  const goToInterview = (p: QualPid) => {
+    setI(UIDS.indexOf(study.qualGroups[p].members[0]))
+    setPart('judge')
+    window.scrollTo(0, 0)
   }
 
   return (
@@ -370,9 +357,9 @@ export default function Step5() {
 
       {part === 'qual' && (
         <div className="mt-6">
-          <Note label="안내">이제부터 연구자의 1차 분석 위에 AI가 재구성한 인터뷰 기반 퍼소나 3개를 보여드려요. 데이터 출처는 숨기지 않아요. 5-1에서 확인한 행동 특성은 반복하지 않고, 퍼소나의 핵심 요약과 근거 발화를 중심으로 보여드려요.</Note>
+          <Note label="안내">이제부터 연구자의 1차 분석 위에 AI가 재구성한 인터뷰 기반 퍼소나 3개를 보여드려요. 데이터 출처는 숨기지 않아요. 5-1에서 확인한 행동 특성은 반복하지 않고, 퍼소나의 핵심 요약을 중심으로 보여드려요. 근거 발화는 5-3에서 참여자별로 한 명씩 확인하고 평가할 수 있어요.</Note>
           <div className="mt-4 space-y-6">
-            {QUAL_IDS.map((p) => <QualPersonaEvidence key={p} pid={p} />)}
+            {QUAL_IDS.map((p) => <QualPersonaEvidence key={p} pid={p} onViewInterview={() => goToInterview(p)} />)}
           </div>
         </div>
       )}
@@ -388,8 +375,8 @@ export default function Step5() {
             ))}
             <span className="ml-auto font-semibold text-g900">전체 {totalDone}/{UIDS.length}</span>
           </div>
-          <p className="mt-4 max-w-prose2 text-b2 text-g700">참여자 6명의 발화를 한 명씩 읽고, 분류한 그룹(퍼소나)이 맞는지 판단해 주세요.</p>
-          <InterviewReviewer />
+          <p className="mt-4 max-w-prose2 text-b2 text-g700">참여자 6명의 발화를 퍼소나별로 묶어 한 명씩 읽고, 분류한 그룹(퍼소나)이 맞는지 판단해 주세요.</p>
+          <InterviewReviewer i={i} setI={setI} />
 
           <section className="mt-8 rounded-xl border border-g200 bg-g50 px-5 py-2 sm:px-6">
             <h2 className="pt-4 text-t1">5단계 종합 평가</h2>
