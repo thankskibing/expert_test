@@ -220,15 +220,16 @@ export const PERSONA_NOTES: { id: string; q: string; hint: string }[] = [
 ]
 
 /**
- * STEP 6(최종 품질 평가) 퍼소나 제시 순서. 같은 순서로만 보면 앞 퍼소나가 기준점이 되는 순서 효과가 생겨서,
- * 리뷰 기반·인터뷰 기반을 번갈아 둔 기본 순서를 평가자마다 다르게 회전해요(6가지, 각 퍼소나가 모든 위치에 한 번씩).
+ * STEP 6(최종 품질 평가) 퍼소나 제시 순서. Primary 2개(A·P)는 기준이 되는 퍼소나라 항상 맨 앞에 고정하고,
+ * 나머지 Secondary 4개(B·S1·C·S2)만 평가자마다 순서를 회전해 순서 효과를 줄여요(4가지, Secondary가 모든 위치에 한 번씩).
  */
-const BASE_ORDER = ['A', 'P', 'B', 'S1', 'C', 'S2']
+const PRIMARY_ORDER = ['A', 'P']
+const SECONDARY_ORDER = ['B', 'S1', 'C', 'S2']
 export function personaOrder(evaluator: string) {
   let h = 0
   for (const ch of evaluator.trim()) h = (h * 31 + ch.codePointAt(0)!) >>> 0
-  const k = h % BASE_ORDER.length
-  return [...BASE_ORDER.slice(k), ...BASE_ORDER.slice(0, k)]
+  const k = h % SECONDARY_ORDER.length
+  return [...PRIMARY_ORDER, ...SECONDARY_ORDER.slice(k), ...SECONDARY_ORDER.slice(0, k)]
 }
 export const SCALE = ['전혀 그렇지 않다', '그렇지 않다', '보통이다', '그렇다', '매우 그렇다']
 

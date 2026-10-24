@@ -50,7 +50,7 @@ function GroundingEvidence({ pid, kind }: { pid: string; kind: 'data' | 'qual' }
   )
 }
 
-function ScaleRow({ no, q, value, onChange }: { no: string; q: string; value?: number; onChange: (v: number) => void }) {
+function ScaleRow({ no, q, value, onChange, reason, onReasonChange }: { no: string; q: string; value?: number; onChange: (v: number) => void; reason: string; onReasonChange: (v: string) => void }) {
   return (
     <div className="border-b border-g200 py-4 last:border-0">
       <p className="text-b2 text-g900"><b className="mr-1.5 font-semibold text-brand">{no}</b>{q}</p>
@@ -67,6 +67,7 @@ function ScaleRow({ no, q, value, onChange }: { no: string; q: string; value?: n
           )
         })}
       </div>
+      <TextArea rows={2} className="mt-2" value={reason} onChange={(e) => onReasonChange(e.target.value)} placeholder="그렇게 생각하신 간단한 이유를 적어 주세요(선택)" />
     </div>
   )
 }
@@ -131,7 +132,10 @@ export default function Step6() {
                 <p className="mt-0.5 text-b3 text-g600">{d.purpose}</p>
               </header>
               <div className="px-5">
-                {d.items.map((it) => <ScaleRow key={it.id} no={it.id} q={it.q} value={state.ratings[pid]?.[it.id]} onChange={(v) => setRating(pid, it.id, v)} />)}
+                {d.items.map((it) => (
+                  <ScaleRow key={it.id} no={it.id} q={it.q} value={state.ratings[pid]?.[it.id]} onChange={(v) => setRating(pid, it.id, v)}
+                    reason={state.dimNotes[pid]?.[it.id] ?? ''} onReasonChange={(v) => setDimNote(pid, it.id, v)} />
+                ))}
               </div>
             </section>
           ))}
