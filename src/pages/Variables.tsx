@@ -21,11 +21,11 @@ function GroupCard({ tag, name, traits, summary, children }: { tag: string; name
 const UIDS: Uid[] = ['U1', 'U2', 'U3', 'U4', 'U5', 'U6']
 
 export default function Variables() {
-  const [qg, setQg] = useState<QualPid | 'all'>('P')
+  const [qg, setQg] = useState<QualPid | 'all' | 'lines'>('P')
   const [qu, setQu] = useState<Uid | 'all'>('all')
-  const members = qg === 'all' ? null : study.qualGroups[qg].members
-  const qPaths = qu !== 'all' ? [qu] : members ?? []
-  const qFocus = qu !== 'all' ? [qu] : members
+  const members = qg === 'all' || qg === 'lines' ? null : study.qualGroups[qg].members
+  const qPaths = qu !== 'all' ? [qu] : qg === 'lines' ? UIDS : members ?? []
+  const qFocus = qu !== 'all' ? [qu] : qg === 'lines' ? null : members
 
   return (
     <div>
@@ -45,6 +45,7 @@ export default function Variables() {
             </Chip>
           ))}
           <Chip on={qg === 'all' && qu === 'all'} onClick={() => { setQg('all'); setQu('all') }}>전체</Chip>
+          <Chip on={qg === 'lines' && qu === 'all'} onClick={() => { setQg('lines'); setQu('all') }}>전체 비교(참여자별 선)</Chip>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
           <span className="mr-1 text-b3 text-g600">참여자 한 명씩 보기</span>
@@ -60,7 +61,7 @@ export default function Variables() {
           <div className="rounded-3xl border border-g200 px-4 py-3 sm:px-6">
             <TrackStack tracks={study.qualPattern} ids={UIDS} paths={qPaths} focus={qFocus} />
           </div>
-          {qg !== 'all' ? (
+          {qg !== 'all' && qg !== 'lines' ? (
             <GroupCard tag={`${study.qualGroups[qg].group} · ${study.qualGroups[qg].role} · ${study.qualGroups[qg].members.join(', ')}`} name={study.qualGroups[qg].name} traits={study.qualGroups[qg].traits} summary={study.qualGroups[qg].summary}>
               <p className="mt-4 text-b3 text-g600">참여자별 발화는 정성 인터뷰 페이지에서 볼 수 있어요.</p>
             </GroupCard>
