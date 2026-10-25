@@ -35,17 +35,19 @@ export function DataGroupCard({ p }: { p: DataPid }) {
  * 4단계(4-1)에서 동일하게 재사용한다 — 내용·동작을 그대로 공유하기 위한 컴포넌트.
  */
 export function DataGroupVariablesCompare() {
-  const [dp, setDp] = useState<DataPid | 'all'>('A')
+  const [dp, setDp] = useState<DataPid | 'all' | 'lines'>('A')
   return (
     <>
-      <Segmented label="데이터 그룹" items={['A', 'B', 'C', 'all'] as (DataPid | 'all')[]} value={dp} onChange={setDp} render={(v) => v === 'all'
+      <Segmented label="데이터 그룹" items={['A', 'B', 'C', 'all', 'lines'] as (DataPid | 'all' | 'lines')[]} value={dp} onChange={setDp} render={(v) => v === 'all'
         ? <span className="py-1">전체 비교</span>
+        : v === 'lines'
+        ? <span className="py-1">전체 비교(그룹별 선)</span>
         : <span className="flex items-center gap-2 py-1"><span className="flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold text-white" style={{ background: PCOLOR[v] }}>{GNUM[v]}</span>{PNAME[v]}</span>} />
       <div className="mt-6 grid gap-6 xl:grid-cols-[1.25fr_1fr]">
         <div className="rounded-3xl border border-g200 px-4 py-3 sm:px-6">
-          <TrackStack tracks={study.dataVars} ids={DATA_IDS} scale={4} paths={dp === 'all' ? [] : [dp]} label={(id) => GNUM[id]} />
+          <TrackStack tracks={study.dataVars} ids={DATA_IDS} scale={4} paths={dp === 'lines' ? DATA_IDS : dp === 'all' ? [] : [dp]} label={(id) => GNUM[id]} />
         </div>
-        {dp !== 'all' ? <DataGroupCard p={dp} /> : (
+        {dp !== 'all' && dp !== 'lines' ? <DataGroupCard p={dp} /> : (
           <div className="space-y-3">
             {DATA_IDS.map((p) => <div key={p} className="rounded-2xl bg-g50 p-5"><PersonaPill id={p} /><p className="mt-2 text-b2 text-g800">{study.dataGroups[p].summary}</p></div>)}
           </div>
@@ -68,18 +70,20 @@ export function QualGroupCard({ g }: { g: QualPid }) {
  * 참고 자료의 '행동 변수·그룹' 페이지는 참여자 한 명씩 보기 토글이 추가로 있어 별도 구현을 유지한다.
  */
 export function QualGroupVariablesCompare() {
-  const [qg, setQg] = useState<QualPid | 'all'>('P')
-  const members = qg === 'all' ? null : study.qualGroups[qg].members
+  const [qg, setQg] = useState<QualPid | 'all' | 'lines'>('P')
+  const members = qg === 'all' || qg === 'lines' ? null : study.qualGroups[qg].members
   return (
     <>
-      <Segmented label="인터뷰 기반 그룹" items={[...QUAL_IDS, 'all'] as (QualPid | 'all')[]} value={qg} onChange={setQg} render={(v) => v === 'all'
+      <Segmented label="인터뷰 기반 그룹" items={[...QUAL_IDS, 'all', 'lines'] as (QualPid | 'all' | 'lines')[]} value={qg} onChange={setQg} render={(v) => v === 'all'
         ? <span className="py-1">전체 비교</span>
+        : v === 'lines'
+        ? <span className="py-1">전체 비교(참여자별 선)</span>
         : <span className="flex items-center gap-2 py-1"><span className="flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold text-white" style={{ background: PCOLOR[v] }}>{QGNUM[v]}</span>{PNAME[v]}</span>} />
       <div className="mt-6 grid gap-6 xl:grid-cols-[1.25fr_1fr]">
         <div className="rounded-3xl border border-g200 px-4 py-3 sm:px-6">
-          <TrackStack tracks={study.qualPattern} ids={UIDS} paths={qg === 'all' ? [] : members ?? []} focus={qg === 'all' ? null : members} />
+          <TrackStack tracks={study.qualPattern} ids={UIDS} paths={qg === 'lines' ? UIDS : qg === 'all' ? [] : members ?? []} focus={qg === 'all' ? null : (qg === 'lines' ? null : members)} />
         </div>
-        {qg !== 'all' ? <QualGroupCard g={qg} /> : (
+        {qg !== 'all' && qg !== 'lines' ? <QualGroupCard g={qg} /> : (
           <div className="space-y-3">
             {QUAL_IDS.map((p) => <div key={p} className="rounded-2xl bg-g50 p-5"><PersonaPill id={p} /><p className="mt-2 text-b2 text-g800">{study.qualGroups[p].summary}</p></div>)}
           </div>
