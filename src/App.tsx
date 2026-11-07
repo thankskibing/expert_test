@@ -16,6 +16,7 @@ import Interviews from './pages/Interviews'
 import Variables from './pages/Variables'
 import Personas from './pages/Personas'
 import Process from './pages/Process'
+import Results from './pages/Results'
 import { ITEM_COUNT } from './lib/protocol'
 import { STEPS } from './lib/steps'
 
@@ -75,6 +76,10 @@ function Shell() {
       <ul className="space-y-1">
         {REF.map((n) => <li key={n.to}><NavLink to={n.to} className={linkCls}>{n.label}</NavLink></li>)}
       </ul>
+      <p className="mb-1 mt-6 px-4 text-b3 text-g600">연구자용</p>
+      <ul className="space-y-1">
+        <li><NavLink to="/results" className={linkCls}>평가 결과</NavLink></li>
+      </ul>
     </nav>
   )
   return (
@@ -117,6 +122,7 @@ function Shell() {
             <Route path="/variables" element={<Variables />} />
             <Route path="/personas" element={<Personas />} />
             <Route path="/process" element={<Process />} />
+            <Route path="/results" element={<Results />} />
             <Route path="*" element={<Start />} />
           </Routes>
         </div>
