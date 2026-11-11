@@ -167,7 +167,7 @@ function Overview({ go }: { go: (tab: TabId, step?: number, e?: EvId) => void })
         ))}
       </div>
 
-      <Section title="핵심 발견" lead="서면 응답, 녹취, 연구자 메모를 합쳐서 여러 평가자가 같이 말한 내용만 묶었어요. 평가자 태그를 누르면 그 사람 응답 전체로 가요.">
+      <Section title="핵심 발견" lead="여러 평가자가 같이 말한 내용만 묶었어요. 평가자 태그를 누르면 그 사람 응답 전체로 가요.">
         <div className="grid gap-3 lg:grid-cols-2">
           {THEMES.map((t) => (
             <article key={t.id} className={`rounded-xl border border-g200 border-l-4 p-4 ${toneCls[t.tone]}`}>
@@ -201,7 +201,7 @@ function oralFor(step: number) {
   return ORAL.filter((o) => Math.floor(o.step) === step)
 }
 function OralList({ notes }: { notes: OralNote[] }) {
-  if (!notes.length) return <p className="text-b2 text-g500">이 단계에 따로 남은 구두 의견은 없어요.</p>
+  if (!notes.length) return <p className="text-b2 text-g500">이 단계에 따로 남은 의견은 없어요.</p>
   return (
     <ul>
       {notes.map((o, i) => (
@@ -285,7 +285,7 @@ function StepView({ step, setStep }: { step: number; setStep: (n: number) => voi
         {qs.filter((q) => q.kind === 'scale').map((q) => <ScaleBlock key={q.key} q={q} />)}
         {qs.filter((q) => q.kind === 'text' && q.key !== 'm_revise').map((q) => <TextBlock key={q.key} q={q} />)}
       </div>
-      <Section title="구두 의견 (녹취·연구자 메모)" lead="말로 한 의견을 요약했어요. 원문 인용이 아니에요. E5는 녹음이 없어 연구자 메모만 있어요.">
+      <Section title="추가 의견">
         <OralList notes={oralFor(step)} />
       </Section>
       {(step === 4 || step === 5) && <p className="text-b2 text-g600">리뷰별·참여자별 점수는 "리뷰·참여자 판정" 탭에 있어요.</p>}
@@ -365,7 +365,7 @@ function PersonaView() {
               <div><p className="mb-1 text-t2 text-success">가장 설득력 있는 점</p>{strong.length ? <ul>{strong.map((e) => <Quote key={e} e={e} src="서면">{D.step6Notes[e][p].strong}</Quote>)}</ul> : <p className="text-b2 text-g500">서면 응답 없음</p>}</div>
               <div><p className="mb-1 text-t2 text-danger">보완이 필요한 점</p>{weak.length ? <ul>{weak.map((e) => <Quote key={e} e={e} src="서면">{D.step6Notes[e][p].weak}</Quote>)}</ul> : <p className="text-b2 text-g500">서면 응답 없음</p>}</div>
             </div>
-            <p className="mb-1 mt-6 text-t2">구두 의견</p>
+            <p className="mb-1 mt-6 text-t2">추가 의견</p>
             <OralList notes={oral} />
           </Section>
         )
@@ -466,9 +466,7 @@ function PersonView({ ev, setEv }: { ev: EvId; setEv: (e: EvId) => void }) {
       <div className="grid gap-4 lg:grid-cols-[20rem_1fr]">
         <aside className="h-fit rounded-xl border border-g200 p-4">
           <p className="text-t1">{m.id}</p>
-          <p className="mt-0.5 text-b3 text-g600">{m.date} · {m.recordingNote}</p>
-          <div className="mt-2 flex flex-wrap gap-1">{m.tags.map((t) => <Badge key={t} tone="orange">{t}</Badge>)}</div>
-          <p className="mt-3 text-b3 text-g700">{m.merge}</p>
+          <p className="mt-0.5 text-b3 text-g600">{m.date}</p>
           <dl className="mt-4 space-y-2 border-t border-g200 pt-3">
             {PROFILE_ROWS.filter(([k]) => pf[k]).map(([k, l]) => (
               <div key={k}><dt className="text-b3 text-g500">{l}</dt><dd className="text-b2 text-g900">{pf[k]}</dd></div>
@@ -559,7 +557,6 @@ function DataView() {
           <li>E1은 구버전 문항이라 현행 문항과 1:1로 대응되는 값만 들어가 있어요(예: 7단계 Q2·Q5·Q6·Q12). 7단계 Q10(보완 가치)·Q11(대체 어려움)은 구버전에 없던 문항이라 연구자가 녹취를 참고해 추가 입력했어요(2점·4점).</li>
           <li>7단계 종합 문항(연구 목적 달성 적절성과 그 이유)은 결과에서 뺐어요.</li>
           <li>7단계 Q11은 역문항이라 점수가 높을수록 "대체하기 어렵다"는 뜻이에요.</li>
-          <li>구두 의견은 녹취와 연구자 메모를 요약한 것으로 원문 인용이 아니에요. 논문에 인용할 때는 녹취 원문 시각을 다시 확인해 주세요.</li>
         </ul>
       </Section>
     </div>
@@ -585,7 +582,7 @@ export default function Results() {
   return (
     <div>
       <PageHead step="연구자용" title="전문가 평가 결과">
-        전문가 6명(E1~E6)의 서면 응답, 녹취, 연구자 메모를 한곳에 모았어요. 나눠 제출한 응답은 평가자별로 합쳤어요.
+        전문가 6명(E1~E6)의 평가 결과를 한곳에 모았어요.
       </PageHead>
       <Tabs label="결과 보기" items={TABS} value={tab} onChange={(t) => setTab(t)} render={(t) => TAB_LABEL[t]} />
       <div className="mt-8">
