@@ -256,7 +256,6 @@ function Step7Extras() {
       <div className="rounded-xl border border-g200 p-4">
         <p className="text-t2">리뷰·인터뷰 퍼소나 차이 체감</p>
         <ul className="mt-2 space-y-1.5">{Object.entries(dcount).map(([k, es]) => <li key={k} className="flex items-center justify-between gap-2 text-b2"><span>{k}</span><span className="text-g600">{es.join(' · ')}</span></li>)}</ul>
-        <p className="mt-2 text-b3 text-g500">E1은 구버전이라 해당 문항이 없어요. E2는 "두 퍼소나 모두 AI 제작"이라는 설명을 들은 뒤 "비슷하다, 보완점 하나가 달랐다"고 정정했어요.</p>
       </div>
       <div className="rounded-xl border border-g200 p-4">
         <p className="text-t2">보완이 필요하다고 고른 단계</p>
