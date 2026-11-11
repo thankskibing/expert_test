@@ -50,8 +50,8 @@ function Cell({ v, bold, title }: { v: number | undefined; bold?: boolean; title
 }
 function EvHead({ e }: { e: EvId }) {
   return (
-    <th className="px-0.5 pb-1 text-center text-b3 font-semibold text-g700" title={`${META[e].name} · ${META[e].date}`}>
-      {e}<span className="block font-normal text-g500">{META[e].name}</span>
+    <th className="px-0.5 pb-1 text-center text-b3 font-semibold text-g700" title={META[e].date}>
+      {e}
     </th>
   )
 }
@@ -67,15 +67,12 @@ function Legend() {
 }
 
 function EvTag({ e }: { e: EvId }) {
-  return <span className="inline-flex h-[22px] shrink-0 items-center rounded-s bg-g100 px-1.5 text-b3 font-semibold text-g800">{e} {META[e].name}</span>
-}
-function SrcTag({ src }: { src: string }) {
-  return <Badge tone={src === '녹취' ? 'dark' : src === '서면' ? 'grey' : 'orange'}>{src}</Badge>
+  return <span className="inline-flex h-[22px] shrink-0 items-center rounded-s bg-g100 px-1.5 text-b3 font-semibold text-g800">{e}</span>
 }
 function Quote({ e, src, children, extra }: { e: EvId; src: string; children: ReactNode; extra?: ReactNode }) {
   return (
     <li className="flex gap-2 border-b border-g200 py-2.5 last:border-0">
-      <div className="flex w-[9.5rem] shrink-0 flex-wrap items-start gap-1"><EvTag e={e} /><SrcTag src={src} />{extra}</div>
+      <div className="flex w-[7.5rem] shrink-0 flex-wrap items-start gap-1" data-src={src}><EvTag e={e} />{extra}</div>
       <div className="min-w-0 flex-1 whitespace-pre-line text-b2 text-g900">{children}</div>
     </li>
   )
@@ -465,10 +462,10 @@ function PersonView({ ev, setEv }: { ev: EvId; setEv: (e: EvId) => void }) {
   const steps = [1, 2, 3, 4, 5, 7]
   return (
     <div>
-      <div className="mb-6 flex flex-wrap gap-1">{EVS.map((e) => <Chip key={e} on={e === ev} onClick={() => setEv(e)}>{e} {META[e].name}</Chip>)}</div>
+      <div className="mb-6 flex flex-wrap gap-1">{EVS.map((e) => <Chip key={e} on={e === ev} onClick={() => setEv(e)}>{e}</Chip>)}</div>
       <div className="grid gap-4 lg:grid-cols-[20rem_1fr]">
         <aside className="h-fit rounded-xl border border-g200 p-4">
-          <p className="text-t1">{m.id} {m.name}</p>
+          <p className="text-t1">{m.id}</p>
           <p className="mt-0.5 text-b3 text-g600">{m.date} · {m.recordingNote}</p>
           <div className="mt-2 flex flex-wrap gap-1">{m.tags.map((t) => <Badge key={t} tone="orange">{t}</Badge>)}</div>
           <p className="mt-3 text-b3 text-g700">{m.merge}</p>
@@ -545,7 +542,7 @@ function DataView() {
             <thead className="text-b3 text-g500"><tr className="border-b border-g200"><th className="py-2 pr-3 font-normal">평가자</th><th className="pr-3 font-normal">날짜</th><th className="pr-3 font-normal">녹취</th><th className="font-normal">병합·유의 사항</th></tr></thead>
             <tbody>{EV_META.map((m) => (
               <tr key={m.id} className="border-b border-g200 align-top">
-                <td className="whitespace-nowrap py-2.5 pr-3 font-semibold">{m.id} {m.name}</td>
+                <td className="whitespace-nowrap py-2.5 pr-3 font-semibold">{m.id}</td>
                 <td className="whitespace-nowrap pr-3 tabular">{m.date}</td>
                 <td className="whitespace-nowrap pr-3"><Badge tone={m.recording === 'ok' ? 'green' : m.recording === 'none' ? 'red' : 'orange'}>{m.recordingNote}</Badge></td>
                 <td className="py-2.5 text-g800">{m.merge}</td>
@@ -557,9 +554,10 @@ function DataView() {
       <Section title="집계 기준">
         <ul className="max-w-prose2 list-disc space-y-1.5 pl-5 text-b2 text-g800">
           <li>시트의 단계별 탭에서 같은 평가자의 여러 제출을 순서대로 합쳤어요. 같은 칸에 값이 두 번 있으면 나중 값을 썼어요.</li>
-          <li>받은 JSON 파일 7개(E2 1, E4 2, E6 2, E5 1, "ㅇㅇ" 1)를 시트 값과 대조했어요. E2 6단계 리뷰 Primary 3-2 한 칸(JSON 5, 시트 3)만 다르고 나머지는 모두 같아요. 시트가 몇 초 뒤의 실제 제출본이라 시트 값을 썼어요.</li>
+          <li>받은 JSON 파일 7개(E2 1, E3 1, E4 2, E5 1, E6 2)를 시트 값과 대조했어요. E2의 6단계 리뷰 Primary 3-2 한 칸(JSON 5, 시트 3)만 다르고 나머지는 모두 같아요. 시트가 몇 초 뒤의 실제 제출본이라 시트 값을 썼어요.</li>
           <li>평균은 응답한 사람만으로 계산해서 문항마다 n이 달라요. 표의 n을 같이 봐 주세요.</li>
-          <li>E1은 구버전 문항이라 현행 문항과 1:1로 대응되는 값만 들어가 있어요(예: 7단계 Q2·Q5·Q6·Q12). E3는 7단계 종합 점수(Q14)를 남기지 않았고, 녹취에서 "목적(대체)은 아직 무리"라고 답했어요.</li>
+          <li>E1은 구버전 문항이라 현행 문항과 1:1로 대응되는 값만 들어가 있어요(예: 7단계 Q2·Q5·Q6·Q12). 7단계 Q10(보완 가치)·Q11(대체 어려움)은 구버전에 없던 문항이라 연구자가 녹취를 참고해 추가 입력했어요(2점·4점).</li>
+          <li>7단계 종합 문항(연구 목적 달성 적절성과 그 이유)은 결과에서 뺐어요.</li>
           <li>7단계 Q11은 역문항이라 점수가 높을수록 "대체하기 어렵다"는 뜻이에요.</li>
           <li>구두 의견은 녹취와 연구자 메모를 요약한 것으로 원문 인용이 아니에요. 논문에 인용할 때는 녹취 원문 시각을 다시 확인해 주세요.</li>
         </ul>

@@ -1,6 +1,7 @@
 import json,sys
 s=json.load(open(sys.argv[1]))
-EV={'E1':'E1','E2':'E2','E3':'E3','ㅇㅇ':'E3','E4':'E4','E5':'E5','E6':'E6'}
+# 평가자 실명 → 코드 매핑은 저장소에 두지 않고 로컬 파일(sys.argv[3], JSON)로 받아요.
+EV=json.load(open(sys.argv[3]))
 g=lambda x,i: x[i].strip() if len(x)>i else ''
 def merged(tab):
     r=s[tab]; out={}
@@ -38,7 +39,6 @@ add(7,'7 종합평가',[('s8_q1',2,'scale','연구 절차의 체계성',None),('
  ('s8_q5',6,'scale','AI가 원문 근거로 도출하도록 구성',None),('s8_q6',7,'scale','연구자 원문 대조 검증의 적절성',None),('s8_q7',8,'text','AI 분석·검증 평가 이유',None),
  ('s8_diff',9,'choice','리뷰·인터뷰 퍼소나 차이 체감',None),('s8_diff_why',10,'text','차이를 느낀(못 느낀) 이유',None),
  ('s8_q10',11,'scale','인터뷰 퍼소나 보완 자료로서의 가치',None),('s8_q11',12,'scale','리뷰 퍼소나만으로는 대체 어려움(역문항)',None),('s8_q12',13,'scale','다른 제품·서비스 적용 가능성',None),('s8_q13',14,'text','활용 가능성 평가 이유',None),
- ('s8_q14',15,'scale','연구 목적 달성 적절성(종합)',None),('s8_q15',16,'text','종합 평가 이유',None),
  ('m_revise',17,'text','보완이 필요한 단계',None),('m_revise_detail',19,'text','보완 내용',None),('m_ai_approach',20,'text','본인이라면 AI를 쓸 단계',None),('m_final',21,'text','추가 의견',None)])
 # E1 old-instrument extras
 old={'s4_q1_why_old':None}
@@ -87,6 +87,10 @@ def judge(tab,idcol):
         e=EV.get(x[1].strip())
         if e: out.append({'ev':e,'persona':g(x,2),'id':g(x,3),'score':ints(g(x,4)),'agree':g(x,5),'why':g(x,6)})
     return out
+# 연구자 추가 입력: E1(파일럿·구버전)에는 없던 7단계 Q10·Q11
+for q in Q:
+    if q['key']=='s8_q10': q['scores']['E1']=2
+    if q['key']=='s8_q11': q['scores']['E1']=4
 res={'evaluators':EVS,'profile':P,'questions':Q,'step6':S6,'step6Notes':N6,'step6Order':order,'e1Memos':M1,
      'reviewJudge':judge('4-3 리뷰별 판정',3),'interviewJudge':judge('5-3 참여자별 판정',3)}
 json.dump(res,open(sys.argv[2],'w'),ensure_ascii=False,indent=1)
